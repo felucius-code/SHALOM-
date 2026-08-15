@@ -226,29 +226,41 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    <<!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+    import {
+        getAuth,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyA1v9vZyfA7PC-8Gjz0rgTGMFbLsl_MV5I",
-        const firebaseConfig = {
-    apiKey: "AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",
-    authDomain: "shalom-a1626.firebaseapp.com",
-    projectId: "shalom-a1626",
-    storageBucket: "shalom-a1626.firebasestorage.app",
-    messagingSenderId: "746323382164",
-    appId: "1:746323382164:web:1bca1a1df5f5ec6f2b8981",
-    measurementId: "G-QXD13ER8SK"
-};
+    import {
+        getFirestore,
+        collection,
+        addDoc,
+        getDocs,
+        query,
+        where
+    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",
+        authDomain: "shalom-a1626.firebaseapp.com",
+        projectId: "shalom-a1626",
+        storageBucket: "shalom-a1626.firebasestorage.app",
+        messagingSenderId: "746323382164",
+        appId: "1:746323382164:web:1bca1a1df5f5ec6f2b8981",
+        measurementId: "G-QXD13ER8SK"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
         const ADMIN_EMAIL = "felucius@gmail.com";
 
