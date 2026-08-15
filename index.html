@@ -772,29 +772,324 @@ select option {
 <section id="page-home"
          class="page active">
 
-    <h1 class="page-title">
-        Início
-    </h1>
+    <div class="home-header">
 
-    <p class="page-description">
-        Bem-vindo ao SHALOM.
-    </p>
+        <h1 class="page-title">
+            ש SHALOM
+        </h1>
 
-    <div class="card">
-
-        <h2 class="card-title">
-            ש Bem-vindo ao SHALOM
-        </h2>
-
-        <p style="color:#B8BDD0;">
-            Um espaço para comunidades,
-            conhecimento, cultura,
-            estudos, entretenimento e produtos.
+        <p class="page-description">
+            Conteúdo selecionado para você.
         </p>
 
     </div>
 
-    <div id="homeFeed"></div>
+
+    <!-- ================================
+         DESTAQUES
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                ⭐ Destaques
+            </h2>
+
+        </div>
+
+        <div
+            id="homeFeatured"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         FILMES
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                🎬 Filmes
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('films')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeFilms"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         SÉRIES
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                📺 Séries
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('series')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeSeries"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         DOCUMENTÁRIOS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                🎞️ Documentários
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('documentaries')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeDocumentaries"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         LIVROS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                📚 Livros
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('books')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeBooks"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         ARTIGOS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                📰 Artigos
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('articles')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeArticles"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         ESTUDOS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                📖 Estudos
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('studies')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeStudies"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         VÍDEOS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                🎥 Vídeos
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('videos')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeVideos"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         LOJA
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                🛒 Loja
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('store')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeProducts"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
 
 </section>
 
