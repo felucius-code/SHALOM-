@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>SHALOM - Rede Social</title>
 
 <style>
+
 * {
     margin: 0;
     padding: 0;
@@ -39,14 +41,20 @@ button {
     display: none !important;
 }
 
-/* ==============================
+hr {
+    border: 0;
+    border-top: 1px solid #303654;
+    margin: 20px 0;
+}
+
+/* =========================
    LOGIN
-============================== */
+========================= */
 
 .auth-container {
     width: 100%;
     max-width: 430px;
-    margin: 0 auto;
+    margin: auto;
     padding: 25px;
 }
 
@@ -62,6 +70,7 @@ button {
     text-align: center;
     color: var(--gold);
     font-size: 30px;
+    font-weight: bold;
     margin-bottom: 10px;
 }
 
@@ -95,6 +104,11 @@ select {
 textarea {
     min-height: 100px;
     resize: vertical;
+}
+
+select option {
+    background: var(--bg);
+    color: white;
 }
 
 .btn {
@@ -142,9 +156,9 @@ textarea {
     background: var(--success);
 }
 
-/* ==============================
+/* =========================
    NAVBAR
-============================== */
+========================= */
 
 .navbar {
     height: 65px;
@@ -185,9 +199,9 @@ textarea {
     font-weight: bold;
 }
 
-/* ==============================
+/* =========================
    LAYOUT
-============================== */
+========================= */
 
 .app-layout {
     max-width: 1200px;
@@ -251,9 +265,9 @@ textarea {
     margin-bottom: 25px;
 }
 
-/* ==============================
+/* =========================
    CARDS
-============================== */
+========================= */
 
 .card {
     background: var(--panel);
@@ -290,6 +304,12 @@ textarea {
     font-size: 45px;
 }
 
+.content-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .content-body {
     padding: 15px;
 }
@@ -310,9 +330,9 @@ textarea {
     border-top: 1px solid #303654;
 }
 
-/* ==============================
-   COMMUNITY
-============================== */
+/* =========================
+   COMMUNITIES
+========================= */
 
 .community-card {
     background: var(--panel);
@@ -338,6 +358,7 @@ textarea {
     border-radius: 5px;
     font-size: 12px;
     background: var(--muted);
+    margin-right: 5px;
 }
 
 .badge-success {
@@ -348,9 +369,14 @@ textarea {
     background: #806A28;
 }
 
-/* ==============================
+.badge-admin {
+    background: #684F00;
+    color: white;
+}
+
+/* =========================
    POSTS
-============================== */
+========================= */
 
 .post {
     background: var(--panel);
@@ -376,25 +402,9 @@ textarea {
     line-height: 1.6;
 }
 
-.post-actions {
-    margin-top: 15px;
-}
-
-.comment {
-    background: var(--bg);
-    padding: 9px;
-    border-radius: 5px;
-    margin-top: 7px;
-}
-
-.comment-author {
-    color: var(--gold);
-    font-size: 13px;
-}
-
-/* ==============================
+/* =========================
    MOBILE
-============================== */
+========================= */
 
 @media (max-width: 750px) {
 
@@ -442,13 +452,14 @@ textarea {
         font-size: 23px;
     }
 }
+
 </style>
 </head>
 
 <body>
 
 <!-- =====================================================
-     LOGIN
+     AUTENTICAÇÃO
 ===================================================== -->
 
 <section id="authScreen">
@@ -457,17 +468,21 @@ textarea {
 
         <div class="auth-card">
 
-            <div class="logo">🕯️ SHALOM</div>
-
-            <div class="subtitle">
-                Rede Social Hebraica
+            <div class="logo">
+                🕯️ SHALOM
             </div>
 
-            <div id="loginError" class="error hidden"></div>
+            <div class="subtitle">
+                Rede Social
+            </div>
 
-            <div id="signupError" class="error hidden"></div>
+            <div id="loginError"
+                 class="error hidden">
+            </div>
 
-            <div id="signupSuccess" class="success hidden"></div>
+            <div id="signupError"
+                 class="error hidden">
+            </div>
 
             <!-- LOGIN -->
 
@@ -478,73 +493,95 @@ textarea {
                 </h2>
 
                 <div class="form-group">
+
                     <label>Email</label>
+
                     <input
                         type="email"
                         id="loginEmail"
                         placeholder="seu@email.com">
+
                 </div>
 
                 <div class="form-group">
+
                     <label>Senha</label>
+
                     <input
                         type="password"
                         id="loginPassword"
                         placeholder="Sua senha">
+
                 </div>
 
                 <button
                     class="btn"
                     style="width:100%;"
                     onclick="handleLogin()">
+
                     Entrar
+
                 </button>
 
                 <button
                     class="btn btn-secondary"
                     style="width:100%;"
                     onclick="showSignup()">
+
                     Criar Conta
+
                 </button>
 
             </div>
 
+
             <!-- CADASTRO -->
 
-            <div id="signupForm" class="hidden">
+            <div id="signupForm"
+                 class="hidden">
 
                 <h2 style="margin-bottom:20px;">
                     Criar Conta
                 </h2>
 
                 <div class="form-group">
+
                     <label>Email</label>
+
                     <input
                         type="email"
                         id="signupEmail"
                         placeholder="seu@email.com">
+
                 </div>
 
                 <div class="form-group">
+
                     <label>Senha</label>
+
                     <input
                         type="password"
                         id="signupPassword"
                         placeholder="Mínimo de 6 caracteres">
+
                 </div>
 
                 <button
                     class="btn"
                     style="width:100%;"
                     onclick="handleSignup()">
+
                     Criar Conta
+
                 </button>
 
                 <button
                     class="btn btn-secondary"
                     style="width:100%;"
                     onclick="showLogin()">
+
                     Voltar
+
                 </button>
 
             </div>
@@ -560,651 +597,849 @@ textarea {
      APLICAÇÃO
 ===================================================== -->
 
-<section id="appScreen" class="hidden">
+<section id="appScreen"
+         class="hidden">
 
-    <header class="navbar">
+<header class="navbar">
 
-        <div class="navbar-brand">
-            🕯️ SHALOM
-        </div>
+    <div class="navbar-brand">
+        🕯️ SHALOM
+    </div>
 
-        <div class="navbar-user">
+    <div class="navbar-user">
 
-            <span
-                id="userEmail"
-                class="user-email">
-            </span>
+        <span
+            id="userEmail"
+            class="user-email">
+        </span>
 
-            <button
-                class="logout-btn"
-                onclick="logout()">
-                Sair
-            </button>
+        <button
+            class="logout-btn"
+            onclick="logout()">
 
-        </div>
+            Sair
 
-    </header>
-
-
-    <div class="app-layout">
-
-        <!-- =================================================
-             MENU
-        ================================================== -->
-
-        <aside class="sidebar">
-
-            <div class="sidebar-title">
-                Principal
-            </div>
-
-            <button
-                class="nav-item active"
-                onclick="openPage('home', this)">
-                🏠 Início
-            </button>
-
-            <button
-                class="nav-item"
-                onclick="openPage('communities', this)">
-                👥 Comunidades
-            </button>
-
-            <button
-                class="nav-item"
-                onclick="openPage('profile', this)">
-                👤 Perfil
-            </button>
-
-            <button
-                class="nav-item"
-                onclick="openPage('notifications', this)">
-                🔔 Notificações
-            </button>
-
-
-            <div class="sidebar-title">
-                Conteúdo
-            </div>
-
-            <button
-                class="nav-item"
-                onclick="openPage('films', this)">
-                🎬 Filmes
-            </button>
-
-            <button
-                class="nav-item"
-                onclick="openPage('series', this)">
-                📺 Séries
-            </button>
-
-            <button
-                class="nav-item"
-                onclick="openPage('books', this)">
-                📚 Livros
-            </button>
-
-            <button
-                class="nav-item"
-                onclick="openPage('documentaries', this)">
-                🎞️ Documentários
-            </button>
-
-            <button
-                class="nav-item"
-                onclick="openPage('studies', this)">
-                📖 Estudos
-            </button>
-
-            <button
-                class="nav-item"
-                onclick="openPage('videos', this)">
-                🎥 Vídeos
-            </button>
-
-
-            <div class="sidebar-title">
-                Loja
-            </div>
-
-            <button
-                class="nav-item"
-                onclick="openPage('store', this)">
-                🛒 Loja
-            </button>
-
-
-            <div
-                id="adminMenu"
-                class="hidden">
-
-                <div class="sidebar-title">
-                    Administração
-                </div>
-
-                <button
-                    class="nav-item"
-                    onclick="openPage('admin', this)">
-                    🛡️ Administração
-                </button>
-
-            </div>
-
-        </aside>
-
-
-        <!-- =================================================
-             CONTEÚDO
-        ================================================== -->
-
-        <main class="main">
-
-
-            <!-- =============================================
-                 INÍCIO
-            ============================================== -->
-
-            <section
-                id="page-home"
-                class="page active">
-
-                <h1 class="page-title">
-                    Início
-                </h1>
-
-                <p class="page-description">
-                    Bem-vindo ao SHALOM.
-                </p>
-
-                <div class="card">
-
-                    <h2 class="card-title">
-                        🕯️ Bem-vindo ao SHALOM
-                    </h2>
-
-                    <p style="color:#B8BDD0;">
-                        Um espaço para comunidades,
-                        conhecimento, cultura,
-                        entretenimento e produtos.
-                    </p>
-
-                </div>
-
-                <div id="homeFeed"></div>
-
-            </section>
-
-
-            <!-- =============================================
-                 COMUNIDADES
-            ============================================== -->
-
-            <section
-                id="page-communities"
-                class="page">
-
-                <h1 class="page-title">
-                    Comunidades
-                </h1>
-
-                <p class="page-description">
-                    Participe de comunidades e
-                    compartilhe conhecimento.
-                </p>
-
-                <div
-                    id="adminCommunityButton"
-                    class="hidden card">
-
-                    <button
-                        class="btn"
-                        onclick="showCreateCommunity()">
-                        ＋ Adicionar comunidade
-                    </button>
-
-                </div>
-
-                <div
-                    id="createCommunityBox"
-                    class="card hidden">
-
-                    <h2 class="card-title">
-                        Nova comunidade
-                    </h2>
-
-                    <div class="form-group">
-
-                        <label>Nome</label>
-
-                        <input
-                            id="communityName"
-                            placeholder="Nome da comunidade">
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Descrição</label>
-
-                        <textarea
-                            id="communityDescription"
-                            placeholder="Descrição">
-                        </textarea>
-
-                    </div>
-
-                    <button
-                        class="btn"
-                        onclick="addCommunity()">
-                        Criar comunidade
-                    </button>
-
-                </div>
-
-                <div id="communitiesList"></div>
-
-            </section>
-
-
-            <!-- =============================================
-                 FILMES
-            ============================================== -->
-
-            <section
-                id="page-films"
-                class="page">
-
-                <h1 class="page-title">
-                    🎬 Filmes
-                </h1>
-
-                <p class="page-description">
-                    Filmes disponíveis no SHALOM.
-                </p>
-
-                <div
-                    id="admin-films"
-                    class="card hidden">
-
-                    <button
-                        class="btn"
-                        onclick="showContentForm('films')">
-                        ＋ Adicionar filme
-                    </button>
-
-                </div>
-
-                <div
-                    id="filmsGrid"
-                    class="grid">
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 SÉRIES
-            ============================================== -->
-
-            <section
-                id="page-series"
-                class="page">
-
-                <h1 class="page-title">
-                    📺 Séries
-                </h1>
-
-                <p class="page-description">
-                    Séries disponíveis no SHALOM.
-                </p>
-
-                <div
-                    id="admin-series"
-                    class="card hidden">
-
-                    <button
-                        class="btn"
-                        onclick="showContentForm('series')">
-                        ＋ Adicionar série
-                    </button>
-
-                </div>
-
-                <div
-                    id="seriesGrid"
-                    class="grid">
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 LIVROS
-            ============================================== -->
-
-            <section
-                id="page-books"
-                class="page">
-
-                <h1 class="page-title">
-                    📚 Livros
-                </h1>
-
-                <p class="page-description">
-                    Biblioteca do SHALOM.
-                </p>
-
-                <div
-                    id="admin-books"
-                    class="card hidden">
-
-                    <button
-                        class="btn"
-                        onclick="showContentForm('books')">
-                        ＋ Adicionar livro
-                    </button>
-
-                </div>
-
-                <div
-                    id="booksGrid"
-                    class="grid">
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 DOCUMENTÁRIOS
-            ============================================== -->
-
-            <section
-                id="page-documentaries"
-                class="page">
-
-                <h1 class="page-title">
-                    🎞️ Documentários
-                </h1>
-
-                <p class="page-description">
-                    Documentários selecionados.
-                </p>
-
-                <div
-                    id="admin-documentaries"
-                    class="card hidden">
-
-                    <button
-                        class="btn"
-                        onclick="showContentForm('documentaries')">
-                        ＋ Adicionar documentário
-                    </button>
-
-                </div>
-
-                <div
-                    id="documentariesGrid"
-                    class="grid">
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 ESTUDOS
-            ============================================== -->
-
-            <section
-                id="page-studies"
-                class="page">
-
-                <h1 class="page-title">
-                    📖 Estudos
-                </h1>
-
-                <p class="page-description">
-                    Estudos e materiais educativos.
-                </p>
-
-                <div
-                    id="admin-studies"
-                    class="card hidden">
-
-                    <button
-                        class="btn"
-                        onclick="showContentForm('studies')">
-                        ＋ Adicionar estudo
-                    </button>
-
-                </div>
-
-                <div
-                    id="studiesGrid"
-                    class="grid">
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 VÍDEOS
-            ============================================== -->
-
-            <section
-                id="page-videos"
-                class="page">
-
-                <h1 class="page-title">
-                    🎥 Vídeos
-                </h1>
-
-                <p class="page-description">
-                    Vídeos diversos publicados na plataforma.
-                </p>
-
-                <div
-                    id="admin-videos"
-                    class="card hidden">
-
-                    <button
-                        class="btn"
-                        onclick="showContentForm('videos')">
-                        ＋ Adicionar vídeo
-                    </button>
-
-                </div>
-
-                <div
-                    id="videosGrid"
-                    class="grid">
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 LOJA
-            ============================================== -->
-
-            <section
-                id="page-store"
-                class="page">
-
-                <h1 class="page-title">
-                    🛒 Loja
-                </h1>
-
-                <p class="page-description">
-                    Produtos disponíveis no SHALOM.
-                </p>
-
-                <div
-                    id="admin-store"
-                    class="card hidden">
-
-                    <button
-                        class="btn"
-                        onclick="showContentForm('products')">
-                        ＋ Adicionar produto
-                    </button>
-
-                </div>
-
-                <div
-                    id="productsGrid"
-                    class="grid">
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 PERFIL
-            ============================================== -->
-
-            <section
-                id="page-profile"
-                class="page">
-
-                <h1 class="page-title">
-                    👤 Perfil
-                </h1>
-
-                <div class="card">
-
-                    <h2 class="card-title">
-                        Meu perfil
-                    </h2>
-
-                    <p>
-                        <strong>Email:</strong>
-                    </p>
-
-                    <p
-                        id="profileEmail"
-                        style="color:#D4AF37;margin-top:7px;">
-                    </p>
-
-                    <hr>
-
-                    <p style="color:#6B7A99;">
-                        O perfil completo será expandido
-                        com foto, nome, biografia,
-                        interesses e outras informações.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 NOTIFICAÇÕES
-            ============================================== -->
-
-            <section
-                id="page-notifications"
-                class="page">
-
-                <h1 class="page-title">
-                    🔔 Notificações
-                </h1>
-
-                <p class="page-description">
-                    Suas notificações aparecerão aqui.
-                </p>
-
-                <div class="card">
-
-                    <p style="color:#6B7A99;">
-                        Nenhuma notificação no momento.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =============================================
-                 ADMINISTRAÇÃO
-            ============================================== -->
-
-            <section
-                id="page-admin"
-                class="page">
-
-                <h1 class="page-title">
-                    🛡️ Administração
-                </h1>
-
-                <p class="page-description">
-                    Ferramentas administrativas do SHALOM.
-                </p>
-
-                <div class="grid">
-
-                    <div class="card">
-                        <h3 class="card-title">
-                            👥 Usuários
-                        </h3>
-                        <p style="color:#6B7A99;">
-                            Gestão dos usuários da plataforma.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3 class="card-title">
-                            🏘️ Comunidades
-                        </h3>
-                        <p style="color:#6B7A99;">
-                            Gestão das comunidades.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3 class="card-title">
-                            🚨 Moderação
-                        </h3>
-                        <p style="color:#6B7A99;">
-                            Denúncias e moderação.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3 class="card-title">
-                            🛒 Loja
-                        </h3>
-                        <p style="color:#6B7A99;">
-                            Gestão dos produtos.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3 class="card-title">
-                            📚 Conteúdo
-                        </h3>
-                        <p style="color:#6B7A99;">
-                            Gestão geral do catálogo.
-                        </p>
-                    </div>
-
-                    <div class="card">
-                        <h3 class="card-title">
-                            ⚙️ Configurações
-                        </h3>
-                        <p style="color:#6B7A99;">
-                            Configurações da plataforma.
-                        </p>
-                    </div>
-
-                </div>
-
-            </section>
-
-        </main>
+        </button>
 
     </div>
+
+</header>
+
+
+<div class="app-layout">
+
+<!-- =====================================================
+     MENU
+===================================================== -->
+
+<aside class="sidebar">
+
+    <div class="sidebar-title">
+        Principal
+    </div>
+
+    <button
+        class="nav-item active"
+        onclick="openPage('home',this)">
+        🏠 Início
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('communities',this)">
+        👥 Comunidades
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('profile',this)">
+        👤 Perfil
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('notifications',this)">
+        🔔 Notificações
+    </button>
+
+
+    <div class="sidebar-title">
+        Conteúdo
+    </div>
+
+    <button
+        class="nav-item"
+        onclick="openPage('films',this)">
+        🎬 Filmes
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('series',this)">
+        📺 Séries
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('books',this)">
+        📚 Livros
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('articles',this)">
+        📰 Artigos
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('documentaries',this)">
+        🎞️ Documentários
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('studies',this)">
+        📖 Estudos
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('videos',this)">
+        🎥 Vídeos
+    </button>
+
+
+    <div class="sidebar-title">
+        Loja
+    </div>
+
+    <button
+        class="nav-item"
+        onclick="openPage('store',this)">
+        🛒 Loja
+    </button>
+
+
+    <div id="adminMenu"
+         class="hidden">
+
+        <div class="sidebar-title">
+            Administração
+        </div>
+
+        <button
+            class="nav-item"
+            onclick="openPage('admin',this)">
+            🛡️ Administração
+        </button>
+
+    </div>
+
+</aside>
+
+
+<!-- =====================================================
+     CONTEÚDO
+===================================================== -->
+
+<main class="main">
+
+
+<!-- =====================================================
+     INÍCIO
+===================================================== -->
+
+<section id="page-home"
+         class="page active">
+
+    <h1 class="page-title">
+        Início
+    </h1>
+
+    <p class="page-description">
+        Bem-vindo ao SHALOM.
+    </p>
+
+    <div class="card">
+
+        <h2 class="card-title">
+            🕯️ Bem-vindo ao SHALOM
+        </h2>
+
+        <p style="color:#B8BDD0;">
+            Um espaço para comunidades,
+            conhecimento, cultura,
+            estudos, entretenimento e produtos.
+        </p>
+
+    </div>
+
+    <div id="homeFeed"></div>
+
+</section>
+
+
+<!-- =====================================================
+     COMUNIDADES
+===================================================== -->
+
+<section id="page-communities"
+         class="page">
+
+    <h1 class="page-title">
+        Comunidades
+    </h1>
+
+    <p class="page-description">
+        Participe de comunidades e
+        compartilhe conhecimento.
+    </p>
+
+
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
+
+    <div id="adminCommunityButton"
+         class="hidden card">
+
+        <button
+            class="btn"
+            onclick="showCreateCommunity()">
+
+            ＋ Adicionar comunidade
+
+        </button>
+
+    </div>
+
+
+    <div id="createCommunityBox"
+         class="card hidden">
+
+        <h2 class="card-title">
+            Nova comunidade
+        </h2>
+
+        <div class="form-group">
+
+            <label>Nome</label>
+
+            <input
+                id="communityName"
+                placeholder="Nome da comunidade">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Descrição</label>
+
+            <textarea
+                id="communityDescription"
+                placeholder="Descrição da comunidade">
+            </textarea>
+
+        </div>
+
+        <button
+            class="btn"
+            onclick="addCommunity()">
+
+            Criar comunidade
+
+        </button>
+
+    </div>
+
+
+    <div id="communitiesList"></div>
+
+
+    <!-- ÁREA DA COMUNIDADE -->
+
+    <div id="communityArea"
+         class="hidden">
+
+        <div class="card">
+
+            <h2
+                id="communityAreaTitle"
+                class="card-title">
+            </h2>
+
+            <p
+                id="communityAreaDescription"
+                style="color:#6B7A99;">
+            </p>
+
+        </div>
+
+
+        <!-- ADMINISTRADOR DA COMUNIDADE -->
+
+        <div id="communityStudyAdminTools"
+             class="card hidden">
+
+            <h2 class="card-title">
+                🎥 Administração de Estudos
+            </h2>
+
+            <p style="color:#6B7A99;">
+                Como administrador desta comunidade,
+                você pode adicionar vídeos de estudos.
+            </p>
+
+            <button
+                class="btn"
+                onclick="showStudyVideoForm()">
+
+                ＋ Adicionar vídeo de estudo
+
+            </button>
+
+        </div>
+
+
+        <!-- FORMULÁRIO DE VÍDEO -->
+
+        <div id="studyVideoForm"
+             class="card hidden">
+
+            <h2 class="card-title">
+                🎥 Novo vídeo de estudo
+            </h2>
+
+            <div class="form-group">
+
+                <label>Título</label>
+
+                <input
+                    id="studyVideoTitle"
+                    placeholder="Título do vídeo">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Descrição</label>
+
+                <textarea
+                    id="studyVideoDescription"
+                    placeholder="Descrição do estudo">
+                </textarea>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Link do vídeo</label>
+
+                <input
+                    id="studyVideoUrl"
+                    placeholder="https://...">
+
+            </div>
+
+            <button
+                class="btn"
+                onclick="saveStudyVideo()">
+
+                Salvar vídeo
+
+            </button>
+
+            <button
+                class="btn btn-secondary"
+                onclick="hideStudyVideoForm()">
+
+                Cancelar
+
+            </button>
+
+        </div>
+
+
+        <div id="communityStudyVideos"></div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CATEGORIAS
+===================================================== -->
+
+<section id="page-films"
+         class="page">
+
+    <h1 class="page-title">
+        🎬 Filmes
+    </h1>
+
+    <p class="page-description">
+        Filmes selecionados pelo SHALOM.
+    </p>
+
+    <div id="admin-films"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('films')">
+
+            ＋ Adicionar filme
+
+        </button>
+
+    </div>
+
+    <div id="filmsGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-series"
+         class="page">
+
+    <h1 class="page-title">
+        📺 Séries
+    </h1>
+
+    <p class="page-description">
+        Séries selecionadas pelo SHALOM.
+    </p>
+
+    <div id="admin-series"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('series')">
+
+            ＋ Adicionar série
+
+        </button>
+
+    </div>
+
+    <div id="seriesGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-books"
+         class="page">
+
+    <h1 class="page-title">
+        📚 Livros
+    </h1>
+
+    <p class="page-description">
+        Biblioteca do SHALOM.
+    </p>
+
+    <div id="admin-books"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('books')">
+
+            ＋ Adicionar livro
+
+        </button>
+
+    </div>
+
+    <div id="booksGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-articles"
+         class="page">
+
+    <h1 class="page-title">
+        📰 Artigos
+    </h1>
+
+    <p class="page-description">
+        Artigos publicados pelo SHALOM.
+    </p>
+
+    <div id="admin-articles"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('articles')">
+
+            ＋ Adicionar artigo
+
+        </button>
+
+    </div>
+
+    <div id="articlesGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-documentaries"
+         class="page">
+
+    <h1 class="page-title">
+        🎞️ Documentários
+    </h1>
+
+    <p class="page-description">
+        Documentários selecionados.
+    </p>
+
+    <div id="admin-documentaries"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('documentaries')">
+
+            ＋ Adicionar documentário
+
+        </button>
+
+    </div>
+
+    <div id="documentariesGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-studies"
+         class="page">
+
+    <h1 class="page-title">
+        📖 Estudos
+    </h1>
+
+    <p class="page-description">
+        Estudos publicados no SHALOM.
+    </p>
+
+    <div id="admin-studies"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('studies')">
+
+            ＋ Adicionar estudo
+
+        </button>
+
+    </div>
+
+    <div id="studiesGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-videos"
+         class="page">
+
+    <h1 class="page-title">
+        🎥 Vídeos
+    </h1>
+
+    <p class="page-description">
+        Vídeos gerais publicados no SHALOM.
+    </p>
+
+    <div id="admin-videos"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('videos')">
+
+            ＋ Adicionar vídeo
+
+        </button>
+
+    </div>
+
+    <div id="videosGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     LOJA
+===================================================== -->
+
+<section id="page-store"
+         class="page">
+
+    <h1 class="page-title">
+        🛒 Loja
+    </h1>
+
+    <p class="page-description">
+        Produtos disponíveis no SHALOM.
+    </p>
+
+    <div id="admin-store"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('products')">
+
+            ＋ Adicionar produto
+
+        </button>
+
+    </div>
+
+    <div id="productsGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     PERFIL
+===================================================== -->
+
+<section id="page-profile"
+         class="page">
+
+    <h1 class="page-title">
+        👤 Perfil
+    </h1>
+
+    <div class="card">
+
+        <h2 class="card-title">
+            Meu perfil
+        </h2>
+
+        <p>
+            <strong>Email:</strong>
+        </p>
+
+        <p
+            id="profileEmail"
+            style="color:#D4AF37;margin-top:7px;">
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     NOTIFICAÇÕES
+===================================================== -->
+
+<section id="page-notifications"
+         class="page">
+
+    <h1 class="page-title">
+        🔔 Notificações
+    </h1>
+
+    <div class="card">
+
+        <p style="color:#6B7A99;">
+            Nenhuma notificação no momento.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     ADMINISTRAÇÃO GERAL
+===================================================== -->
+
+<section id="page-admin"
+         class="page">
+
+    <h1 class="page-title">
+        🛡️ Administração
+    </h1>
+
+    <p class="page-description">
+        Administração geral do SHALOM.
+    </p>
+
+
+    <!-- ADMINISTRADORES DE COMUNIDADE -->
+
+    <div class="card">
+
+        <h2 class="card-title">
+            👥 Administradores de Comunidade
+        </h2>
+
+        <p style="color:#6B7A99;margin-bottom:20px;">
+
+            O administrador geral pode definir
+            quem administra cada comunidade.
+
+        </p>
+
+
+        <div class="form-group">
+
+            <label>
+                Comunidade
+            </label>
+
+            <select
+                id="adminCommunitySelect">
+
+                <option value="">
+                    Selecione uma comunidade
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Email do administrador
+            </label>
+
+            <input
+                type="email"
+                id="communityAdminEmail"
+                placeholder="usuario@email.com">
+
+        </div>
+
+
+        <button
+            class="btn"
+            onclick="assignCommunityAdmin()">
+
+            Tornar administrador
+
+        </button>
+
+
+        <div
+            id="communityAdminsList"
+            style="margin-top:20px;">
+        </div>
+
+    </div>
+
+
+    <!-- ADMINISTRAÇÃO GERAL -->
+
+    <div class="grid">
+
+        <div class="card">
+
+            <h3 class="card-title">
+                👥 Usuários
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão dos usuários.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                🏘️ Comunidades
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão das comunidades.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                🚨 Moderação
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Denúncias e moderação.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                🛒 Loja
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão da loja.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                📚 Conteúdo
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão do catálogo.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                ⚙️ Configurações
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Configurações da plataforma.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+</main>
+
+</div>
 
 </section>
 
@@ -1220,7 +1455,6 @@ import {
 } from
 "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
-
 import {
     getAuth,
     createUserWithEmailAndPassword,
@@ -1230,15 +1464,15 @@ import {
 } from
 "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
-
 import {
     getFirestore,
     collection,
     addDoc,
     getDocs,
-    doc,
     getDoc,
+    doc,
     updateDoc,
+    deleteDoc,
     query,
     where,
     arrayUnion,
@@ -1249,7 +1483,7 @@ import {
 
 
 /* =====================================================
-   FIREBASE CONFIG
+   CONFIGURAÇÃO FIREBASE
 ===================================================== */
 
 const firebaseConfig = {
@@ -1288,13 +1522,82 @@ const db =
 
 
 /* =====================================================
-   ADMIN
+   PERMISSÕES
 ===================================================== */
 
 const ADMIN_EMAIL =
     "felucius@gmail.com";
 
 let isAdmin = false;
+
+let currentCommunityId = null;
+
+let currentCommunityIsAdmin = false;
+
+
+/* =====================================================
+   TIPOS DE CONTEÚDO
+===================================================== */
+
+const contentTypes = {
+
+    films: {
+        collection: "films",
+        title: "Filme",
+        icon: "🎬",
+        adminId: "admin-films"
+    },
+
+    series: {
+        collection: "series",
+        title: "Série",
+        icon: "📺",
+        adminId: "admin-series"
+    },
+
+    books: {
+        collection: "books",
+        title: "Livro",
+        icon: "📚",
+        adminId: "admin-books"
+    },
+
+    articles: {
+        collection: "articles",
+        title: "Artigo",
+        icon: "📰",
+        adminId: "admin-articles"
+    },
+
+    documentaries: {
+        collection: "documentaries",
+        title: "Documentário",
+        icon: "🎞️",
+        adminId: "admin-documentaries"
+    },
+
+    studies: {
+        collection: "studies",
+        title: "Estudo",
+        icon: "📖",
+        adminId: "admin-studies"
+    },
+
+    videos: {
+        collection: "videos",
+        title: "Vídeo",
+        icon: "🎥",
+        adminId: "admin-videos"
+    },
+
+    products: {
+        collection: "products",
+        title: "Produto",
+        icon: "🛒",
+        adminId: "admin-store"
+    }
+
+};
 
 
 /* =====================================================
@@ -1344,6 +1647,7 @@ async function() {
             "loginError"
         );
     }
+
 };
 
 
@@ -1406,11 +1710,12 @@ async function() {
             "signupError"
         );
     }
+
 };
 
 
 /* =====================================================
-   LOGIN / CADASTRO VISUAL
+   TELAS LOGIN / CADASTRO
 ===================================================== */
 
 window.showSignup =
@@ -1418,11 +1723,14 @@ function() {
 
     document
         .getElementById("loginForm")
-        .classList.add("hidden");
+        .classList
+        .add("hidden");
 
     document
         .getElementById("signupForm")
-        .classList.remove("hidden");
+        .classList
+        .remove("hidden");
+
 };
 
 
@@ -1431,11 +1739,14 @@ function() {
 
     document
         .getElementById("signupForm")
-        .classList.add("hidden");
+        .classList
+        .add("hidden");
 
     document
         .getElementById("loginForm")
-        .classList.remove("hidden");
+        .classList
+        .remove("hidden");
+
 };
 
 
@@ -1447,6 +1758,7 @@ window.logout =
 async function() {
 
     await signOut(auth);
+
 };
 
 
@@ -1460,8 +1772,10 @@ function(page, button) {
     document
         .querySelectorAll(".page")
         .forEach(
-            element =>
-                element.classList.remove("active")
+            pageElement =>
+                pageElement
+                .classList
+                .remove("active")
         );
 
 
@@ -1473,63 +1787,85 @@ function(page, button) {
 
     if (target) {
 
-        target.classList.add("active");
+        target
+            .classList
+            .add("active");
+
     }
 
 
     document
         .querySelectorAll(".nav-item")
         .forEach(
-            element =>
-                element.classList.remove("active")
+            item =>
+                item
+                .classList
+                .remove("active")
         );
 
 
     if (button) {
 
-        button.classList.add("active");
-    }
+        button
+            .classList
+            .add("active");
 
-
-    if (page === "communities") {
-
-        loadCommunities();
-    }
-
-
-    if (
-        [
-            "films",
-            "series",
-            "books",
-            "documentaries",
-            "studies",
-            "videos",
-            "store"
-        ].includes(page)
-    ) {
-
-        loadContent(page);
     }
 
 
     if (page === "home") {
 
         loadHome();
+
     }
+
+
+    if (page === "communities") {
+
+        loadCommunities();
+
+    }
+
+
+    if (
+        Object.keys(contentTypes)
+        .includes(page)
+    ) {
+
+        loadContent(page);
+
+    }
+
+
+    if (page === "admin") {
+
+        if (isAdmin) {
+
+            loadAdminCommunities();
+
+            loadCommunityAdmins();
+
+        }
+
+    }
+
 };
 
 
 /* =====================================================
-   COMUNIDADES
+   CRIAR COMUNIDADE
 ===================================================== */
 
 window.showCreateCommunity =
 function() {
 
     document
-        .getElementById("createCommunityBox")
-        .classList.toggle("hidden");
+        .getElementById(
+            "createCommunityBox"
+        )
+        .classList
+        .toggle("hidden");
+
 };
 
 
@@ -1539,7 +1875,7 @@ async function() {
     if (!isAdmin) {
 
         alert(
-            "Você não possui permissão."
+            "Somente o administrador geral pode criar comunidades."
         );
 
         return;
@@ -1548,14 +1884,18 @@ async function() {
 
     const name =
         document
-        .getElementById("communityName")
+        .getElementById(
+            "communityName"
+        )
         .value
         .trim();
 
 
     const description =
         document
-        .getElementById("communityDescription")
+        .getElementById(
+            "communityDescription"
+        )
         .value
         .trim();
 
@@ -1596,18 +1936,23 @@ async function() {
 
                 pendingMembers:
                     []
+
             }
         );
 
 
         document
-            .getElementById("communityName")
-            .value = "";
+        .getElementById(
+            "communityName"
+        )
+        .value = "";
 
 
         document
-            .getElementById("communityDescription")
-            .value = "";
+        .getElementById(
+            "communityDescription"
+        )
+        .value = "";
 
 
         alert(
@@ -1626,14 +1971,21 @@ async function() {
             "Erro ao criar comunidade: " +
             error.message
         );
+
     }
+
 };
 
+
+/* =====================================================
+   CARREGAR COMUNIDADES
+===================================================== */
 
 async function loadCommunities() {
 
     const list =
-        document.getElementById(
+        document
+        .getElementById(
             "communitiesList"
         );
 
@@ -1659,134 +2011,163 @@ async function loadCommunities() {
         if (snapshot.empty) {
 
             list.innerHTML =
-                `
-                <div class="card">
-                    <p style="color:#6B7A99;">
-                        Nenhuma comunidade disponível.
-                    </p>
-                </div>
-                `;
+            `
+            <div class="card">
+
+                <p style="color:#6B7A99;">
+                    Nenhuma comunidade disponível.
+                </p>
+
+            </div>
+            `;
 
             return;
         }
 
 
-        snapshot.forEach(
-            communityDoc => {
+        for (
+            const communityDoc
+            of snapshot.docs
+        ) {
 
-                const data =
-                    communityDoc.data();
+            const data =
+                communityDoc.data();
 
-                const id =
-                    communityDoc.id;
+            const id =
+                communityDoc.id;
 
+            const members =
+                data.members || [];
 
-                const members =
-                    data.members || [];
+            const pending =
+                data.pendingMembers || [];
 
-                const pending =
-                    data.pendingMembers || [];
+            const email =
+                auth.currentUser.email;
 
+            const member =
+                members.includes(email);
 
-                const email =
-                    auth.currentUser.email;
+            const pendingRequest =
+                pending.includes(email);
 
-
-                const member =
-                    members.includes(email);
-
-                const pendingRequest =
-                    pending.includes(email);
-
-                const owner =
-                    data.createdBy === email;
-
-
-                let action = "";
+            const communityAdmin =
+                await isCommunityAdmin(id);
 
 
-                if (member) {
-
-                    action =
-                    `
-                    <span class="badge badge-success">
-                        ✓ Membro
-                    </span>
-                    `;
-
-                } else if (pendingRequest) {
-
-                    action =
-                    `
-                    <span class="badge badge-pending">
-                        ⏳ Solicitação pendente
-                    </span>
-                    `;
-
-                } else {
-
-                    action =
-                    `
-                    <button
-                        class="btn btn-small"
-                        onclick="requestJoin('${id}')">
-                        Solicitar entrada
-                    </button>
-                    `;
-                }
+            let action = "";
 
 
-                if (owner) {
+            if (member) {
 
-                    action +=
-                    `
-                    <button
-                        class="btn btn-small btn-secondary"
-                        onclick="viewRequests('${id}')">
-                        🔔 Solicitações
-                    </button>
-                    `;
-                }
-
-
-                if (member) {
-
-                    action +=
-                    `
-                    <button
-                        class="btn btn-small"
-                        onclick="openCommunity('${id}')">
-                        Abrir
-                    </button>
-                    `;
-                }
-
-
-                list.innerHTML +=
+                action +=
                 `
-                <div class="community-card">
-
-                    <h3>
-                        ${escapeHtml(data.name)}
-                    </h3>
-
-                    <p>
-                        ${escapeHtml(
-                            data.description ||
-                            "Sem descrição."
-                        )}
-                    </p>
-
-                    <p>
-                        👥 ${members.length} membros
-                    </p>
-
-                    ${action}
-
-                </div>
+                <span class="badge badge-success">
+                    ✓ Membro
+                </span>
                 `;
+
             }
-        );
+            else if (pendingRequest) {
+
+                action +=
+                `
+                <span class="badge badge-pending">
+                    ⏳ Solicitação pendente
+                </span>
+                `;
+
+            }
+            else {
+
+                action +=
+                `
+                <button
+                    class="btn btn-small"
+                    onclick="requestJoin('${id}')">
+
+                    Solicitar entrada
+
+                </button>
+                `;
+
+            }
+
+
+            if (communityAdmin) {
+
+                action +=
+                `
+                <span class="badge badge-admin">
+                    🛡️ Administrador
+                </span>
+                `;
+
+            }
+
+
+            if (member) {
+
+                action +=
+                `
+                <button
+                    class="btn btn-small"
+                    onclick="openCommunity('${id}')">
+
+                    Abrir
+
+                </button>
+                `;
+
+            }
+
+
+            if (
+                data.createdBy === email ||
+                isAdmin
+            ) {
+
+                action +=
+                `
+                <button
+                    class="btn btn-small btn-secondary"
+                    onclick="viewRequests('${id}')">
+
+                    🔔 Solicitações
+
+                </button>
+                `;
+
+            }
+
+
+            list.innerHTML +=
+            `
+            <div class="community-card">
+
+                <h3>
+                    ${escapeHtml(data.name)}
+                </h3>
+
+                <p>
+                    ${escapeHtml(
+                        data.description ||
+                        "Sem descrição."
+                    )}
+                </p>
+
+                <p>
+                    👥 ${members.length} membros
+                </p>
+
+                <div>
+                    ${action}
+                </div>
+
+            </div>
+            `;
+
+        }
 
 
     } catch (error) {
@@ -1796,11 +2177,15 @@ async function loadCommunities() {
         list.innerHTML =
         `
         <div class="error">
+
             Erro ao carregar comunidades:
             ${escapeHtml(error.message)}
+
         </div>
         `;
+
     }
+
 }
 
 
@@ -1813,22 +2198,19 @@ async function(id) {
 
     try {
 
-        const ref =
+        await updateDoc(
             doc(
                 db,
                 "communities",
                 id
-            );
-
-
-        await updateDoc(
-            ref,
+            ),
             {
 
                 pendingMembers:
                     arrayUnion(
                         auth.currentUser.email
                     )
+
             }
         );
 
@@ -1849,7 +2231,9 @@ async function(id) {
             "Erro ao solicitar entrada: " +
             error.message
         );
+
     }
+
 };
 
 
@@ -1862,19 +2246,22 @@ async function(id) {
 
     try {
 
-        const ref =
-            doc(
-                db,
-                "communities",
-                id
+        const snap =
+            await getDoc(
+                doc(
+                    db,
+                    "communities",
+                    id
+                )
             );
 
 
-        const snap =
-            await getDoc(ref);
-
-
         if (!snap.exists()) {
+
+            alert(
+                "Comunidade não encontrada."
+            );
+
             return;
         }
 
@@ -1883,10 +2270,16 @@ async function(id) {
             snap.data();
 
 
-        if (
-            data.createdBy !==
-            auth.currentUser.email
-        ) {
+        const email =
+            auth.currentUser.email;
+
+
+        const canManage =
+            isAdmin ||
+            data.createdBy === email;
+
+
+        if (!canManage) {
 
             alert(
                 "Você não administra esta comunidade."
@@ -1912,51 +2305,76 @@ async function(id) {
 
         let html =
         `
-        <h2 style="color:#D4AF37;margin-bottom:15px;">
-            Solicitações
-        </h2>
+        <div class="card">
+
+            <h2 class="card-title">
+                🔔 Solicitações
+            </h2>
         `;
 
 
         pending.forEach(
-            email => {
+            pendingEmail => {
 
                 html +=
                 `
-                <div class="card">
+                <div
+                    style="
+                    background:#0A0E27;
+                    padding:12px;
+                    margin-bottom:10px;
+                    border-radius:6px;
+                    ">
 
                     <strong>
-                        ${escapeHtml(email)}
+                        ${escapeHtml(
+                            pendingEmail
+                        )}
                     </strong>
 
                     <br>
 
                     <button
                         class="btn btn-small"
-                        onclick="approveMember('${id}','${encodeURIComponent(email)}')">
+                        onclick="approveMember(
+                            '${id}',
+                            '${encodeURIComponent(
+                                pendingEmail
+                            )}'
+                        )">
+
                         Aprovar
+
                     </button>
 
                     <button
                         class="btn btn-small btn-danger"
-                        onclick="rejectMember('${id}','${encodeURIComponent(email)}')">
+                        onclick="rejectMember(
+                            '${id}',
+                            '${encodeURIComponent(
+                                pendingEmail
+                            )}'
+                        )">
+
                         Recusar
+
                     </button>
 
                 </div>
                 `;
+
             }
         );
 
 
-        const list =
-            document.getElementById(
+        html += "</div>";
+
+
+        document
+            .getElementById(
                 "communitiesList"
-            );
-
-
-        list.innerHTML =
-            html;
+            )
+            .innerHTML = html;
 
 
     } catch (error) {
@@ -1967,13 +2385,19 @@ async function(id) {
             "Erro: " +
             error.message
         );
+
     }
+
 };
 
 
+/* =====================================================
+   APROVAR
+===================================================== */
+
 window.approveMember =
 async function(
-    id,
+    communityId,
     encodedEmail
 ) {
 
@@ -1985,16 +2409,12 @@ async function(
 
     try {
 
-        const ref =
+        await updateDoc(
             doc(
                 db,
                 "communities",
-                id
-            );
-
-
-        await updateDoc(
-            ref,
+                communityId
+            ),
             {
 
                 members:
@@ -2002,6 +2422,7 @@ async function(
 
                 pendingMembers:
                     arrayRemove(email)
+
             }
         );
 
@@ -2022,13 +2443,19 @@ async function(
             "Erro ao aprovar: " +
             error.message
         );
+
     }
+
 };
 
 
+/* =====================================================
+   RECUSAR
+===================================================== */
+
 window.rejectMember =
 async function(
-    id,
+    communityId,
     encodedEmail
 ) {
 
@@ -2040,20 +2467,17 @@ async function(
 
     try {
 
-        const ref =
+        await updateDoc(
             doc(
                 db,
                 "communities",
-                id
-            );
-
-
-        await updateDoc(
-            ref,
+                communityId
+            ),
             {
 
                 pendingMembers:
                     arrayRemove(email)
+
             }
         );
 
@@ -2074,68 +2498,218 @@ async function(
             "Erro ao recusar: " +
             error.message
         );
+
     }
+
 };
 
 
 /* =====================================================
-   CONTEÚDOS
+   VERIFICAR ADMINISTRADOR DE COMUNIDADE
 ===================================================== */
 
-const contentNames = {
+async function isCommunityAdmin(
+    communityId
+) {
 
-    films: {
-        collection: "films",
-        title: "Filme",
-        icon: "🎬"
-    },
+    if (!auth.currentUser) {
 
-    series: {
-        collection: "series",
-        title: "Série",
-        icon: "📺"
-    },
+        return false;
 
-    books: {
-        collection: "books",
-        title: "Livro",
-        icon: "📚"
-    },
-
-    documentaries: {
-        collection: "documentaries",
-        title: "Documentário",
-        icon: "🎞️"
-    },
-
-    studies: {
-        collection: "studies",
-        title: "Estudo",
-        icon: "📖"
-    },
-
-    videos: {
-        collection: "videos",
-        title: "Vídeo",
-        icon: "🎥"
-    },
-
-    products: {
-        collection: "products",
-        title: "Produto",
-        icon: "🛒"
     }
+
+
+    if (isAdmin) {
+
+        return true;
+
+    }
+
+
+    try {
+
+        const q =
+            query(
+                collection(
+                    db,
+                    "communityAdmins"
+                ),
+                where(
+                    "communityId",
+                    "==",
+                    communityId
+                ),
+                where(
+                    "userEmail",
+                    "==",
+                    auth.currentUser.email
+                )
+            );
+
+
+        const snapshot =
+            await getDocs(q);
+
+
+        return !snapshot.empty;
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro verificando administrador:",
+            error
+        );
+
+        return false;
+
+    }
+
+}
+
+
+/* =====================================================
+   ABRIR COMUNIDADE
+===================================================== */
+
+window.openCommunity =
+async function(id) {
+
+    try {
+
+        const snap =
+            await getDoc(
+                doc(
+                    db,
+                    "communities",
+                    id
+                )
+            );
+
+
+        if (!snap.exists()) {
+
+            alert(
+                "Comunidade não encontrada."
+            );
+
+            return;
+        }
+
+
+        const data =
+            snap.data();
+
+
+        const email =
+            auth.currentUser.email;
+
+
+        if (
+            !(
+                data.members ||
+                []
+            ).includes(email)
+        ) {
+
+            alert(
+                "Você ainda não é membro desta comunidade."
+            );
+
+            return;
+        }
+
+
+        currentCommunityId = id;
+
+
+        currentCommunityIsAdmin =
+            await isCommunityAdmin(id);
+
+
+        document
+            .getElementById(
+                "communityArea"
+            )
+            .classList
+            .remove("hidden");
+
+
+        document
+            .getElementById(
+                "communityAreaTitle"
+            )
+            .textContent =
+                "🏘️ " +
+                data.name;
+
+
+        document
+            .getElementById(
+                "communityAreaDescription"
+            )
+            .textContent =
+                data.description ||
+                "";
+
+
+        if (
+            currentCommunityIsAdmin
+        ) {
+
+            document
+                .getElementById(
+                    "communityStudyAdminTools"
+                )
+                .classList
+                .remove("hidden");
+
+        } else {
+
+            document
+                .getElementById(
+                    "communityStudyAdminTools"
+                )
+                .classList
+                .add("hidden");
+
+        }
+
+
+        loadCommunityStudyVideos(id);
+
+
+        document
+            .getElementById(
+                "communityArea"
+            )
+            .scrollIntoView({
+                behavior: "smooth"
+            });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao abrir comunidade: " +
+            error.message
+        );
+
+    }
+
 };
 
 
 /* =====================================================
-   FORMULÁRIO ADMINISTRATIVO DE CONTEÚDO
+   VÍDEOS DE ESTUDO
 ===================================================== */
 
-window.showContentForm =
-function(type) {
+window.showStudyVideoForm =
+function() {
 
-    if (!isAdmin) {
+    if (!currentCommunityIsAdmin) {
 
         alert(
             "Você não possui permissão."
@@ -2145,8 +2719,326 @@ function(type) {
     }
 
 
+    document
+        .getElementById(
+            "studyVideoForm"
+        )
+        .classList
+        .remove("hidden");
+
+};
+
+
+window.hideStudyVideoForm =
+function() {
+
+    document
+        .getElementById(
+            "studyVideoForm"
+        )
+        .classList
+        .add("hidden");
+
+};
+
+
+window.saveStudyVideo =
+async function() {
+
+    if (
+        !currentCommunityIsAdmin ||
+        !currentCommunityId
+    ) {
+
+        alert(
+            "Você não possui permissão."
+        );
+
+        return;
+    }
+
+
+    const title =
+        document
+        .getElementById(
+            "studyVideoTitle"
+        )
+        .value
+        .trim();
+
+
+    const description =
+        document
+        .getElementById(
+            "studyVideoDescription"
+        )
+        .value
+        .trim();
+
+
+    const url =
+        document
+        .getElementById(
+            "studyVideoUrl"
+        )
+        .value
+        .trim();
+
+
+    if (!title) {
+
+        alert(
+            "Digite o título."
+        );
+
+        return;
+    }
+
+
+    if (!url) {
+
+        alert(
+            "Digite o link do vídeo."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        await addDoc(
+            collection(
+                db,
+                "communityStudyVideos"
+            ),
+            {
+
+                communityId:
+                    currentCommunityId,
+
+                title,
+
+                description,
+
+                url,
+
+                createdBy:
+                    auth.currentUser.email,
+
+                createdAt:
+                    serverTimestamp()
+
+            }
+        );
+
+
+        document
+            .getElementById(
+                "studyVideoTitle"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "studyVideoDescription"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "studyVideoUrl"
+            )
+            .value = "";
+
+
+        hideStudyVideoForm();
+
+
+        await loadCommunityStudyVideos(
+            currentCommunityId
+        );
+
+
+        alert(
+            "Vídeo de estudo adicionado."
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao adicionar vídeo: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+async function loadCommunityStudyVideos(
+    communityId
+) {
+
+    const container =
+        document
+        .getElementById(
+            "communityStudyVideos"
+        );
+
+
+    container.innerHTML =
+        "<p style='color:#6B7A99;'>Carregando vídeos...</p>";
+
+
+    try {
+
+        const q =
+            query(
+                collection(
+                    db,
+                    "communityStudyVideos"
+                ),
+                where(
+                    "communityId",
+                    "==",
+                    communityId
+                )
+            );
+
+
+        const snapshot =
+            await getDocs(q);
+
+
+        container.innerHTML = "";
+
+
+        if (snapshot.empty) {
+
+            container.innerHTML =
+            `
+            <div class="card">
+
+                <p style="color:#6B7A99;">
+                    Ainda não existem vídeos
+                    de estudos nesta comunidade.
+                </p>
+
+            </div>
+            `;
+
+            return;
+        }
+
+
+        snapshot.forEach(
+            videoDoc => {
+
+                const data =
+                    videoDoc.data();
+
+
+                container.innerHTML +=
+                `
+                <div class="card">
+
+                    <h3 class="card-title">
+
+                        🎥
+                        ${escapeHtml(
+                            data.title
+                        )}
+
+                    </h3>
+
+                    <p style="
+                        color:#B8BDD0;
+                        margin-bottom:12px;
+                    ">
+
+                        ${escapeHtml(
+                            data.description || ""
+                        )}
+
+                    </p>
+
+                    <button
+                        class="btn"
+                        onclick="openVideo(
+                            '${escapeAttribute(
+                                data.url
+                            )}'
+                        )">
+
+                        ▶ Assistir vídeo
+
+                    </button>
+
+                </div>
+                `;
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+        `
+        <div class="error">
+
+            Erro ao carregar vídeos:
+            ${escapeHtml(
+                error.message
+            )}
+
+        </div>
+        `;
+
+    }
+
+}
+
+
+window.openVideo =
+function(url) {
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+};
+
+
+/* =====================================================
+   CONTEÚDO GERAL
+   SOMENTE ADMINISTRADOR GERAL
+===================================================== */
+
+window.showContentForm =
+function(type) {
+
+    if (!isAdmin) {
+
+        alert(
+            "Somente o administrador geral pode adicionar este conteúdo."
+        );
+
+        return;
+    }
+
+
     const info =
-        contentNames[type];
+        contentTypes[type];
 
 
     const page =
@@ -2155,14 +3047,16 @@ function(type) {
         );
 
 
-    const existing =
+    const old =
         document.getElementById(
             "dynamicContentForm"
         );
 
 
-    if (existing) {
-        existing.remove();
+    if (old) {
+
+        old.remove();
+
     }
 
 
@@ -2183,12 +3077,18 @@ function(type) {
     form.innerHTML =
     `
     <h2 class="card-title">
-        ${info.icon} Adicionar ${info.title}
+
+        ${info.icon}
+        Adicionar ${info.title}
+
     </h2>
+
 
     <div class="form-group">
 
-        <label>Título</label>
+        <label>
+            Título
+        </label>
 
         <input
             id="newContentTitle"
@@ -2196,20 +3096,26 @@ function(type) {
 
     </div>
 
+
     <div class="form-group">
 
-        <label>Descrição</label>
+        <label>
+            Descrição
+        </label>
 
         <textarea
             id="newContentDescription"
-            placeholder="Descrição do conteúdo">
+            placeholder="Descrição">
         </textarea>
 
     </div>
 
+
     <div class="form-group">
 
-        <label>Imagem / capa</label>
+        <label>
+            Imagem / capa
+        </label>
 
         <input
             id="newContentImage"
@@ -2217,37 +3123,47 @@ function(type) {
 
     </div>
 
+
     <div class="form-group">
 
-        <label>Link do conteúdo</label>
+        <label>
+            Link
+        </label>
 
         <input
             id="newContentUrl"
-            placeholder="URL">
+            placeholder="https://...">
 
     </div>
+
 
     <button
         class="btn"
         onclick="saveContent('${type}')">
+
         Salvar
+
     </button>
+
 
     <button
         class="btn btn-secondary"
-        onclick="document.getElementById('dynamicContentForm').remove()">
+        onclick="document
+        .getElementById(
+            'dynamicContentForm'
+        )
+        .remove()">
+
         Cancelar
+
     </button>
     `;
 
 
     page.prepend(form);
+
 };
 
-
-/* =====================================================
-   SALVAR CONTEÚDO
-===================================================== */
 
 window.saveContent =
 async function(type) {
@@ -2255,7 +3171,7 @@ async function(type) {
     if (!isAdmin) {
 
         alert(
-            "Você não possui permissão."
+            "Somente o administrador geral pode fazer isso."
         );
 
         return;
@@ -2263,7 +3179,7 @@ async function(type) {
 
 
     const info =
-        contentNames[type];
+        contentTypes[type];
 
 
     const title =
@@ -2334,13 +3250,8 @@ async function(type) {
 
                 createdAt:
                     serverTimestamp()
+
             }
-        );
-
-
-        alert(
-            info.title +
-            " adicionado com sucesso."
         );
 
 
@@ -2349,6 +3260,12 @@ async function(type) {
                 "dynamicContentForm"
             )
             ?.remove();
+
+
+        alert(
+            info.title +
+            " adicionado com sucesso."
+        );
 
 
         loadContent(type);
@@ -2362,30 +3279,38 @@ async function(type) {
             "Erro ao adicionar conteúdo: " +
             error.message
         );
+
     }
+
 };
 
 
 /* =====================================================
-   CARREGAR CONTEÚDOS
+   CARREGAR CONTEÚDO
 ===================================================== */
 
 async function loadContent(type) {
 
     const info =
-        contentNames[type];
+        contentTypes[type];
+
+
+    const gridId =
+        type === "products"
+        ? "productsGrid"
+        : type + "Grid";
 
 
     const grid =
         document.getElementById(
-            type === "products"
-            ? "productsGrid"
-            : type + "Grid"
+            gridId
         );
 
 
     if (!grid) {
+
         return;
+
     }
 
 
@@ -2412,14 +3337,20 @@ async function loadContent(type) {
             grid.innerHTML =
             `
             <div class="card">
+
                 <p style="color:#6B7A99;">
-                    Nenhum ${info.title.toLowerCase()}
+
+                    Nenhum
+                    ${info.title.toLowerCase()}
                     adicionado ainda.
+
                 </p>
+
             </div>
             `;
 
             return;
+
         }
 
 
@@ -2429,38 +3360,26 @@ async function loadContent(type) {
                 const data =
                     contentDoc.data();
 
+
                 const id =
                     contentDoc.id;
 
 
-                const cover =
-                    data.image
-                    ?
-                    `<img
-                        src="${escapeAttribute(data.image)}"
-                        style="width:100%;height:100%;object-fit:cover;"
-                        alt="">`
-                    :
+                let cover =
                     info.icon;
 
 
-                let adminTools = "";
+                if (data.image) {
 
-
-                if (isAdmin) {
-
-                    adminTools =
+                    cover =
                     `
-                    <div class="admin-tools">
-
-                        <button
-                            class="btn btn-small btn-danger"
-                            onclick="deleteContent('${type}','${id}')">
-                            Excluir
-                        </button>
-
-                    </div>
+                    <img
+                        src="${escapeAttribute(
+                            data.image
+                        )}"
+                        alt="">
                     `;
+
                 }
 
 
@@ -2469,23 +3388,32 @@ async function loadContent(type) {
                 <article class="content-card">
 
                     <div class="content-cover">
+
                         ${cover}
+
                     </div>
+
 
                     <div class="content-body">
 
                         <h3>
+
                             ${escapeHtml(
                                 data.title
                             )}
+
                         </h3>
 
+
                         <p>
+
                             ${escapeHtml(
                                 data.description ||
                                 "Sem descrição."
                             )}
+
                         </p>
+
 
                         ${
                             data.url
@@ -2493,20 +3421,50 @@ async function loadContent(type) {
                             `
                             <button
                                 class="btn btn-small"
-                                onclick="window.open('${escapeAttribute(data.url)}','_blank')">
+                                onclick="openVideo(
+                                    '${escapeAttribute(
+                                        data.url
+                                    )}'
+                                )">
+
                                 Abrir
+
                             </button>
                             `
                             :
                             ""
                         }
 
-                        ${adminTools}
+
+                        ${
+                            isAdmin
+                            ?
+                            `
+                            <div
+                                class="admin-tools">
+
+                                <button
+                                    class="btn btn-small btn-danger"
+                                    onclick="deleteContent(
+                                        '${type}',
+                                        '${id}'
+                                    )">
+
+                                    Excluir
+
+                                </button>
+
+                            </div>
+                            `
+                            :
+                            ""
+                        }
 
                     </div>
 
                 </article>
                 `;
+
             }
         );
 
@@ -2518,33 +3476,38 @@ async function loadContent(type) {
         grid.innerHTML =
         `
         <div class="error">
+
             Erro ao carregar conteúdo:
-            ${escapeHtml(error.message)}
+            ${escapeHtml(
+                error.message
+            )}
+
         </div>
         `;
+
     }
+
 }
 
 
 /* =====================================================
-   EXCLUIR CONTEÚDO
+   EXCLUIR
 ===================================================== */
 
 window.deleteContent =
-async function(type, id) {
+async function(
+    type,
+    id
+) {
 
     if (!isAdmin) {
 
         alert(
-            "Você não possui permissão."
+            "Somente o administrador geral pode excluir conteúdo."
         );
 
         return;
     }
-
-
-    const info =
-        contentNames[type];
 
 
     if (
@@ -2552,79 +3515,506 @@ async function(type, id) {
             "Deseja realmente excluir este conteúdo?"
         )
     ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await deleteDoc(
+            doc(
+                db,
+                contentTypes[type].collection,
+                id
+            )
+        );
+
+
+        alert(
+            "Conteúdo excluído."
+        );
+
+
+        loadContent(type);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao excluir: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =====================================================
+   ADMINISTRAÇÃO DE COMUNIDADES
+===================================================== */
+
+async function loadAdminCommunities() {
+
+    if (!isAdmin) {
+
+        return;
+
+    }
+
+
+    const select =
+        document.getElementById(
+            "adminCommunitySelect"
+        );
+
+
+    select.innerHTML =
+        `
+        <option value="">
+            Selecione uma comunidade
+        </option>
+        `;
+
+
+    try {
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "communities"
+                )
+            );
+
+
+        snapshot.forEach(
+            communityDoc => {
+
+                const data =
+                    communityDoc.data();
+
+
+                select.innerHTML +=
+                `
+                <option
+                    value="${communityDoc.id}">
+
+                    ${escapeHtml(
+                        data.name
+                    )}
+
+                </option>
+                `;
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =====================================================
+   NOMEAR ADMINISTRADOR
+===================================================== */
+
+window.assignCommunityAdmin =
+async function() {
+
+    if (!isAdmin) {
+
+        alert(
+            "Somente o administrador geral pode fazer isso."
+        );
+
+        return;
+    }
+
+
+    const communityId =
+        document
+        .getElementById(
+            "adminCommunitySelect"
+        )
+        .value;
+
+
+    const email =
+        document
+        .getElementById(
+            "communityAdminEmail"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    if (!communityId) {
+
+        alert(
+            "Selecione uma comunidade."
+        );
+
+        return;
+    }
+
+
+    if (!email) {
+
+        alert(
+            "Digite o email do usuário."
+        );
+
         return;
     }
 
 
     try {
 
-        /*
-         * A exclusão definitiva será habilitada
-         * juntamente com as regras administrativas
-         * do Firestore.
-         */
+        const communitySnap =
+            await getDoc(
+                doc(
+                    db,
+                    "communities",
+                    communityId
+                )
+            );
+
+
+        if (!communitySnap.exists()) {
+
+            alert(
+                "Comunidade não encontrada."
+            );
+
+            return;
+        }
+
+
+        const community =
+            communitySnap.data();
+
+
+        if (
+            !(
+                community.members ||
+                []
+            ).includes(email)
+        ) {
+
+            alert(
+                "Esse usuário precisa ser membro da comunidade antes de ser nomeado administrador."
+            );
+
+            return;
+        }
+
+
+        const existing =
+            await getDocs(
+                query(
+                    collection(
+                        db,
+                        "communityAdmins"
+                    ),
+                    where(
+                        "communityId",
+                        "==",
+                        communityId
+                    ),
+                    where(
+                        "userEmail",
+                        "==",
+                        email
+                    )
+                )
+            );
+
+
+        if (!existing.empty) {
+
+            alert(
+                "Este usuário já é administrador desta comunidade."
+            );
+
+            return;
+        }
+
+
+        await addDoc(
+            collection(
+                db,
+                "communityAdmins"
+            ),
+            {
+
+                userEmail:
+                    email,
+
+                communityId:
+                    communityId,
+
+                assignedBy:
+                    auth.currentUser.email,
+
+                createdAt:
+                    serverTimestamp()
+
+            }
+        );
+
+
+        document
+        .getElementById(
+            "communityAdminEmail"
+        )
+        .value = "";
+
 
         alert(
-            "A função de exclusão será conectada ao controle administrativo definitivo."
+            "Administrador de comunidade definido com sucesso."
         );
+
+
+        loadCommunityAdmins();
+
 
     } catch (error) {
 
         console.error(error);
+
+        alert(
+            "Erro ao definir administrador: " +
+            error.message
+        );
+
     }
+
 };
 
 
 /* =====================================================
-   COMUNIDADE ABERTA
+   LISTAR ADMINS DE COMUNIDADE
 ===================================================== */
 
-window.openCommunity =
-async function(id) {
+async function loadCommunityAdmins() {
+
+    if (!isAdmin) {
+
+        return;
+
+    }
+
+
+    const container =
+        document.getElementById(
+            "communityAdminsList"
+        );
+
+
+    container.innerHTML =
+        "<p style='color:#6B7A99;'>Carregando...</p>";
+
 
     try {
 
-        const ref =
-            doc(
-                db,
-                "communities",
-                id
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "communityAdmins"
+                )
             );
 
 
-        const snap =
-            await getDoc(ref);
+        container.innerHTML = "";
 
 
-        if (!snap.exists()) {
+        if (snapshot.empty) {
+
+            container.innerHTML =
+            `
+            <p style="color:#6B7A99;">
+                Nenhum administrador de comunidade definido.
+            </p>
+            `;
+
             return;
+
         }
 
 
-        const data =
-            snap.data();
-
-
-        const email =
-            auth.currentUser.email;
-
-
-        if (
-            !data.members ||
-            !data.members.includes(email)
+        for (
+            const adminDoc
+            of snapshot.docs
         ) {
 
-            alert(
-                "Você ainda não é membro desta comunidade."
-            );
+            const data =
+                adminDoc.data();
 
-            return;
+
+            let communityName =
+                "Comunidade";
+
+
+            try {
+
+                const communitySnap =
+                    await getDoc(
+                        doc(
+                            db,
+                            "communities",
+                            data.communityId
+                        )
+                    );
+
+
+                if (
+                    communitySnap.exists()
+                ) {
+
+                    communityName =
+                        communitySnap
+                        .data()
+                        .name;
+
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+
+            container.innerHTML +=
+            `
+            <div
+                style="
+                background:#0A0E27;
+                padding:12px;
+                border-radius:6px;
+                margin-bottom:10px;
+                ">
+
+                <strong
+                    style="color:#D4AF37;">
+
+                    ${escapeHtml(
+                        data.userEmail
+                    )}
+
+                </strong>
+
+                <br>
+
+                <span
+                    style="
+                    color:#6B7A99;
+                    font-size:13px;
+                    ">
+
+                    Comunidade:
+                    ${escapeHtml(
+                        communityName
+                    )}
+
+                </span>
+
+                <br>
+
+                <button
+                    class="btn btn-small btn-danger"
+                    onclick="removeCommunityAdmin(
+                        '${adminDoc.id}'
+                    )">
+
+                    Remover administrador
+
+                </button>
+
+            </div>
+            `;
+
         }
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+        `
+        <div class="error">
+
+            Erro ao carregar administradores:
+            ${escapeHtml(
+                error.message
+            )}
+
+        </div>
+        `;
+
+    }
+
+}
+
+
+/* =====================================================
+   REMOVER ADMIN
+===================================================== */
+
+window.removeCommunityAdmin =
+async function(id) {
+
+    if (!isAdmin) {
+
+        alert(
+            "Somente o administrador geral pode fazer isso."
+        );
+
+        return;
+    }
+
+
+    if (
+        !confirm(
+            "Remover este administrador da comunidade?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await deleteDoc(
+            doc(
+                db,
+                "communityAdmins",
+                id
+            )
+        );
 
 
         alert(
-            "Comunidade aberta. A área completa de publicações da comunidade será conectada nesta próxima camada."
+            "Administrador removido."
         );
+
+
+        loadCommunityAdmins();
 
 
     } catch (error) {
@@ -2632,10 +4022,12 @@ async function(id) {
         console.error(error);
 
         alert(
-            "Erro ao abrir comunidade: " +
+            "Erro ao remover administrador: " +
             error.message
         );
+
     }
+
 };
 
 
@@ -2645,50 +4037,73 @@ async function(id) {
 
 function loadHome() {
 
-    const feed =
-        document.getElementById(
+    document
+        .getElementById(
             "homeFeed"
-        );
+        )
+        .innerHTML =
+        `
+        <div class="card">
 
+            <h2 class="card-title">
+                Explore o SHALOM
+            </h2>
 
-    feed.innerHTML =
-    `
-    <div class="card">
+            <div class="grid">
 
-        <h2 class="card-title">
-            Explore o SHALOM
-        </h2>
+                <button
+                    class="btn"
+                    onclick="openPageByName('films')">
 
-        <div class="grid">
+                    🎬 Filmes
 
-            <button
-                class="btn"
-                onclick="openPageByName('films')">
-                🎬 Filmes
-            </button>
+                </button>
 
-            <button
-                class="btn"
-                onclick="openPageByName('books')">
-                📚 Livros
-            </button>
+                <button
+                    class="btn"
+                    onclick="openPageByName('series')">
 
-            <button
-                class="btn"
-                onclick="openPageByName('studies')">
-                📖 Estudos
-            </button>
+                    📺 Séries
 
-            <button
-                class="btn"
-                onclick="openPageByName('store')">
-                🛒 Loja
-            </button>
+                </button>
+
+                <button
+                    class="btn"
+                    onclick="openPageByName('books')">
+
+                    📚 Livros
+
+                </button>
+
+                <button
+                    class="btn"
+                    onclick="openPageByName('articles')">
+
+                    📰 Artigos
+
+                </button>
+
+                <button
+                    class="btn"
+                    onclick="openPageByName('studies')">
+
+                    📖 Estudos
+
+                </button>
+
+                <button
+                    class="btn"
+                    onclick="openPageByName('store')">
+
+                    🛒 Loja
+
+                </button>
+
+            </div>
 
         </div>
+        `;
 
-    </div>
-    `;
 }
 
 
@@ -2701,64 +4116,74 @@ function(page) {
         );
 
 
-    let button = null;
+    let targetButton = null;
 
 
     buttons.forEach(
-        element => {
+        button => {
+
+            const onclick =
+                button
+                .getAttribute(
+                    "onclick"
+                );
+
 
             if (
-                element
-                .getAttribute("onclick")
-                ?.includes(
+                onclick &&
+                onclick.includes(
                     "'" + page + "'"
                 )
             ) {
 
-                button = element;
+                targetButton =
+                    button;
+
             }
+
         }
     );
 
 
     openPage(
         page,
-        button
+        targetButton
     );
+
 };
 
 
 /* =====================================================
-   AUTH STATE
+   AUTENTICAÇÃO
 ===================================================== */
 
 onAuthStateChanged(
     auth,
-    user => {
+    async user => {
 
         if (user) {
 
             isAdmin =
-                user.email ===
-                ADMIN_EMAIL;
+                user.email
+                .toLowerCase() ===
+                ADMIN_EMAIL
+                .toLowerCase();
 
 
             document
                 .getElementById(
                     "authScreen"
                 )
-                .classList.add(
-                    "hidden"
-                );
+                .classList
+                .add("hidden");
 
 
             document
                 .getElementById(
                     "appScreen"
                 )
-                .classList.remove(
-                    "hidden"
-                );
+                .classList
+                .remove("hidden");
 
 
             document
@@ -2777,9 +4202,7 @@ onAuthStateChanged(
                 user.email;
 
 
-            /*
-             * FERRAMENTAS ADMINISTRATIVAS
-             */
+            /* ADMIN GERAL */
 
             if (isAdmin) {
 
@@ -2787,42 +4210,36 @@ onAuthStateChanged(
                     .getElementById(
                         "adminMenu"
                     )
-                    .classList.remove(
-                        "hidden"
-                    );
-
-
-                [
-                    "films",
-                    "series",
-                    "books",
-                    "documentaries",
-                    "studies",
-                    "videos",
-                    "store"
-                ].forEach(
-                    type => {
-
-                        document
-                            .getElementById(
-                                "admin-" +
-                                type
-                            )
-                            ?.classList
-                            .remove(
-                                "hidden"
-                            );
-                    }
-                );
+                    .classList
+                    .remove("hidden");
 
 
                 document
                     .getElementById(
                         "adminCommunityButton"
                     )
-                    .classList.remove(
-                        "hidden"
-                    );
+                    .classList
+                    .remove("hidden");
+
+
+                Object.keys(
+                    contentTypes
+                ).forEach(
+                    type => {
+
+                        document
+                            .getElementById(
+                                contentTypes[type]
+                                .adminId
+                            )
+                            ?.classList
+                            .remove(
+                                "hidden"
+                            );
+
+                    }
+                );
+
 
             } else {
 
@@ -2830,42 +4247,34 @@ onAuthStateChanged(
                     .getElementById(
                         "adminMenu"
                     )
-                    .classList.add(
-                        "hidden"
-                    );
-
-
-                [
-                    "films",
-                    "series",
-                    "books",
-                    "documentaries",
-                    "studies",
-                    "videos",
-                    "store"
-                ].forEach(
-                    type => {
-
-                        document
-                            .getElementById(
-                                "admin-" +
-                                type
-                            )
-                            ?.classList
-                            .add(
-                                "hidden"
-                            );
-                    }
-                );
+                    .classList
+                    .add("hidden");
 
 
                 document
                     .getElementById(
                         "adminCommunityButton"
                     )
-                    .classList.add(
-                        "hidden"
-                    );
+                    .classList
+                    .add("hidden");
+
+
+                Object.keys(
+                    contentTypes
+                ).forEach(
+                    type => {
+
+                        document
+                            .getElementById(
+                                contentTypes[type]
+                                .adminId
+                            )
+                            ?.classList
+                            .add("hidden");
+
+                    }
+                );
+
             }
 
 
@@ -2876,15 +4285,17 @@ onAuthStateChanged(
 
             isAdmin = false;
 
+            currentCommunityId = null;
+
+            currentCommunityIsAdmin = false;
+
 
             document
                 .getElementById(
                     "authScreen"
                 )
                 .classList
-                .remove(
-                    "hidden"
-                );
+                .remove("hidden");
 
 
             document
@@ -2892,10 +4303,10 @@ onAuthStateChanged(
                     "appScreen"
                 )
                 .classList
-                .add(
-                    "hidden"
-                );
+                .add("hidden");
+
         }
+
     }
 );
 
@@ -2919,21 +4330,22 @@ function showError(
         message;
 
 
-    element.classList.remove(
-        "hidden"
-    );
+    element
+        .classList
+        .remove("hidden");
 
 
     setTimeout(
         () => {
 
-            element.classList.add(
-                "hidden"
-            );
+            element
+                .classList
+                .add("hidden");
 
         },
         4000
     );
+
 }
 
 
@@ -2943,7 +4355,9 @@ function escapeHtml(text) {
         text === null ||
         text === undefined
     ) {
+
         return "";
+
     }
 
 
@@ -2968,6 +4382,7 @@ function escapeHtml(text) {
             /'/g,
             "&#039;"
         );
+
 }
 
 
@@ -2977,7 +4392,9 @@ function escapeAttribute(text) {
         text === null ||
         text === undefined
     ) {
+
         return "";
+
     }
 
 
@@ -2990,9 +4407,10 @@ function escapeAttribute(text) {
             /"/g,
             "%22"
         );
+
 }
 
 </script>
 
 </body>
-                    </html>
+</html>
