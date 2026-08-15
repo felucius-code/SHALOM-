@@ -4,24 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SHALOM - Rede Social Hebraica</title>
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
             background: #0A0E27;
             color: #FFFFFF;
         }
-        
+
         .container {
-            max-width: 500px;
+            max-width: 700px;
             margin: 0 auto;
+            padding-bottom: 40px;
         }
-        
+
         .navbar {
             background: #1A1F3A;
             padding: 15px;
@@ -29,13 +31,16 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #D4AF37;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-        
+
         .navbar h1 {
             color: #D4AF37;
             font-size: 20px;
         }
-        
+
         .logout-btn {
             background: #D4AF37;
             color: #0A0E27;
@@ -45,34 +50,42 @@
             cursor: pointer;
             font-weight: bold;
         }
-        
+
         .content {
             padding: 20px;
         }
-        
-        .login-form {
+
+        .login-form,
+        .card,
+        .community-card,
+        .post-card {
             background: #1A1F3A;
-            padding: 30px;
             border-radius: 10px;
+        }
+
+        .login-form {
+            padding: 30px;
             margin-top: 20px;
         }
-        
-        .login-form h2 {
+
+        .login-form h2,
+        .section-title {
             margin-bottom: 20px;
             color: #D4AF37;
         }
-        
+
         .form-group {
             margin-bottom: 15px;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 5px;
             color: #6B7A99;
         }
-        
-        .form-group input {
+
+        .form-group input,
+        .form-group textarea {
             width: 100%;
             padding: 10px;
             background: #0A0E27;
@@ -80,7 +93,12 @@
             color: #FFFFFF;
             border-radius: 5px;
         }
-        
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
         .btn {
             width: 100%;
             padding: 12px;
@@ -92,11 +110,28 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        
+
         .btn:hover {
             background: #E5C158;
         }
-        
+
+        .btn-secondary {
+            background: #6B7A99;
+            color: #FFFFFF;
+        }
+
+        .btn-danger {
+            background: #8B0000;
+            color: #FFFFFF;
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 8px 12px;
+            margin: 5px 5px 0 0;
+            font-size: 13px;
+        }
+
         .error {
             background: #8B0000;
             color: #FFF;
@@ -104,27 +139,19 @@
             border-radius: 5px;
             margin-bottom: 10px;
         }
-        
-        .admin-panel {
-            background: #1A1F3A;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 10px;
-            border: 2px solid #D4AF37;
+
+        .success {
+            background: #315B3A;
+            color: #FFF;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
         }
-        
-        .admin-panel h2 {
-            color: #D4AF37;
-            margin-bottom: 15px;
+
+        .hidden {
+            display: none !important;
         }
-        
-        .home-content {
-            background: #1A1F3A;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-        
+
         .user-info {
             background: #0A0E27;
             padding: 15px;
@@ -132,266 +159,2484 @@
             margin-bottom: 20px;
             border-left: 4px solid #D4AF37;
         }
-        
-        .hidden {
-            display: none;
+
+        .card {
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #303654;
+        }
+
+        .community-card {
+            padding: 18px;
+            margin-bottom: 15px;
+            border-left: 4px solid #D4AF37;
+        }
+
+        .community-card h3 {
+            color: #D4AF37;
+            margin-bottom: 8px;
+        }
+
+        .community-card p {
+            color: #B8BDD0;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: #6B7A99;
+            margin-top: 5px;
+        }
+
+        .badge-approved {
+            background: #315B3A;
+        }
+
+        .badge-pending {
+            background: #806A28;
+        }
+
+        .post-card {
+            padding: 18px;
+            margin-bottom: 15px;
+            border: 1px solid #303654;
+        }
+
+        .post-author {
+            color: #D4AF37;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .post-date {
+            color: #6B7A99;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .post-content {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+
+        .comment {
+            background: #0A0E27;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 8px;
+        }
+
+        .comment-author {
+            color: #D4AF37;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .comment-text {
+            margin-top: 4px;
+            font-size: 14px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .nav-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #303654;
+            color: white;
+        }
+
+        .nav-buttons button.active {
+            background: #D4AF37;
+            color: #0A0E27;
+            font-weight: bold;
+        }
+
+        .empty {
+            color: #6B7A99;
+            text-align: center;
+            padding: 20px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #303654;
+            margin: 20px 0;
         }
     </style>
 </head>
+
 <body>
+
+    <!-- NAVBAR -->
     <div id="navbar" class="navbar hidden">
         <h1>🕯️ SHALOM</h1>
+
         <div>
-            <span id="userEmail" style="margin-right: 15px; color: #D4AF37;"></span>
-            <button class="logout-btn" onclick="logout()">Sair</button>
-        </div>
-    </div>
-    
-    <div class="container">
-        <!-- LOGIN SCREEN -->
-        <div id="loginScreen">
-            <div class="login-form">
-                <h2>Login - SHALOM</h2>
-                <div id="errorMessage" class="error hidden"></div>
-                
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" placeholder="seu@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label>Senha</label>
-                    <input type="password" id="loginPassword" placeholder="Sua senha">
-                </div>
-                
-                <button class="btn" onclick="handleLogin()">Entrar</button>
-                <button class="btn" style="background: #6B7A99;" onclick="alert('O botão está funcionando!'); showSignup();">Criar Conta</button>
-            </div>
-        </div>
-        
-        <!-- SIGNUP SCREEN -->
-        <div id="signupScreen" class="hidden">
-            <div class="login-form">
-                <h2>Criar Conta</h2>
-                <div id="signupError" class="error hidden"></div>
-                
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="signupEmail" placeholder="seu@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label>Senha</label>
-                    <input type="password" id="signupPassword" placeholder="Escolha uma senha">
-                </div>
-                
-                <button class="btn" onclick="handleSignup()">Criar Conta</button>
-                <button class="btn" style="background: #6B7A99;" onclick="showLogin()">Voltar</button>
-            </div>
-        </div>
-        
-        <!-- HOME SCREEN (após login) -->
-        <div id="homeScreen" class="hidden">
-            <div class="content">
-                <div class="user-info">
-                    <p><strong>Bem-vindo!</strong></p>
-                    <p id="homeEmail"></p>
-                </div>
-                
-                <!-- ADMIN PANEL (só aparece para admin) -->
-                <div id="adminPanelContainer" class="hidden">
-                    <div class="admin-panel">
-                        <h2>🔐 Painel Administrativo</h2>
-                        <p style="margin-bottom: 15px; color: #D4AF37;">Você está logado como administrador</p>
-                        
-                        <div class="form-group">
-                            <label>Adicionar Comunidade</label>
-                            <input type="text" id="communityName" placeholder="Nome da comunidade">
-                        </div>
-                        
-                        <button class="btn" onclick="addCommunity()">➕ Criar Comunidade</button>
-                        
-                        <div id="communitiesList" style="margin-top: 20px;"></div>
-                    </div>
-                </div>
-                
-                <!-- USER CONTENT (para usuários comuns) -->
-                <div id="userContentContainer" class="hidden">
-                    <div class="home-content">
-                        <h2>📱 Suas Comunidades</h2>
-                        <p style="color: #6B7A99; margin-top: 10px;">Em breve você poderá se juntar a comunidades!</p>
-                    </div>
-                </div>
-            </div>
+            <span id="userEmail"
+                  style="margin-right:15px;color:#D4AF37;"></span>
+
+            <button class="logout-btn" onclick="logout()">
+                Sair
+            </button>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+
+    <div class="container">
+
+        <!-- LOGIN -->
+        <div id="loginScreen">
+
+            <div class="login-form">
+
+                <h2>Login - SHALOM</h2>
+
+                <div id="errorMessage"
+                     class="error hidden"></div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        placeholder="seu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        placeholder="Sua senha">
+                </div>
+
+                <button class="btn"
+                        onclick="handleLogin()">
+                    Entrar
+                </button>
+
+                <button class="btn btn-secondary"
+                        onclick="showSignup()">
+                    Criar Conta
+                </button>
+
+            </div>
+        </div>
+
+
+        <!-- CADASTRO -->
+        <div id="signupScreen" class="hidden">
+
+            <div class="login-form">
+
+                <h2>Criar Conta</h2>
+
+                <div id="signupError"
+                     class="error hidden"></div>
+
+                <div id="signupSuccess"
+                     class="success hidden"></div>
+
+                <div class="form-group">
+                    <label>Email</label>
+
+                    <input
+                        type="email"
+                        id="signupEmail"
+                        placeholder="seu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Senha</label>
+
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        placeholder="Escolha uma senha">
+                </div>
+
+                <button class="btn"
+                        onclick="handleSignup()">
+                    Criar Conta
+                </button>
+
+                <button class="btn btn-secondary"
+                        onclick="showLogin()">
+                    Voltar
+                </button>
+
+            </div>
+        </div>
+
+
+        <!-- HOME -->
+        <div id="homeScreen" class="hidden">
+
+            <div class="content">
+
+                <div class="user-info">
+
+                    <p>
+                        <strong>Bem-vindo ao SHALOM!</strong>
+                    </p>
+
+                    <p id="homeEmail"></p>
+
+                </div>
+
+
+                <!-- MENU -->
+                <div class="nav-buttons">
+
+                    <button
+                        id="navCommunities"
+                        class="active"
+                        onclick="showSection('communities')">
+
+                        Comunidades
+
+                    </button>
+
+                    <button
+                        id="navFeed"
+                        onclick="showSection('feed')">
+
+                        Meu Feed
+
+                    </button>
+
+                </div>
+
+
+                <!-- COMUNIDADES -->
+                <div id="communitiesSection">
+
+                    <h2 class="section-title">
+                        Comunidades
+                    </h2>
+
+
+                    <!-- CRIAR COMUNIDADE -->
+                    <div id="adminCreateCommunity"
+                         class="card hidden">
+
+                        <h3 style="color:#D4AF37;margin-bottom:15px;">
+                            🔐 Administração
+                        </h3>
+
+                        <div class="form-group">
+
+                            <label>
+                                Nome da comunidade
+                            </label>
+
+                            <input
+                                type="text"
+                                id="communityName"
+                                placeholder="Nome da comunidade">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label>
+                                Descrição
+                            </label>
+
+                            <textarea
+                                id="communityDescription"
+                                placeholder="Descrição da comunidade"></textarea>
+
+                        </div>
+
+                        <button
+                            class="btn"
+                            onclick="addCommunity()">
+
+                            ➕ Criar Comunidade
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- SOLICITAÇÕES DO ADMIN -->
+                    <div id="adminRequests"
+                         class="card hidden">
+
+                        <h3 style="color:#D4AF37;margin-bottom:15px;">
+                            🔔 Solicitações de entrada
+                        </h3>
+
+                        <div id="requestsList"></div>
+
+                    </div>
+
+
+                    <!-- LISTA -->
+                    <div id="communitiesList"></div>
+
+                </div>
+
+
+                <!-- FEED -->
+                <div id="feedSection"
+                     class="hidden">
+
+                    <h2 class="section-title">
+                        Meu Feed
+                    </h2>
+
+                    <div id="feedList"></div>
+
+                </div>
+
+
+                <!-- COMUNIDADE ABERTA -->
+                <div id="communityView"
+                     class="hidden">
+
+                    <button
+                        class="btn btn-secondary"
+                        onclick="backToCommunities()">
+
+                        ← Voltar para comunidades
+
+                    </button>
+
+                    <div id="communityDetails"
+                         style="margin-top:20px;">
+                    </div>
+
+                    <div id="communityPosts"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+<!-- Firebase SDK -->
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+    import {
+        initializeApp
+    } from
+    "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+
     import {
         getAuth,
         createUserWithEmailAndPassword,
         signInWithEmailAndPassword,
         signOut,
         onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+    } from
+    "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+
 
     import {
         getFirestore,
         collection,
         addDoc,
         getDocs,
+        doc,
+        getDoc,
+        updateDoc,
         query,
-        where
-    } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+        where,
+        orderBy,
+        arrayUnion,
+        arrayRemove,
+        serverTimestamp
+    } from
+    "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-    // Firebase Config
+
+    /* ==========================================
+       CONFIGURAÇÃO FIREBASE
+       ========================================== */
+
     const firebaseConfig = {
-        apiKey: "AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",
-        authDomain: "shalom-a1626.firebaseapp.com",
-        projectId: "shalom-a1626",
-        storageBucket: "shalom-a1626.firebasestorage.app",
-        messagingSenderId: "746323382164",
-        appId: "1:746323382164:web:1bca1a1df5f5ec6f2b8981",
-        measurementId: "G-QXD13ER8SK"
+
+        apiKey:
+        "AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",
+
+        authDomain:
+        "shalom-a1626.firebaseapp.com",
+
+        projectId:
+        "shalom-a1626",
+
+        storageBucket:
+        "shalom-a1626.firebasestorage.app",
+
+        messagingSenderId:
+        "746323382164",
+
+        appId:
+        "1:746323382164:web:1bca1a1df5f5ec6f2b8981",
+
+        measurementId:
+        "G-QXD13ER8SK"
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
 
-        const ADMIN_EMAIL = "felucius@gmail.com";
+    const app =
+        initializeApp(firebaseConfig);
 
-        // Funções Globais
-        window.handleLogin = async function() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+    const auth =
+        getAuth(app);
 
-            if (!email || !password) {
-                showError('Por favor preencha todos os campos', 'errorMessage');
-                return;
-            }
+    const db =
+        getFirestore(app);
 
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                showError('Email ou senha incorretos', 'errorMessage');
-            }
-        };
 
-        window.handleSignup = async function() {
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
+    /* ==========================================
+       ADMIN
+       ========================================== */
 
-            if (!email || !password) {
-                showError('Por favor preencha todos os campos', 'signupError');
-                return;
-            }
+    const ADMIN_EMAIL =
+        "felucius@gmail.com";
 
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                showError('Erro ao criar conta: ' + error.message, 'signupError');
-            }
-        };
 
-        window.logout = async function() {
-            await signOut(auth);
-        };
+    let currentCommunity = null;
 
-        window.showLogin = function() {
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('signupScreen').classList.add('hidden');
-        };
 
-        window.showSignup = function() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('signupScreen').classList.remove('hidden');
-        };
+    /* ==========================================
+       LOGIN
+       ========================================== */
 
-        window.addCommunity = async function() {
-            const name = document.getElementById('communityName').value;
-            if (!name) {
-                alert('Digite o nome da comunidade');
-                return;
-            }
+    window.handleLogin =
+    async function () {
 
-            try {
-                await addDoc(collection(db, 'communities'), {
-                    name: name,
-                    createdBy: auth.currentUser.email,
-                    createdAt: new Date(),
-                    members: [auth.currentUser.email]
-                });
-                document.getElementById('communityName').value = '';
-                loadCommunities();
-            } catch (error) {
-                alert('Erro ao criar comunidade: ' + error.message);
-            }
-        };
+        const email =
+            document.getElementById(
+                "loginEmail"
+            ).value.trim();
 
-        window.loadCommunities = async function() {
-            const list = document.getElementById('communitiesList');
-            try {
-                const q = query(collection(db, 'communities'), where('createdBy', '==', auth.currentUser.email));
-                const snapshot = await getDocs(q);
-                
-                if (snapshot.empty) {
-                    list.innerHTML = '<p style="color: #6B7A99; margin-top: 20px;">Nenhuma comunidade criada ainda</p>';
-                    return;
-                }
+        const password =
+            document.getElementById(
+                "loginPassword"
+            ).value;
 
-                list.innerHTML = '<h3 style="margin-top: 20px; margin-bottom: 10px;">Comunidades Criadas:</h3>';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    list.innerHTML += `<div style="background: #0A0E27; padding: 10px; margin-bottom: 10px; border-radius: 5px; border-left: 3px solid #D4AF37;">
-                        <strong>${data.name}</strong><br>
-                        <small style="color: #6B7A99;">Membros: ${data.members.length}</small>
-                    </div>`;
-                });
-            } catch (error) {
-                console.error('Erro ao carregar comunidades:', error);
-            }
-        };
 
-        function showError(msg, elementId) {
-            const elem = document.getElementById(elementId);
-            elem.textContent = msg;
-            elem.classList.remove('hidden');
-            setTimeout(() => elem.classList.add('hidden'), 3000);
+        if (!email || !password) {
+
+            showError(
+                "Preencha email e senha.",
+                "errorMessage"
+            );
+
+            return;
         }
 
-        // Auth State Listener
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Usuário logado
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('signupScreen').classList.add('hidden');
-                document.getElementById('homeScreen').classList.remove('hidden');
-                document.getElementById('navbar').classList.remove('hidden');
 
-                document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('homeEmail').textContent = `Email: ${user.email}`;
+        try {
 
-                // Mostrar painel admin se for admin
-                if (user.email === ADMIN_EMAIL) {
-                    document.getElementById('adminPanelContainer').classList.remove('hidden');
-                    document.getElementById('userContentContainer').classList.add('hidden');
-                    loadCommunities();
-                } else {
-                    document.getElementById('adminPanelContainer').classList.add('hidden');
-                    document.getElementById('userContentContainer').classList.remove('hidden');
+            await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            showError(
+                "Email ou senha incorretos.",
+                "errorMessage"
+            );
+        }
+    };
+
+
+    /* ==========================================
+       CADASTRO
+       ========================================== */
+
+    window.handleSignup =
+    async function () {
+
+        const email =
+            document.getElementById(
+                "signupEmail"
+            ).value.trim();
+
+        const password =
+            document.getElementById(
+                "signupPassword"
+            ).value;
+
+
+        if (!email || !password) {
+
+            showError(
+                "Preencha todos os campos.",
+                "signupError"
+            );
+
+            return;
+        }
+
+
+        if (password.length < 6) {
+
+            showError(
+                "A senha precisa ter pelo menos 6 caracteres.",
+                "signupError"
+            );
+
+            return;
+        }
+
+
+        try {
+
+            await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            showError(
+                "Erro ao criar conta: " +
+                error.message,
+                "signupError"
+            );
+        }
+    };
+
+
+    /* ==========================================
+       LOGOUT
+       ========================================== */
+
+    window.logout =
+    async function () {
+
+        await signOut(auth);
+    };
+
+
+    /* ==========================================
+       NAVEGAÇÃO
+       ========================================== */
+
+    window.showLogin =
+    function () {
+
+        document
+            .getElementById("loginScreen")
+            .classList.remove("hidden");
+
+        document
+            .getElementById("signupScreen")
+            .classList.add("hidden");
+    };
+
+
+    window.showSignup =
+    function () {
+
+        document
+            .getElementById("loginScreen")
+            .classList.add("hidden");
+
+        document
+            .getElementById("signupScreen")
+            .classList.remove("hidden");
+    };
+
+
+    window.showSection =
+    function (section) {
+
+        document
+            .getElementById("communityView")
+            .classList.add("hidden");
+
+
+        if (section === "communities") {
+
+            document
+                .getElementById("communitiesSection")
+                .classList.remove("hidden");
+
+            document
+                .getElementById("feedSection")
+                .classList.add("hidden");
+
+            document
+                .getElementById("navCommunities")
+                .classList.add("active");
+
+            document
+                .getElementById("navFeed")
+                .classList.remove("active");
+
+            loadCommunities();
+
+        } else {
+
+            document
+                .getElementById("communitiesSection")
+                .classList.add("hidden");
+
+            document
+                .getElementById("feedSection")
+                .classList.remove("hidden");
+
+            document
+                .getElementById("navCommunities")
+                .classList.remove("active");
+
+            document
+                .getElementById("navFeed")
+                .classList.add("active");
+
+            loadFeed();
+        }
+    };
+
+
+    /* ==========================================
+       CRIAR COMUNIDADE
+       ========================================== */
+
+    window.addCommunity =
+    async function () {
+
+        const name =
+            document
+                .getElementById("communityName")
+                .value.trim();
+
+
+        const description =
+            document
+                .getElementById("communityDescription")
+                .value.trim();
+
+
+        if (!name) {
+
+            alert(
+                "Digite o nome da comunidade."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            await addDoc(
+                collection(
+                    db,
+                    "communities"
+                ),
+                {
+
+                    name: name,
+
+                    description:
+                        description,
+
+                    createdBy:
+                        auth.currentUser.email,
+
+                    createdAt:
+                        serverTimestamp(),
+
+                    members:
+                        [
+                            auth.currentUser.email
+                        ],
+
+                    pendingMembers:
+                        []
+
                 }
-            } else {
-                // Usuário deslogado
-                document.getElementById('loginScreen').classList.remove('hidden');
-                document.getElementById('homeScreen').classList.add('hidden');
-                document.getElementById('navbar').classList.add('hidden');
-                document.getElementById('signupScreen').classList.add('hidden');
+            );
+
+
+            document
+                .getElementById("communityName")
+                .value = "";
+
+            document
+                .getElementById("communityDescription")
+                .value = "";
+
+
+            alert(
+                "Comunidade criada com sucesso!"
+            );
+
+
+            loadCommunities();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Erro ao criar comunidade: " +
+                error.message
+            );
+        }
+    };
+
+
+    /* ==========================================
+       CARREGAR COMUNIDADES
+       ========================================== */
+
+    window.loadCommunities =
+    async function () {
+
+        const list =
+            document.getElementById(
+                "communitiesList"
+            );
+
+
+        list.innerHTML =
+            "<p class='empty'>Carregando comunidades...</p>";
+
+
+        try {
+
+            const snapshot =
+                await getDocs(
+                    collection(
+                        db,
+                        "communities"
+                    )
+                );
+
+
+            if (snapshot.empty) {
+
+                list.innerHTML =
+                    "<p class='empty'>Nenhuma comunidade criada ainda.</p>";
+
+                return;
             }
-        });
-    </script>
+
+
+            list.innerHTML = "";
+
+
+            snapshot.forEach(
+                communityDoc => {
+
+                    const data =
+                        communityDoc.data();
+
+                    const id =
+                        communityDoc.id;
+
+
+                    const members =
+                        data.members || [];
+
+                    const pending =
+                        data.pendingMembers || [];
+
+
+                    const isMember =
+                        members.includes(
+                            auth.currentUser.email
+                        );
+
+
+                    const isPending =
+                        pending.includes(
+                            auth.currentUser.email
+                        );
+
+
+                    const isOwner =
+                        data.createdBy ===
+                        auth.currentUser.email;
+
+
+                    let action = "";
+
+
+                    if (isMember) {
+
+                        action =
+                        `
+                        <span class="badge badge-approved">
+                            ✓ Você é membro
+                        </span>
+
+                        <br>
+
+                        <button
+                            class="btn btn-small"
+                            onclick="openCommunity('${id}')">
+
+                            Entrar na comunidade
+
+                        </button>
+                        `;
+
+                    } else if (isPending) {
+
+                        action =
+                        `
+                        <span class="badge badge-pending">
+                            ⏳ Solicitação pendente
+                        </span>
+                        `;
+
+                    } else {
+
+                        action =
+                        `
+                        <button
+                            class="btn btn-small"
+                            onclick="requestJoin('${id}')">
+
+                            Solicitar entrada
+
+                        </button>
+                        `;
+                    }
+
+
+                    list.innerHTML +=
+                    `
+                    <div class="community-card">
+
+                        <h3>
+                            ${escapeHtml(data.name)}
+                        </h3>
+
+                        <p>
+                            ${escapeHtml(
+                                data.description ||
+                                "Sem descrição."
+                            )}
+                        </p>
+
+                        <p>
+                            👥 Membros:
+                            ${members.length}
+                        </p>
+
+                        <p>
+                            👤 Criada por:
+                            ${escapeHtml(data.createdBy)}
+                        </p>
+
+                        ${action}
+
+                        ${
+                            isOwner
+                            ?
+                            `
+                            <button
+                                class="btn btn-small btn-secondary"
+                                onclick="viewCommunityRequests('${id}')">
+
+                                🔔 Solicitações
+
+                            </button>
+                            `
+                            :
+                            ""
+                        }
+
+                    </div>
+                    `;
+                }
+            );
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            list.innerHTML =
+            `
+            <div class="error">
+                Erro ao carregar comunidades:
+                ${escapeHtml(error.message)}
+            </div>
+            `;
+        }
+    };
+
+
+    /* ==========================================
+       SOLICITAR ENTRADA
+       ========================================== */
+
+    window.requestJoin =
+    async function (communityId) {
+
+        try {
+
+            const ref =
+                doc(
+                    db,
+                    "communities",
+                    communityId
+                );
+
+
+            const snap =
+                await getDoc(ref);
+
+
+            if (!snap.exists()) {
+
+                alert(
+                    "Comunidade não encontrada."
+                );
+
+                return;
+            }
+
+
+            const data =
+                snap.data();
+
+
+            if (
+                data.members &&
+                data.members.includes(
+                    auth.currentUser.email
+                )
+            ) {
+
+                alert(
+                    "Você já é membro desta comunidade."
+                );
+
+                return;
+            }
+
+
+            if (
+                data.pendingMembers &&
+                data.pendingMembers.includes(
+                    auth.currentUser.email
+                )
+            ) {
+
+                alert(
+                    "Sua solicitação já está pendente."
+                );
+
+                return;
+            }
+
+
+            await updateDoc(
+                ref,
+                {
+
+                    pendingMembers:
+                        arrayUnion(
+                            auth.currentUser.email
+                        )
+                }
+            );
+
+
+            alert(
+                "Solicitação enviada!"
+            );
+
+
+            loadCommunities();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Erro ao solicitar entrada: " +
+                error.message
+            );
+        }
+    };
+
+
+    /* ==========================================
+       SOLICITAÇÕES DO DONO
+       ========================================== */
+
+    window.viewCommunityRequests =
+    async function (communityId) {
+
+        try {
+
+            const ref =
+                doc(
+                    db,
+                    "communities",
+                    communityId
+                );
+
+
+            const snap =
+                await getDoc(ref);
+
+
+            if (!snap.exists()) {
+
+                alert(
+                    "Comunidade não encontrada."
+                );
+
+                return;
+            }
+
+
+            const data =
+                snap.data();
+
+
+            if (
+                data.createdBy !==
+                auth.currentUser.email
+            ) {
+
+                alert(
+                    "Você não administra esta comunidade."
+                );
+
+                return;
+            }
+
+
+            const pending =
+                data.pendingMembers || [];
+
+
+            if (pending.length === 0) {
+
+                alert(
+                    "Não há solicitações pendentes."
+                );
+
+                return;
+            }
+
+
+            let html =
+            `
+            <h3 style="color:#D4AF37;margin-bottom:15px;">
+                Solicitações de entrada
+            </h3>
+            `;
+
+
+            pending.forEach(
+                email => {
+
+                    html +=
+                    `
+                    <div
+                        class="community-card">
+
+                        <strong>
+                            ${escapeHtml(email)}
+                        </strong>
+
+                        <br>
+
+                        <button
+                            class="btn btn-small"
+                            onclick="approveMember('${communityId}','${encodeURIComponent(email)}')">
+
+                            ✓ Aprovar
+
+                        </button>
+
+                        <button
+                            class="btn btn-small btn-danger"
+                            onclick="rejectMember('${communityId}','${encodeURIComponent(email)}')">
+
+                            ✕ Recusar
+
+                        </button>
+
+                    </div>
+                    `;
+                }
+            );
+
+
+            document
+                .getElementById(
+                    "adminRequests"
+                )
+                .classList.remove("hidden");
+
+
+            document
+                .getElementById(
+                    "requestsList"
+                )
+                .innerHTML = html;
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Erro: " +
+                error.message
+            );
+        }
+    };
+
+
+    /* ==========================================
+       APROVAR MEMBRO
+       ========================================== */
+
+    window.approveMember =
+    async function (
+        communityId,
+        encodedEmail
+    ) {
+
+        const email =
+            decodeURIComponent(
+                encodedEmail
+            );
+
+
+        try {
+
+            const ref =
+                doc(
+                    db,
+                    "communities",
+                    communityId
+                );
+
+
+            const snap =
+                await getDoc(ref);
+
+
+            if (!snap.exists()) {
+                return;
+            }
+
+
+            const data =
+                snap.data();
+
+
+            if (
+                data.createdBy !==
+                auth.currentUser.email
+            ) {
+
+                alert(
+                    "Sem permissão."
+                );
+
+                return;
+            }
+
+
+            await updateDoc(
+                ref,
+                {
+
+                    members:
+                        arrayUnion(email),
+
+                    pendingMembers:
+                        arrayRemove(email)
+
+                }
+            );
+
+
+            alert(
+                "Membro aprovado!"
+            );
+
+
+            viewCommunityRequests(
+                communityId
+            );
+
+            loadCommunities();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Erro ao aprovar membro: " +
+                error.message
+            );
+        }
+    };
+
+
+    /* ==========================================
+       RECUSAR MEMBRO
+       ========================================== */
+
+    window.rejectMember =
+    async function (
+        communityId,
+        encodedEmail
+    ) {
+
+        const email =
+            decodeURIComponent(
+                encodedEmail
+            );
+
+
+        try {
+
+            const ref =
+                doc(
+                    db,
+                    "communities",
+                    communityId
+                );
+
+
+            const snap =
+                await getDoc(ref);
+
+
+            if (!snap.exists()) {
+                return;
+            }
+
+
+            const data =
+                snap.data();
+
+
+            if (
+                data.createdBy !==
+                auth.currentUser.email
+            ) {
+
+                alert(
+                    "Sem permissão."
+                );
+
+                return;
+            }
+
+
+            await updateDoc(
+                ref,
+                {
+
+                    pendingMembers:
+                        arrayRemove(email)
+
+                }
+            );
+
+
+            alert(
+                "Solicitação recusada."
+            );
+
+
+            viewCommunityRequests(
+                communityId
+            );
+
+            loadCommunities();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Erro ao recusar solicitação: " +
+                error.message
+            );
+        }
+    };
+
+
+    /* ==========================================
+       ABRIR COMUNIDADE
+       ========================================== */
+
+    window.openCommunity =
+    async function (communityId) {
+
+        try {
+
+            const ref =
+                doc(
+                    db,
+                    "communities",
+                    communityId
+                );
+
+
+            const snap =
+                await getDoc(ref);
+
+
+            if (!snap.exists()) {
+
+                alert(
+                    "Comunidade não encontrada."
+                );
+
+                return;
+            }
+
+
+            const data =
+                snap.data();
+
+
+            if (
+                !data.members ||
+                !data.members.includes(
+                    auth.currentUser.email
+                )
+            ) {
+
+                alert(
+                    "Você ainda não é membro desta comunidade."
+                );
+
+                return;
+            }
+
+
+            currentCommunity = {
+                id: communityId,
+                ...data
+            };
+
+
+            document
+                .getElementById(
+                    "communitiesSection"
+                )
+                .classList.add("hidden");
+
+
+            document
+                .getElementById(
+                    "feedSection"
+                )
+                .classList.add("hidden");
+
+
+            document
+                .getElementById(
+                    "communityView"
+                )
+                .classList.remove("hidden");
+
+
+            document
+                .getElementById(
+                    "communityDetails"
+                )
+                .innerHTML =
+                `
+                <div class="card">
+
+                    <h2 style="color:#D4AF37;">
+                        ${escapeHtml(data.name)}
+                    </h2>
+
+                    <p style="margin-top:10px;">
+                        ${escapeHtml(
+                            data.description ||
+                            "Sem descrição."
+                        )}
+                    </p>
+
+                    <p style="margin-top:10px;color:#6B7A99;">
+                        👥 ${(
+                            data.members ||
+                            []
+                        ).length} membros
+                    </p>
+
+                </div>
+
+
+                <div class="card">
+
+                    <h3 style="color:#D4AF37;margin-bottom:15px;">
+                        Nova publicação
+                    </h3>
+
+                    <textarea
+                        id="newPostText"
+                        placeholder="Escreva algo para sua comunidade..."
+                        style="
+                            width:100%;
+                            min-height:100px;
+                            padding:10px;
+                            background:#0A0E27;
+                            border:1px solid #D4AF37;
+                            color:white;
+                            border-radius:5px;
+                        "
+                    ></textarea>
+
+                    <button
+                        class="btn"
+                        onclick="createPost('${communityId}')">
+
+                        Publicar
+
+                    </button>
+
+                </div>
+                `;
+
+
+            loadCommunityPosts(
+                communityId
+            );
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Erro ao abrir comunidade: " +
+                error.message
+            );
+        }
+    };
+
+
+    /* ==========================================
+       CRIAR PUBLICAÇÃO
+       ========================================== */
+
+    window.createPost =
+    async function (communityId) {
+
+        const text =
+            document
+                .getElementById(
+                    "newPostText"
+                )
+                .value.trim();
+
+
+        if (!text) {
+
+            alert(
+                "Escreva alguma coisa antes de publicar."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            const communityRef =
+                doc(
+                    db,
+                    "communities",
+                    communityId
+                );
+
+
+            const communitySnap =
+                await getDoc(
+                    communityRef
+                );
+
+
+            if (!communitySnap.exists()) {
+                return;
+            }
+
+
+            const community =
+                communitySnap.data();
+
+
+            if (
+                !community.members.includes(
+                    auth.currentUser.email
+                )
+            ) {
+
+                alert(
+                    "Você não é membro desta comunidade."
+                );
+
+                return;
+            }
+
+
+            await addDoc(
+                collection(
+                    db,
+                    "posts"
+                ),
+                {
+
+                    communityId:
+                        communityId,
+
+                    author:
+                        auth.currentUser.email,
+
+                    text:
+                        text,
+
+                    createdAt:
+                        serverTimestamp(),
+
+                    likes:
+                        [],
+
+                    comments:
+                        []
+                }
+            );
+
+
+            document
+                .getElementById(
+                    "newPostText"
+                )
+                .value = "";
+
+
+            alert(
+                "Publicação criada!"
+            );
+
+
+            loadCommunityPosts(
+                communityId
+            );
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Erro ao publicar: " +
+                error.message
+            );
+        }
+    };
+
+
+    /* ==========================================
+       CARREGAR POSTS DA COMUNIDADE
+       ========================================== */
+
+    async function loadCommunityPosts(
+        communityId
+    ) {
+
+        const container =
+            document
+                .getElementById(
+                    "communityPosts"
+                );
+
+
+        container.innerHTML =
+            "<p class='empty'>Carregando publicações...</p>";
+
+
+        try {
+
+            const q =
+                query(
+                    collection(
+                        db,
+                        "posts"
+                    ),
+                    where(
+                        "communityId",
+                        "==",
+                        communityId
+                    )
+                );
+
+
+            const snapshot =
+                await getDocs(q);
+
+
+            if (snapshot.empty) {
+
+                container.innerHTML =
+                    `
+                    <div class="empty">
+                        Ainda não há publicações nesta comunidade.
+                    </div>
+                    `;
+
+                return;
+            }
+
+
+            const posts = [];
+
+
+            snapshot.forEach(
+                postDoc => {
+
+                    posts.push({
+
+                        id: postDoc.id,
+
+                        ...postDoc.data()
+
+                    });
+                }
+            );
+
+
+            posts.sort(
+                (a, b) => {
+
+                    const aTime =
+                        a.createdAt?.seconds ||
+                        0;
+
+                    const bTime =
+                        b.createdAt?.seconds ||
+                        0;
+
+                    return bTime - aTime;
+                }
+            );
+
+
+            container.innerHTML = "";
+
+
+            posts.forEach(
+                post => {
+
+                    renderPost(
+                        post,
+                        container
+                    );
+                }
+            );
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            container.innerHTML =
+            `
+            <div class="error">
+                Erro ao carregar publicações:
+                ${escapeHtml(error.message)}
+            </div>
+            `;
+        }
+    }
+
+
+    /* ==========================================
+       RENDER POST
+       ========================================== */
+
+    function renderPost(
+        post,
+        container
+    ) {
+
+        const likes =
+            post.likes || [];
+
+        const comments =
+            post.comments || [];
+
+
+        const liked =
+            likes.includes(
+                auth.currentUser.email
+            );
+
+
+        let commentsHtml = "";
+
+
+        comments.forEach(
+            comment => {
+
+                commentsHtml +=
+                `
+                <div class="comment">
+
+                    <div class="comment-author">
+                        ${escapeHtml(
+                            comment.author
+                        )}
+                    </div>
+
+                    <div class="comment-text">
+                        ${escapeHtml(
+                            comment.text
+                        )}
+                    </div>
+
+                </div>
+                `;
+            }
+        );
+
+
+        const postElement =
+            document.createElement(
+                "div"
+            );
+
+
+        postElement.className =
+            "post-card";
+
+
+        postElement.innerHTML =
+        `
+        <div class="post-author">
+            ${escapeHtml(post.author)}
+        </div>
+
+        <div class="post-date">
+            ${formatDate(post.createdAt)}
+        </div>
+
+        <div class="post-content">
+            ${escapeHtml(post.text)}
+        </div>
+
+
+        <button
+            class="btn btn-small ${liked ? "" : "btn-secondary"}"
+            onclick="toggleLike('${post.id}')">
+
+            ${liked ? "❤️" : "♡"}
+            ${likes.length}
+
+        </button>
+
+
+        <div style="margin-top:15px;">
+
+            <input
+                id="comment-${post.id}"
+                placeholder="Escreva um comentário..."
+                style="
+                    width:70%;
+                    padding:8px;
+                    background:#0A0E27;
+                    color:white;
+                    border:1px solid #6B7A99;
+                    border-radius:5px;
+                "
+            >
+
+            <button
+                class="btn btn-small"
+                onclick="addComment('${post.id}')">
+
+                Comentar
+
+            </button>
+
+        </div>
+
+
+        <div style="margin-top:15px;">
+
+            ${commentsHtml}
+
+        </div>
+        `;
+
+
+        container.appendChild(
+            postElement
+        );
+    }
+
+
+    /* ==========================================
+       CURTIR
+       ========================================== */
+
+    window.toggleLike =
+    async function (postId) {
+
+        try {
+
+            const ref =
+                doc(
+                    db,
+                    "posts",
+                    postId
+                );
+
+
+            const snap =
+                await getDoc(ref);
+
+
+            if (!snap.exists()) {
+                return;
+            }
+
+
+            const data =
+                snap.data();
+
+
+            const likes =
+                data.likes || [];
+
+
+            if (
+                likes.includes(
+                    auth.currentUser.email
+                )
+            ) {
+
+                await updateDoc(
+                    ref,
+                    {
+
+                        likes:
+                            arrayRemove(
+                                auth.currentUser.email
+                            )
+                    }
+                );
+
+            } else {
+
+                await updateDoc(
+                    ref,
+                    {
+
+                        likes:
+                            arrayUnion(
+                                auth.currentUser.email
+                            )
+                    }
+                );
+            }
+
+
+            if (currentCommunity) {
+
+                loadCommunityPosts(
+                    currentCommunity.id
+                );
+            }
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Erro ao curtir publicação: " +
+                error.message
+            );
+        }
+    };
+
+
+    /* ==========================================
+       COMENTÁRIO
+       ========================================== */
+
+    window.addComment =
+    async function (postId) {
+
+        const input =
+            document.getElementById(
+                "comment-" + postId
+            );
+
+
+        const text =
+            input.value.trim();
+
+
+        if (!text) {
+
+            alert(
+                "Digite um comentário."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            const ref =
+                doc(
+                    db,
+                    "posts",
+                    postId
+                );
+
+
+            await updateDoc(
+                ref,
+                {
+
+                    comments:
+                        arrayUnion({
+
+                            author:
+                                auth.currentUser.email,
+
+                            text:
+                                text,
+
+                            createdAt:
+                                new Date()
+                        })
+                }
+            );
+
+
+            input.value = "";
+
+
+            if (currentCommunity) {
+
+                loadCommunityPosts(
+                    currentCommunity.id
+                );
+            }
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Erro ao comentar: " +
+                error.message
+            );
+        }
+    };
+
+
+    /* ==========================================
+       FEED
+       ========================================== */
+
+    async function loadFeed() {
+
+        const container =
+            document.getElementById(
+                "feedList"
+            );
+
+
+        container.innerHTML =
+            "<p class='empty'>Carregando feed...</p>";
+
+
+        try {
+
+            const communitySnapshot =
+                await getDocs(
+                    collection(
+                        db,
+                        "communities"
+                    )
+                );
+
+
+            const memberCommunityIds = [];
+
+
+            communitySnapshot.forEach(
+                communityDoc => {
+
+                    const data =
+                        communityDoc.data();
+
+
+                    if (
+                        data.members &&
+                        data.members.includes(
+                            auth.currentUser.email
+                        )
+                    ) {
+
+                        memberCommunityIds.push(
+                            communityDoc.id
+                        );
+                    }
+                }
+            );
+
+
+            if (
+                memberCommunityIds.length === 0
+            ) {
+
+                container.innerHTML =
+                `
+                <div class="empty">
+                    Você ainda não participa de nenhuma comunidade.
+                </div>
+                `;
+
+                return;
+            }
+
+
+            const postsSnapshot =
+                await getDocs(
+                    collection(
+                        db,
+                        "posts"
+                    )
+                );
+
+
+            const posts = [];
+
+
+            postsSnapshot.forEach(
+                postDoc => {
+
+                    const post =
+                        postDoc.data();
+
+
+                    if (
+                        memberCommunityIds.includes(
+                            post.communityId
+                        )
+                    ) {
+
+                        posts.push({
+
+                            id:
+                                postDoc.id,
+
+                            ...post
+                        });
+                    }
+                }
+            );
+
+
+            posts.sort(
+                (a, b) => {
+
+                    const aTime =
+                        a.createdAt?.seconds ||
+                        0;
+
+                    const bTime =
+                        b.createdAt?.seconds ||
+                        0;
+
+                    return bTime - aTime;
+                }
+            );
+
+
+            if (posts.length === 0) {
+
+                container.innerHTML =
+                `
+                <div class="empty">
+                    Ainda não há publicações nas suas comunidades.
+                </div>
+                `;
+
+                return;
+            }
+
+
+            container.innerHTML = "";
+
+
+            posts.forEach(
+                post => {
+
+                    renderPost(
+                        post,
+                        container
+                    );
+                }
+            );
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            container.innerHTML =
+            `
+            <div class="error">
+                Erro ao carregar feed:
+                ${escapeHtml(error.message)}
+            </div>
+            `;
+        }
+    }
+
+
+    /* ==========================================
+       VOLTAR
+       ========================================== */
+
+    window.backToCommunities =
+    function () {
+
+        currentCommunity = null;
+
+
+        document
+            .getElementById(
+                "communityView"
+            )
+            .classList.add("hidden");
+
+
+        document
+            .getElementById(
+                "feedSection"
+            )
+            .classList.add("hidden");
+
+
+        document
+            .getElementById(
+                "communitiesSection"
+            )
+            .classList.remove("hidden");
+
+
+        loadCommunities();
+    };
+
+
+    /* ==========================================
+       AUTH STATE
+       ========================================== */
+
+    onAuthStateChanged(
+        auth,
+        user => {
+
+            if (user) {
+
+                document
+                    .getElementById(
+                        "loginScreen"
+                    )
+                    .classList.add("hidden");
+
+
+                document
+                    .getElementById(
+                        "signupScreen"
+                    )
+                    .classList.add("hidden");
+
+
+                document
+                    .getElementById(
+                        "homeScreen"
+                    )
+                    .classList.remove("hidden");
+
+
+                document
+                    .getElementById(
+                        "navbar"
+                    )
+                    .classList.remove("hidden");
+
+
+                document
+                    .getElementById(
+                        "userEmail"
+                    )
+                    .textContent =
+                    user.email;
+
+
+                document
+                    .getElementById(
+                        "homeEmail"
+                    )
+                    .textContent =
+                    "Email: " + user.email;
+
+
+                if (
+                    user.email ===
+                    ADMIN_EMAIL
+                ) {
+
+                    document
+                        .getElementById(
+                            "adminCreateCommunity"
+                        )
+                        .classList.remove(
+                            "hidden"
+                        );
+
+                    document
+                        .getElementById(
+                            "adminRequests"
+                        )
+                        .classList.remove(
+                            "hidden"
+                        );
+
+                } else {
+
+                    document
+                        .getElementById(
+                            "adminCreateCommunity"
+                        )
+                        .classList.add(
+                            "hidden"
+                        );
+
+                    document
+                        .getElementById(
+                            "adminRequests"
+                        )
+                        .classList.add(
+                            "hidden"
+                        );
+                }
+
+
+                loadCommunities();
+
+            } else {
+
+                document
+                    .getElementById(
+                        "loginScreen"
+                    )
+                    .classList.remove(
+                        "hidden"
+                    );
+
+
+                document
+                    .getElementById(
+                        "signupScreen"
+                    )
+                    .classList.add(
+                        "hidden"
+                    );
+
+
+                document
+                    .getElementById(
+                        "homeScreen"
+                    )
+                    .classList.add(
+                        "hidden"
+                    );
+
+
+                document
+                    .getElementById(
+                        "navbar"
+                    )
+                    .classList.add(
+                        "hidden"
+                    );
+            }
+        }
+    );
+
+
+    /* ==========================================
+       FUNÇÕES AUXILIARES
+       ========================================== */
+
+    function showError(
+        message,
+        elementId
+    ) {
+
+        const element =
+            document.getElementById(
+                elementId
+            );
+
+
+        element.textContent =
+            message;
+
+
+        element.classList.remove(
+            "hidden"
+        );
+
+
+        setTimeout(
+            () => {
+
+                element.classList.add(
+                    "hidden"
+                );
+
+            },
+            4000
+        );
+    }
+
+
+    function escapeHtml(
+        text
+    ) {
+
+        if (text === undefined ||
+            text === null) {
+
+            return "";
+        }
+
+
+        return String(text)
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+    }
+
+
+    function formatDate(
+        timestamp
+    ) {
+
+        if (!timestamp) {
+            return "Agora";
+        }
+
+
+        try {
+
+            let date;
+
+
+            if (
+                timestamp.toDate
+            ) {
+
+                date =
+                    timestamp.toDate();
+
+            } else if (
+                timestamp.seconds
+            ) {
+
+                date =
+                    new Date(
+                        timestamp.seconds *
+                        1000
+                    );
+
+            } else {
+
+                date =
+                    new Date(timestamp);
+            }
+
+
+            return date.toLocaleString(
+                "pt-BR"
+            );
+
+        } catch {
+
+            return "Agora";
+        }
+    }
+
+</script>
+
 </body>
-</html>
+    </html>
