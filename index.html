@@ -330,6 +330,25 @@ select option {
     border-top: 1px solid #303654;
 }
 
+.access-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.access-free {
+    background: #315B3A;
+    color: #7FD897;
+}
+
+.access-subscription {
+    background: #684F00;
+    color: #E5C158;
+}
+
 /* =========================
    COMMUNITIES
 ========================= */
@@ -469,7 +488,7 @@ select option {
         <div class="auth-card">
 
             <div class="logo">
-                🕯️ SHALOM
+                ש SHALOM
             </div>
 
             <div class="subtitle">
@@ -603,7 +622,7 @@ select option {
 <header class="navbar">
 
     <div class="navbar-brand">
-        🕯️ SHALOM
+        ש SHALOM
     </div>
 
     <div class="navbar-user">
@@ -764,7 +783,7 @@ select option {
     <div class="card">
 
         <h2 class="card-title">
-            🕯️ Bem-vindo ao SHALOM
+            ש Bem-vindo ao SHALOM
         </h2>
 
         <p style="color:#B8BDD0;">
@@ -3137,6 +3156,28 @@ function(type) {
     </div>
 
 
+    <div class="form-group">
+
+        <label>
+            Acesso
+        </label>
+
+        <select
+            id="newContentAccess">
+
+            <option value="free">
+                🔓 Gratuito
+            </option>
+
+            <option value="subscription">
+                🔐 Por Assinatura
+            </option>
+
+        </select>
+
+    </div>
+
+
     <button
         class="btn"
         onclick="saveContent('${type}')">
@@ -3218,6 +3259,14 @@ async function(type) {
         .trim();
 
 
+    const access =
+        document
+        .getElementById(
+            "newContentAccess"
+        )
+        .value;
+
+
     if (!title) {
 
         alert(
@@ -3244,6 +3293,8 @@ async function(type) {
                 image,
 
                 url,
+
+                access,
 
                 createdBy:
                     auth.currentUser.email,
@@ -3383,6 +3434,29 @@ async function loadContent(type) {
                 }
 
 
+                let accessBadge = "";
+
+                if (data.access === "free") {
+
+                    accessBadge =
+                    `
+                    <span class="access-badge access-free">
+                        🔓 Gratuito
+                    </span>
+                    `;
+
+                } else if (data.access === "subscription") {
+
+                    accessBadge =
+                    `
+                    <span class="access-badge access-subscription">
+                        🔐 Assinatura
+                    </span>
+                    `;
+
+                }
+
+
                 grid.innerHTML +=
                 `
                 <article class="content-card">
@@ -3395,6 +3469,8 @@ async function loadContent(type) {
 
 
                     <div class="content-body">
+
+                        ${accessBadge}
 
                         <h3>
 
