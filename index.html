@@ -5088,392 +5088,657 @@ async function(id) {
 
 
 /* =====================================================
-/* =====================================================
-   HOME DINÂMICA
+   HOME
+   CARREGAMENTO DOS CARROSSÉIS
 ===================================================== */
 
-function loadHome() {
+async function loadHome() {
 
-    const homeFeed =
-        document.getElementById("homeFeed");
+    /*
+     * A estrutura visual da Home já existe no HTML.
+     * Aqui apenas carregamos os dados do Firebase.
+     */
 
-    if (!homeFeed) {
-        return;
-    }
-
-    homeFeed.innerHTML = `
-
-        <!-- =========================================
-             BUSCA
-        ========================================== -->
-
-        <div class="card">
-
-            <h2 class="card-title">
-                🔎 Explorar o SHALOM
-            </h2>
-
-            <input
-                type="search"
-                id="homeSearch"
-                placeholder="Buscar filmes, séries, livros, artigos..."
-                oninput="searchHome(this.value)"
-            >
-
-        </div>
-
-
-        <!-- =========================================
-             CONTINUAR ASSISTINDO
-        ========================================== -->
-
-        <section class="home-section">
-
-            <div class="home-section-header">
-
-                <h2>
-                    ▶ Continuar assistindo
-                </h2>
-
-                <button
-                    class="home-see-all"
-                    onclick="openPageByName('films')">
-
-                    Ver todos →
-
-                </button>
-
-            </div>
-
-            <div
-                id="homeContinue"
-                class="home-carousel">
-
-                <div class="home-loading">
-                    Carregando...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             FILMES
-        ========================================== -->
-
-        <section class="home-section">
-
-            <div class="home-section-header">
-
-                <h2>
-                    🎬 Filmes
-                </h2>
-
-                <button
-                    class="home-see-all"
-                    onclick="openPageByName('films')">
-
-                    Ver todos →
-
-                </button>
-
-            </div>
-
-            <div
-                id="homeFilms"
-                class="home-carousel">
-
-                <div class="home-loading">
-                    Carregando...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             SÉRIES
-        ========================================== -->
-
-        <section class="home-section">
-
-            <div class="home-section-header">
-
-                <h2>
-                    📺 Séries
-                </h2>
-
-                <button
-                    class="home-see-all"
-                    onclick="openPageByName('series')">
-
-                    Ver todos →
-
-                </button>
-
-            </div>
-
-            <div
-                id="homeSeries"
-                class="home-carousel">
-
-                <div class="home-loading">
-                    Carregando...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             DOCUMENTÁRIOS
-        ========================================== -->
-
-        <section class="home-section">
-
-            <div class="home-section-header">
-
-                <h2>
-                    🎞️ Documentários
-                </h2>
-
-                <button
-                    class="home-see-all"
-                    onclick="openPageByName('documentaries')">
-
-                    Ver todos →
-
-                </button>
-
-            </div>
-
-            <div
-                id="homeDocumentaries"
-                class="home-carousel">
-
-                <div class="home-loading">
-                    Carregando...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             LIVROS
-        ========================================== -->
-
-        <section class="home-section">
-
-            <div class="home-section-header">
-
-                <h2>
-                    📚 Livros
-                </h2>
-
-                <button
-                    class="home-see-all"
-                    onclick="openPageByName('books')">
-
-                    Ver todos →
-
-                </button>
-
-            </div>
-
-            <div
-                id="homeBooks"
-                class="home-carousel">
-
-                <div class="home-loading">
-                    Carregando...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             ARTIGOS
-        ========================================== -->
-
-        <section class="home-section">
-
-            <div class="home-section-header">
-
-                <h2>
-                    📰 Artigos
-                </h2>
-
-                <button
-                    class="home-see-all"
-                    onclick="openPageByName('articles')">
-
-                    Ver todos →
-
-                </button>
-
-            </div>
-
-            <div
-                id="homeArticles"
-                class="home-carousel">
-
-                <div class="home-loading">
-                    Carregando...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             ESTUDOS
-        ========================================== -->
-
-        <section class="home-section">
-
-            <div class="home-section-header">
-
-                <h2>
-                    📖 Estudos
-                </h2>
-
-                <button
-                    class="home-see-all"
-                    onclick="openPageByName('studies')">
-
-                    Ver todos →
-
-                </button>
-
-            </div>
-
-            <div
-                id="homeStudies"
-                class="home-carousel">
-
-                <div class="home-loading">
-                    Carregando...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================================
-             LOJA
-        ========================================== -->
-
-        <section class="home-section">
-
-            <div class="home-section-header">
-
-                <h2>
-                    🛒 Destaques da Loja
-                </h2>
-
-                <button
-                    class="home-see-all"
-                    onclick="openPageByName('store')">
-
-                    Ver todos →
-
-                </button>
-
-            </div>
-
-            <div
-                id="homeProducts"
-                class="home-carousel">
-
-                <div class="home-loading">
-                    Carregando...
-                </div>
-
-            </div>
-
-        </section>
-
-    `;
-
-
-    /* Carregar conteúdo dos carrosséis */
-
-    loadHomeCarousel(
+    loadHomeSection(
         "films",
         "homeFilms"
     );
 
-    loadHomeCarousel(
+    loadHomeSection(
         "series",
         "homeSeries"
     );
 
-    loadHomeCarousel(
+    loadHomeSection(
         "documentaries",
         "homeDocumentaries"
     );
 
-    loadHomeCarousel(
+    loadHomeSection(
         "books",
         "homeBooks"
     );
 
-    loadHomeCarousel(
+    loadHomeSection(
         "articles",
         "homeArticles"
     );
 
-    loadHomeCarousel(
+    loadHomeSection(
         "studies",
         "homeStudies"
     );
 
-    loadHomeCarousel(
+    loadHomeSection(
+        "videos",
+        "homeVideos"
+    );
+
+    loadHomeSection(
         "products",
         "homeProducts"
     );
 
+    loadHomeFeatured();
+
 }
 
-    };
 
+/* =====================================================
+   CARREGAR UMA SEÇÃO DA HOME
+===================================================== */
 
-    /*
-     * Carrega cada categoria.
-     */
+async function loadHomeSection(
+    type,
+    elementId
+) {
 
-    for (
-        const type
-        of Object.keys(homeSections)
-    ) {
-
-        await loadHomeSection(
-            type,
-            homeSections[type]
+    const container =
+        document.getElementById(
+            elementId
         );
+
+
+    if (!container) {
+
+        console.warn(
+            "Elemento da Home não encontrado:",
+            elementId
+        );
+
+        return;
 
     }
 
 
-    /*
-     * Carrega os destaques.
-     */
+    const info =
+        contentTypes[type];
 
-    await loadHomeFeatured(
-        homeSections
-    );
+
+    if (!info) {
+
+        console.error(
+            "Tipo de conteúdo inválido:",
+            type
+        );
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        `
+        <div class="home-loading">
+            Carregando...
+        </div>
+        `;
+
+
+    try {
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    info.collection
+                )
+            );
+
+
+        container.innerHTML = "";
+
+
+        if (snapshot.empty) {
+
+            container.innerHTML =
+                `
+                <div class="home-empty">
+
+                    Nenhum conteúdo disponível
+                    ainda.
+
+                </div>
+                `;
+
+            return;
+
+        }
+
+
+        snapshot.forEach(
+            contentDoc => {
+
+                const data =
+                    contentDoc.data();
+
+
+                const id =
+                    contentDoc.id;
+
+
+                /*
+                 * Capa
+                 */
+
+                let cover =
+                    `
+                    <span class="home-card-icon">
+                        ${info.icon}
+                    </span>
+                    `;
+
+
+                if (data.image) {
+
+                    cover =
+                        `
+                        <img
+                            src="${escapeAttribute(
+                                data.image
+                            )}"
+                            alt="${escapeAttribute(
+                                data.title || ""
+                            )}"
+                            loading="lazy">
+                        `;
+
+                }
+
+
+                /*
+                 * Badge de acesso
+                 */
+
+                let accessBadge = "";
+
+
+                if (
+                    data.access === "free"
+                ) {
+
+                    accessBadge =
+                        `
+                        <span
+                            class="home-card-access free">
+
+                            🔓 Gratuito
+
+                        </span>
+                        `;
+
+                }
+
+
+                if (
+                    data.access === "subscription"
+                ) {
+
+                    accessBadge =
+                        `
+                        <span
+                            class="home-card-access subscription">
+
+                            🔐 Assinatura
+
+                        </span>
+                        `;
+
+                }
+
+
+                /*
+                 * Cartão
+                 */
+
+                container.innerHTML +=
+                    `
+                    <article
+                        class="home-card">
+
+                        <div
+                            class="home-card-cover">
+
+                            ${cover}
+
+                        </div>
+
+
+                        <div
+                            class="home-card-body">
+
+                            ${accessBadge}
+
+
+                            <div
+                                class="home-card-title">
+
+                                ${escapeHtml(
+                                    data.title ||
+                                    "Sem título"
+                                )}
+
+                            </div>
+
+
+                            <div
+                                class="home-card-description">
+
+                                ${escapeHtml(
+                                    data.description ||
+                                    "Sem descrição."
+                                )}
+
+                            </div>
+
+
+                            <button
+                                class="home-card-button"
+                                onclick="openHomeContent(
+                                    '${type}',
+                                    '${id}'
+                                )">
+
+                                Ver conteúdo
+
+                            </button>
+
+                        </div>
+
+                    </article>
+                    `;
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro carregando seção da Home:",
+            type,
+            error
+        );
+
+
+        container.innerHTML =
+            `
+            <div class="home-empty">
+
+                Erro ao carregar conteúdo.
+
+            </div>
+            `;
+
+    }
 
 }
 
+
+/* =====================================================
+   DESTAQUES DA HOME
+===================================================== */
+
+async function loadHomeFeatured() {
+
+    const container =
+        document.getElementById(
+            "homeFeatured"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        `
+        <div class="home-loading">
+            Carregando destaques...
+        </div>
+        `;
+
+
+    try {
+
+        const collections = [
+            "films",
+            "series",
+            "documentaries"
+        ];
+
+
+        let featured = [];
+
+
+        /*
+         * Busca os conteúdos marcados
+         * como destaque.
+         */
+
+        for (
+            const collectionName
+            of collections
+        ) {
+
+            const snapshot =
+                await getDocs(
+                    collection(
+                        db,
+                        collectionName
+                    )
+                );
+
+
+            snapshot.forEach(
+                contentDoc => {
+
+                    const data =
+                        contentDoc.data();
+
+
+                    /*
+                     * Somente conteúdos
+                     * marcados como featured.
+                     */
+
+                    if (
+                        data.featured === true
+                    ) {
+
+                        featured.push({
+
+                            type:
+                                collectionName,
+
+                            id:
+                                contentDoc.id,
+
+                            data:
+                                data
+
+                        });
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /*
+         * Se não houver nenhum conteúdo
+         * marcado como destaque,
+         * usamos alguns conteúdos disponíveis
+         * para que a seção não fique vazia.
+         */
+
+        if (
+            featured.length === 0
+        ) {
+
+            for (
+                const collectionName
+                of collections
+            ) {
+
+                if (
+                    featured.length >= 10
+                ) {
+
+                    break;
+
+                }
+
+
+                const snapshot =
+                    await getDocs(
+                        collection(
+                            db,
+                            collectionName
+                        )
+                    );
+
+
+                snapshot.forEach(
+                    contentDoc => {
+
+                        if (
+                            featured.length >= 10
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        featured.push({
+
+                            type:
+                                collectionName,
+
+                            id:
+                                contentDoc.id,
+
+                            data:
+                                contentDoc.data()
+
+                        });
+
+                    }
+                );
+
+            }
+
+        }
+
+
+        container.innerHTML = "";
+
+
+        if (
+            featured.length === 0
+        ) {
+
+            container.innerHTML =
+                `
+                <div class="home-empty">
+
+                    Ainda não existem
+                    conteúdos disponíveis.
+
+                </div>
+                `;
+
+            return;
+
+        }
+
+
+        /*
+         * Limita os destaques a 10 itens.
+         */
+
+        featured
+            .slice(0, 10)
+            .forEach(
+                item => {
+
+                    const data =
+                        item.data;
+
+
+                    let cover =
+                        `
+                        <span
+                            class="home-card-icon">
+
+                            ⭐
+
+                        </span>
+                        `;
+
+
+                    if (data.image) {
+
+                        cover =
+                            `
+                            <img
+                                src="${escapeAttribute(
+                                    data.image
+                                )}"
+                                alt="${escapeAttribute(
+                                    data.title || ""
+                                )}"
+                                loading="lazy">
+                            `;
+
+                    }
+
+
+                    let accessBadge = "";
+
+
+                    if (
+                        data.access === "free"
+                    ) {
+
+                        accessBadge =
+                            `
+                            <span
+                                class="home-card-access free">
+
+                                🔓 Gratuito
+
+                            </span>
+                            `;
+
+                    }
+
+
+                    if (
+                        data.access === "subscription"
+                    ) {
+
+                        accessBadge =
+                            `
+                            <span
+                                class="home-card-access subscription">
+
+                                🔐 Assinatura
+
+                            </span>
+                            `;
+
+                    }
+
+
+                    container.innerHTML +=
+                        `
+                        <article
+                            class="home-card">
+
+                            <div
+                                class="home-card-cover">
+
+                                ${cover}
+
+                            </div>
+
+
+                            <div
+                                class="home-card-body">
+
+                                ${accessBadge}
+
+
+                                <div
+                                    class="home-card-title">
+
+                                    ${escapeHtml(
+                                        data.title ||
+                                        "Sem título"
+                                    )}
+
+                                </div>
+
+
+                                <div
+                                    class="home-card-description">
+
+                                    ${escapeHtml(
+                                        data.description ||
+                                        "Conteúdo selecionado pelo SHALOM."
+                                    )}
+
+                                </div>
+
+
+                                <button
+                                    class="home-card-button"
+                                    onclick="openHomeContent(
+                                        '${item.type}',
+                                        '${item.id}'
+                                    )">
+
+                                    Ver conteúdo
+
+                                </button>
+
+                            </div>
+
+                        </article>
+                        `;
+
+                }
+            );
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro carregando destaques:",
+            error
+        );
+
+
+        container.innerHTML =
+            `
+            <div class="home-empty">
+
+                Não foi possível carregar
+                os destaques.
+
+            </div>
+            `;
+
+    }
+
+}
 
 /* =====================================================
    CARREGAR UMA SEÇÃO DA HOME
@@ -5802,17 +6067,7 @@ async function loadHomeFeatured(
         }
 
 
-        /*
-         * Mostra até 10 conteúdos.
-         */
-
-        featured
-            .slice(0, 10)
-            .forEach(
-                item => {
-
-                    const data =
-                        item.data;
+item.data;
 
 
                     let cover =
