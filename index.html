@@ -4714,79 +4714,636 @@ async function(id) {
 
 
 /* =====================================================
-   HOME
+/* =====================================================
+   HOME DINÂMICA
 ===================================================== */
 
-function loadHome() {
+async function loadHome() {
 
-    document
-        .getElementById(
-            "homeFeed"
-        )
-        .innerHTML =
+    /*
+     * Cada seção da Home corresponde
+     * a uma coleção do Firebase.
+     */
+
+    const homeSections = {
+
+        films: {
+            collection: "films",
+            element: "homeFilms",
+            icon: "🎬"
+        },
+
+        series: {
+            collection: "series",
+            element: "homeSeries",
+            icon: "📺"
+        },
+
+        documentaries: {
+            collection: "documentaries",
+            element: "homeDocumentaries",
+            icon: "🎞️"
+        },
+
+        books: {
+            collection: "books",
+            element: "homeBooks",
+            icon: "📚"
+        },
+
+        articles: {
+            collection: "articles",
+            element: "homeArticles",
+            icon: "📰"
+        },
+
+        studies: {
+            collection: "studies",
+            element: "homeStudies",
+            icon: "📖"
+        },
+
+        videos: {
+            collection: "videos",
+            element: "homeVideos",
+            icon: "🎥"
+        },
+
+        products: {
+            collection: "products",
+            element: "homeProducts",
+            icon: "🛒"
+        }
+
+    };
+
+
+    /*
+     * Carrega cada categoria.
+     */
+
+    for (
+        const type
+        of Object.keys(homeSections)
+    ) {
+
+        await loadHomeSection(
+            type,
+            homeSections[type]
+        );
+
+    }
+
+
+    /*
+     * Carrega os destaques.
+     */
+
+    await loadHomeFeatured(
+        homeSections
+    );
+
+}
+
+
+/* =====================================================
+   CARREGAR UMA SEÇÃO DA HOME
+===================================================== */
+
+async function loadHomeSection(
+    type,
+    config
+) {
+
+    const container =
+        document.getElementById(
+            config.element
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML =
         `
-        <div class="card">
-
-            <h2 class="card-title">
-                Explore o SHALOM
-            </h2>
-
-            <div class="grid">
-
-                <button
-                    class="btn"
-                    onclick="openPageByName('films')">
-
-                    🎬 Filmes
-
-                </button>
-
-                <button
-                    class="btn"
-                    onclick="openPageByName('series')">
-
-                    📺 Séries
-
-                </button>
-
-                <button
-                    class="btn"
-                    onclick="openPageByName('books')">
-
-                    📚 Livros
-
-                </button>
-
-                <button
-                    class="btn"
-                    onclick="openPageByName('articles')">
-
-                    📰 Artigos
-
-                </button>
-
-                <button
-                    class="btn"
-                    onclick="openPageByName('studies')">
-
-                    📖 Estudos
-
-                </button>
-
-                <button
-                    class="btn"
-                    onclick="openPageByName('store')">
-
-                    🛒 Loja
-
-                </button>
-
-            </div>
-
+        <div class="home-loading">
+            Carregando...
         </div>
         `;
 
+
+    try {
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    config.collection
+                )
+            );
+
+
+        container.innerHTML = "";
+
+
+        if (snapshot.empty) {
+
+            container.innerHTML =
+                `
+                <div class="home-empty">
+                    Nenhum conteúdo disponível ainda.
+                </div>
+                `;
+
+            return;
+
+        }
+
+
+        /*
+         * Mostramos inicialmente os conteúdos
+         * encontrados no Firebase.
+         */
+
+        snapshot.forEach(
+            contentDoc => {
+
+                const data =
+                    contentDoc.data();
+
+                const id =
+                    contentDoc.id;
+
+
+                let cover =
+                    `
+                    <span class="home-card-icon">
+                        ${config.icon}
+                    </span>
+                    `;
+
+
+                if (data.image) {
+
+                    cover =
+                        `
+                        <img
+                            src="${escapeAttribute(
+                                data.image
+                            )}"
+                            alt="${escapeAttribute(
+                                data.title || ""
+                            )}"
+                            loading="lazy">
+                        `;
+
+                }
+
+
+                let accessBadge = "";
+
+
+                if (
+                    data.access === "free"
+                ) {
+
+                    accessBadge =
+                        `
+                        <span
+                            class="home-card-access free">
+
+                            🔓 Gratuito
+
+                        </span>
+                        `;
+
+                }
+
+
+                if (
+                    data.access === "subscription"
+                ) {
+
+                    accessBadge =
+                        `
+                        <span
+                            class="home-card-access subscription">
+
+                            🔐 Assinatura
+
+                        </span>
+                        `;
+
+                }
+
+
+                container.innerHTML +=
+                    `
+                    <article
+                        class="home-card">
+
+                        <div
+                            class="home-card-cover">
+
+                            ${cover}
+
+                        </div>
+
+
+                        <div
+                            class="home-card-body">
+
+                            ${accessBadge}
+
+
+                            <div
+                                class="home-card-title">
+
+                                ${escapeHtml(
+                                    data.title ||
+                                    "Sem título"
+                                )}
+
+                            </div>
+
+
+                            <div
+                                class="home-card-description">
+
+                                ${escapeHtml(
+                                    data.description ||
+                                    "Sem descrição."
+                                )}
+
+                            </div>
+
+
+                            <button
+                                class="home-card-button"
+                                onclick="openHomeContent(
+                                    '${type}',
+                                    '${id}'
+                                )">
+
+                                Ver conteúdo
+
+                            </button>
+
+                        </div>
+
+                    </article>
+                    `;
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro carregando Home:",
+            error
+        );
+
+
+        container.innerHTML =
+            `
+            <div class="home-empty">
+
+                Erro ao carregar conteúdo.
+
+            </div>
+            `;
+
+    }
+
 }
+
+
+/* =====================================================
+   DESTAQUES
+===================================================== */
+
+async function loadHomeFeatured(
+    homeSections
+) {
+
+    const container =
+        document.getElementById(
+            "homeFeatured"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        `
+        <div class="home-loading">
+            Carregando destaques...
+        </div>
+        `;
+
+
+    try {
+
+        /*
+         * Neste primeiro momento,
+         * buscamos conteúdos das principais
+         * categorias e selecionamos alguns.
+         */
+
+        const collections = [
+            "films",
+            "series",
+            "documentaries"
+        ];
+
+
+        let featured = [];
+
+
+        for (
+            const collectionName
+            of collections
+        ) {
+
+            const snapshot =
+                await getDocs(
+                    collection(
+                        db,
+                        collectionName
+                    )
+                );
+
+
+            snapshot.forEach(
+                contentDoc => {
+
+                    const data =
+                        contentDoc.data();
+
+
+                    featured.push({
+
+                        type:
+                            collectionName,
+
+                        id:
+                            contentDoc.id,
+
+                        data:
+                            data
+
+                    });
+
+                }
+            );
+
+        }
+
+
+        container.innerHTML = "";
+
+
+        if (
+            featured.length === 0
+        ) {
+
+            container.innerHTML =
+                `
+                <div class="home-empty">
+
+                    Ainda não existem
+                    conteúdos em destaque.
+
+                </div>
+                `;
+
+            return;
+
+        }
+
+
+        /*
+         * Mostra até 10 conteúdos.
+         */
+
+        featured
+            .slice(0, 10)
+            .forEach(
+                item => {
+
+                    const data =
+                        item.data;
+
+
+                    let cover =
+                        "";
+
+
+                    if (data.image) {
+
+                        cover =
+                            `
+                            <img
+                                src="${escapeAttribute(
+                                    data.image
+                                )}"
+                                alt="${escapeAttribute(
+                                    data.title || ""
+                                )}"
+                                loading="lazy">
+                            `;
+
+                    }
+
+
+                    container.innerHTML +=
+                        `
+                        <article
+                            class="home-card">
+
+                            <div
+                                class="home-card-cover">
+
+                                ${
+                                    cover ||
+                                    `
+                                    <span
+                                        class="home-card-icon">
+
+                                        ⭐
+
+                                    </span>
+                                    `
+                                }
+
+                            </div>
+
+
+                            <div
+                                class="home-card-body">
+
+                                <div
+                                    class="home-card-title">
+
+                                    ${escapeHtml(
+                                        data.title ||
+                                        "Sem título"
+                                    )}
+
+                                </div>
+
+
+                                <div
+                                    class="home-card-description">
+
+                                    ${escapeHtml(
+                                        data.description ||
+                                        "Conteúdo selecionado pelo SHALOM."
+                                    )}
+
+                                </div>
+
+
+                                <button
+                                    class="home-card-button"
+                                    onclick="openHomeContent(
+                                        '${item.type}',
+                                        '${item.id}'
+                                    )">
+
+                                    Ver conteúdo
+
+                                </button>
+
+                            </div>
+
+                        </article>
+                        `;
+
+                }
+            );
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro carregando destaques:",
+            error
+        );
+
+
+        container.innerHTML =
+            `
+            <div class="home-empty">
+
+                Não foi possível carregar
+                os destaques.
+
+            </div>
+            `;
+
+    }
+
+}
+
+
+/* =====================================================
+   ABRIR CONTEÚDO A PARTIR DA HOME
+===================================================== */
+
+window.openHomeContent =
+async function(
+    type,
+    id
+) {
+
+    const info =
+        contentTypes[type];
+
+
+    if (!info) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const contentDoc =
+            await getDoc(
+                doc(
+                    db,
+                    info.collection,
+                    id
+                )
+            );
+
+
+        if (
+            !contentDoc.exists()
+        ) {
+
+            alert(
+                "Este conteúdo não está mais disponível."
+            );
+
+            return;
+
+        }
+
+
+        const data =
+            contentDoc.data();
+
+
+        /*
+         * Por enquanto, antes de criarmos
+         * o player interno, usamos a mesma
+         * lógica de abertura já existente.
+         *
+         * Na próxima etapa substituiremos
+         * isso pelo player do próprio SHALOM.
+         */
+
+        if (data.url) {
+
+            openVideo(
+                data.url
+            );
+
+        } else {
+
+            alert(
+                "Este conteúdo ainda não possui um link."
+            );
+
+        }
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao abrir conteúdo: " +
+            error.message
+        );
+
+    }
+
+};
 
 
 window.openPageByName =
