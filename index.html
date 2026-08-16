@@ -3649,55 +3649,65 @@ function(url) {
    SOMENTE ADMINISTRADOR GERAL
 ===================================================== */
 
+        
+            /* =====================================================
+   FORMULÁRIO DE CONTEÚDO
+   VERSÃO NOVA
+===================================================== */
+
 window.showContentForm =
 function(type) {
 
     if (!isAdmin) {
 
         alert(
-            "Somente o administrador geral pode adicionar este conteúdo."
+            "Somente o administrador geral pode adicionar conteúdo."
         );
 
         return;
     }
 
-
     const info =
         contentTypes[type];
-
 
     const page =
         document.querySelector(
             ".page.active"
         );
 
+    if (!page) {
+        return;
+    }
 
     const old =
         document.getElementById(
             "dynamicContentForm"
         );
 
-
     if (old) {
-
         old.remove();
-
     }
 
-
     const form =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     form.id =
         "dynamicContentForm";
 
-
     form.className =
         "card";
 
+    /*
+       CAMPOS ESPECÍFICOS PARA FILMES,
+       SÉRIES E DOCUMENTÁRIOS
+    */
+
+    const isVideoContent =
+        (
+            type === "films" ||
+            type === "series" ||
+            type === "documentaries"
+        );
 
     form.innerHTML =
     `
@@ -3716,8 +3726,9 @@ function(type) {
         </label>
 
         <input
+            type="text"
             id="newContentTitle"
-            placeholder="Título">
+            placeholder="Ex.: O Nome do Filme">
 
     </div>
 
@@ -3730,7 +3741,7 @@ function(type) {
 
         <textarea
             id="newContentDescription"
-            placeholder="Descrição">
+            placeholder="Escreva uma descrição do conteúdo">
         </textarea>
 
     </div>
@@ -3739,44 +3750,174 @@ function(type) {
     <div class="form-group">
 
         <label>
-            Imagem / capa
+            Capa / imagem
         </label>
 
         <input
+            type="url"
             id="newContentImage"
-            placeholder="URL da imagem">
-
-    </div>
-
-
-    <div class="form-group">
-
-        <label>
-            Link
-        </label>
-
-        <input
-            id="newContentUrl"
             placeholder="https://...">
 
+        <small style="
+            display:block;
+            color:#6B7A99;
+            margin-top:6px;
+        ">
+
+            URL de uma imagem para a capa.
+
+        </small>
+
     </div>
+
+
+    ${
+        isVideoContent
+        ?
+        `
+
+        <div class="form-group">
+
+            <label>
+                URL do vídeo
+            </label>
+
+            <input
+                type="url"
+                id="newContentUrl"
+                placeholder="https://...">
+
+            <small style="
+                display:block;
+                color:#6B7A99;
+                margin-top:6px;
+            ">
+
+                Endereço do vídeo ou do player
+                autorizado para reprodução.
+
+            </small>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Tipo de reprodução
+            </label>
+
+            <select id="newContentPlayer">
+
+                <option value="embed">
+                    ▶ Player incorporado
+                </option>
+
+                <option value="external">
+                    🔗 Abrir externamente
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Categoria
+            </label>
+
+            <input
+                type="text"
+                id="newContentCategory"
+                placeholder="Ex.: História, Drama, Educação">
+
+        </div>
+
+
+        <div class="grid">
+
+            <div class="form-group">
+
+                <label>
+                    Ano
+                </label>
+
+                <input
+                    type="number"
+                    id="newContentYear"
+                    placeholder="2026">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Duração
+                </label>
+
+                <input
+                    type="text"
+                    id="newContentDuration"
+                    placeholder="Ex.: 1h 45min">
+
+            </div>
+
+        </div>
+
+        `
+        :
+        `
+
+        <div class="form-group">
+
+            <label>
+                Link do conteúdo
+            </label>
+
+            <input
+                type="url"
+                id="newContentUrl"
+                placeholder="https://...">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Categoria
+            </label>
+
+            <input
+                type="text"
+                id="newContentCategory"
+                placeholder="Ex.: História, Torá, Literatura">
+
+        </div>
+
+        `
+    }
 
 
     <div class="form-group">
 
         <label>
-            Acesso
+            Tipo de acesso
         </label>
 
         <select
-            id="newContentAccess">
+            id="newContentAccess"
+            onchange="updateContentPriceField()">
 
             <option value="free">
                 🔓 Gratuito
             </option>
 
             <option value="subscription">
-                🔐 Por Assinatura
+                🔐 Por assinatura
             </option>
 
         </select>
@@ -3784,26 +3925,63 @@ function(type) {
     </div>
 
 
+    <div
+        id="contentPriceBox"
+        class="form-group hidden">
+
+        <label>
+            Valor da assinatura
+        </label>
+
+        <input
+            type="number"
+            id="newContentPrice"
+            min="0"
+            step="0.01"
+            placeholder="Ex.: 19.90">
+
+        <small style="
+            display:block;
+            color:#6B7A99;
+            margin-top:6px;
+        ">
+
+            Neste momento o valor será apenas
+            registrado. O sistema de pagamento
+            será implementado posteriormente.
+
+        </small>
+
+    </div>
+
+
+    <div
+        id="contentFormMessage"
+        class="hidden">
+    </div>
+
+
     <button
         class="btn"
         onclick="saveContent('${type}')">
 
-        Salvar
+        💾 Salvar ${info.title}
 
     </button>
 
 
     <button
         class="btn btn-secondary"
-        onclick="document
-        .getElementById(
-            'dynamicContentForm'
-        )
-        .remove()">
+        onclick="
+            document
+                .getElementById('dynamicContentForm')
+                ?.remove()
+        ">
 
         Cancelar
 
     </button>
+
     `;
 
 
@@ -3812,13 +3990,60 @@ function(type) {
 };
 
 
+/* =====================================================
+   MOSTRAR CAMPO DE PREÇO
+===================================================== */
+
+window.updateContentPriceField =
+function() {
+
+    const access =
+        document
+        .getElementById(
+            "newContentAccess"
+        );
+
+    const priceBox =
+        document
+        .getElementById(
+            "contentPriceBox"
+        );
+
+    if (!access || !priceBox) {
+        return;
+    }
+
+    if (
+        access.value ===
+        "subscription"
+    ) {
+
+        priceBox
+            .classList
+            .remove("hidden");
+
+    } else {
+
+        priceBox
+            .classList
+            .add("hidden");
+
+    }
+
+};
+
+
+/* =====================================================
+   SALVAR CONTEÚDO
+===================================================== */
+
 window.saveContent =
 async function(type) {
 
     if (!isAdmin) {
 
         alert(
-            "Somente o administrador geral pode fazer isso."
+            "Somente o administrador geral pode adicionar conteúdo."
         );
 
         return;
@@ -3834,7 +4059,7 @@ async function(type) {
         .getElementById(
             "newContentTitle"
         )
-        .value
+        ?.value
         .trim();
 
 
@@ -3843,7 +4068,7 @@ async function(type) {
         .getElementById(
             "newContentDescription"
         )
-        .value
+        ?.value
         .trim();
 
 
@@ -3852,7 +4077,7 @@ async function(type) {
         .getElementById(
             "newContentImage"
         )
-        .value
+        ?.value
         .trim();
 
 
@@ -3861,7 +4086,7 @@ async function(type) {
         .getElementById(
             "newContentUrl"
         )
-        .value
+        ?.value
         .trim();
 
 
@@ -3870,13 +4095,126 @@ async function(type) {
         .getElementById(
             "newContentAccess"
         )
-        .value;
+        ?.value;
 
+
+    const priceElement =
+        document
+        .getElementById(
+            "newContentPrice"
+        );
+
+
+    const price =
+        priceElement
+        ?
+        Number(
+            priceElement.value || 0
+        )
+        :
+        0;
+
+
+    const category =
+        document
+        .getElementById(
+            "newContentCategory"
+        )
+        ?.value
+        .trim();
+
+
+    const yearElement =
+        document
+        .getElementById(
+            "newContentYear"
+        );
+
+
+    const year =
+        yearElement
+        ?
+        Number(
+            yearElement.value || 0
+        )
+        :
+        0;
+
+
+    const duration =
+        document
+        .getElementById(
+            "newContentDuration"
+        )
+        ?.value
+        .trim();
+
+
+    const playerElement =
+        document
+        .getElementById(
+            "newContentPlayer"
+        );
+
+
+    const player =
+        playerElement
+        ?
+        playerElement.value
+        :
+        "external";
+
+
+    /* =========================
+       VALIDAÇÕES
+    ========================= */
 
     if (!title) {
 
         alert(
-            "Digite um título."
+            "Digite o título."
+        );
+
+        return;
+    }
+
+
+    if (!description) {
+
+        alert(
+            "Digite uma descrição."
+        );
+
+        return;
+    }
+
+
+    if (
+        type === "films" ||
+        type === "series" ||
+        type === "documentaries"
+    ) {
+
+        if (!url) {
+
+            alert(
+                "Informe a URL do vídeo."
+            );
+
+            return;
+        }
+
+    }
+
+
+    if (
+        access ===
+        "subscription" &&
+        price <= 0
+    ) {
+
+        alert(
+            "Informe um valor válido para a assinatura."
         );
 
         return;
@@ -3885,30 +4223,64 @@ async function(type) {
 
     try {
 
+        /*
+           DADOS SALVOS NO FIRESTORE
+        */
+
+        const contentData = {
+
+            title,
+
+            description,
+
+            image,
+
+            url,
+
+            access,
+
+            price,
+
+            category,
+
+            year,
+
+            duration,
+
+            player,
+
+            type,
+
+            createdBy:
+                auth.currentUser.email,
+
+            createdAt:
+                serverTimestamp(),
+
+            active:
+                true,
+
+            featured:
+                false,
+
+            views:
+                0,
+
+            rating:
+                0,
+
+            ratingCount:
+                0
+
+        };
+
+
         await addDoc(
             collection(
                 db,
                 info.collection
             ),
-            {
-
-                title,
-
-                description,
-
-                image,
-
-                url,
-
-                access,
-
-                createdBy:
-                    auth.currentUser.email,
-
-                createdAt:
-                    serverTimestamp()
-
-            }
+            contentData
         );
 
 
@@ -3921,16 +4293,24 @@ async function(type) {
 
         alert(
             info.title +
-            " adicionado com sucesso."
+            " adicionado com sucesso!"
         );
 
 
-        loadContent(type);
+        /*
+           RECARREGA O CATÁLOGO
+        */
+
+        await loadContent(type);
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erro ao salvar conteúdo:",
+            error
+        );
+
 
         alert(
             "Erro ao adicionar conteúdo: " +
@@ -3940,6 +4320,9 @@ async function(type) {
     }
 
 };
+
+
+        
 
 
 /* =====================================================
