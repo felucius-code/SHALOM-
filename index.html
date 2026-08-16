@@ -1,38 +1,36 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>SHALOM — Rede Social</title>
+<title>SHALOM - Rede Social</title>
 
 <style>
 
 * {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-    background: #f4f6fa;
-    color: #172033;
+:root {
+    --bg: #0A0E27;
+    --panel: #1A1F3A;
+    --panel2: #222846;
+    --gold: #D4AF37;
+    --gold-light: #E5C158;
+    --muted: #6B7A99;
+    --white: #FFFFFF;
+    --danger: #8B0000;
+    --success: #315B3A;
 }
 
-button,
-input,
-textarea,
-select {
-    font-family: inherit;
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    min-height: 100vh;
 }
 
 button {
@@ -43,285 +41,393 @@ button {
     display: none !important;
 }
 
-/* =====================================================
-   AUTENTICAÇÃO
-===================================================== */
+hr {
+    border: 0;
+    border-top: 1px solid #303654;
+    margin: 20px 0;
+}
+
+/* =========================
+   LOGIN
+========================= */
 
 .auth-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background:
-        linear-gradient(
-            135deg,
-            #101a32,
-            #1c2b4a
-        );
+    width: 100%;
+    max-width: 430px;
+    margin: auto;
+    padding: 25px;
 }
 
 .auth-card {
-    width: 100%;
-    max-width: 430px;
-    background: white;
-    border-radius: 18px;
-    padding: 35px;
-    box-shadow:
-        0 20px 60px rgba(0,0,0,.25);
+    background: var(--panel);
+    padding: 30px;
+    border-radius: 14px;
+    margin-top: 60px;
+    border: 1px solid #303654;
 }
 
 .logo {
     text-align: center;
-    font-size: 32px;
+    color: var(--gold);
+    font-size: 30px;
     font-weight: bold;
-    color: #172033;
+    margin-bottom: 10px;
 }
 
 .subtitle {
     text-align: center;
-    color: #6b7a99;
-    margin-top: 6px;
+    color: var(--muted);
     margin-bottom: 30px;
 }
 
 .form-group {
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
 .form-group label {
     display: block;
-    font-weight: 600;
-    margin-bottom: 7px;
+    color: var(--muted);
+    margin-bottom: 6px;
 }
 
-.form-group input,
-.form-group textarea,
-.form-group select {
+input,
+textarea,
+select {
     width: 100%;
-    border: 1px solid #d9dfeb;
-    border-radius: 9px;
-    padding: 12px;
-    font-size: 15px;
-    outline: none;
-    background: white;
+    padding: 11px;
+    border-radius: 6px;
+    border: 1px solid var(--gold);
+    background: var(--bg);
+    color: white;
 }
 
-.form-group textarea {
-    min-height: 110px;
+textarea {
+    min-height: 100px;
     resize: vertical;
 }
 
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-    border-color: #5068a0;
+select option {
+    background: var(--bg);
+    color: white;
 }
 
 .btn {
     border: none;
-    border-radius: 9px;
-    padding: 12px 18px;
-    background: #172033;
-    color: white;
+    border-radius: 7px;
+    padding: 11px 15px;
+    background: var(--gold);
+    color: var(--bg);
     font-weight: bold;
-    margin-top: 5px;
+    margin-top: 8px;
 }
 
 .btn:hover {
-    opacity: .9;
+    background: var(--gold-light);
 }
 
 .btn-secondary {
-    background: #e8ecf3;
-    color: #172033;
+    background: var(--muted);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-small {
+    padding: 7px 10px;
+    font-size: 13px;
+    margin-right: 5px;
+}
+
+.error,
+.success {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
 }
 
 .error {
-    background: #fde8e8;
-    color: #a11a1a;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 18px;
-    font-size: 14px;
+    background: var(--danger);
 }
 
-/* =====================================================
-   APLICAÇÃO
-===================================================== */
-
-#app {
-    min-height: 100vh;
+.success {
+    background: var(--success);
 }
+
+/* =========================
+   NAVBAR
+========================= */
 
 .navbar {
-    height: 64px;
-    background: #101a32;
-    color: white;
+    height: 65px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--gold);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
-    position: fixed;
+    padding: 0 18px;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
+    z-index: 100;
 }
 
 .navbar-brand {
-    font-size: 23px;
+    color: var(--gold);
+    font-size: 21px;
     font-weight: bold;
 }
 
 .navbar-user {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
 }
 
 .user-email {
-    font-size: 14px;
-    opacity: .9;
+    color: var(--gold);
+    font-size: 13px;
 }
 
 .logout-btn {
-    border: 1px solid rgba(255,255,255,.3);
-    background: transparent;
-    color: white;
-    padding: 8px 13px;
-    border-radius: 7px;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-weight: bold;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.app-layout {
+    max-width: 1200px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 65px);
 }
 
 .sidebar {
-    position: fixed;
-    top: 64px;
-    left: 0;
-    bottom: 0;
-    width: 240px;
-    background: white;
-    border-right: 1px solid #e1e5ed;
-    padding: 20px 12px;
-    overflow-y: auto;
+    background: var(--panel);
+    border-right: 1px solid #303654;
+    padding: 15px;
 }
 
 .sidebar-title {
-    color: #8a94a8;
+    color: var(--gold);
     font-size: 12px;
-    font-weight: bold;
     text-transform: uppercase;
-    margin: 18px 10px 7px;
+    margin: 18px 8px 8px;
 }
 
 .nav-item {
     width: 100%;
-    border: none;
     background: transparent;
-    color: #364158;
+    color: white;
+    border: none;
+    padding: 11px 10px;
     text-align: left;
-    padding: 11px 12px;
-    border-radius: 8px;
+    border-radius: 6px;
     margin-bottom: 3px;
-    font-size: 14px;
 }
 
 .nav-item:hover,
 .nav-item.active {
-    background: #edf1f8;
-    color: #101a32;
-    font-weight: bold;
+    background: var(--panel2);
+    color: var(--gold);
 }
 
 .main {
-    margin-left: 240px;
-    padding: 94px 30px 40px;
-    min-height: 100vh;
+    padding: 25px;
+    min-width: 0;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
 }
 
 .page-title {
-    margin: 0 0 8px;
-    font-size: 30px;
+    color: var(--gold);
+    margin-bottom: 8px;
+    font-size: 27px;
 }
 
 .page-description {
-    margin-top: 0;
-    color: #6b7a99;
-    margin-bottom: 28px;
+    color: var(--muted);
+    margin-bottom: 25px;
 }
 
-/* =====================================================
-   CARDS / GRID
-===================================================== */
+/* =========================
+   CARDS
+========================= */
 
 .card {
-    background: white;
-    border-radius: 14px;
-    padding: 22px;
-    margin-bottom: 20px;
-    border: 1px solid #e3e7ef;
+    background: var(--panel);
+    border: 1px solid #303654;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 18px;
 }
 
 .card-title {
-    margin-top: 0;
+    color: var(--gold);
+    margin-bottom: 10px;
 }
 
 .grid {
     display: grid;
-    grid-template-columns:
-        repeat(auto-fill, minmax(220px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 15px;
 }
 
 .content-card {
-    background: white;
-    border-radius: 13px;
+    background: var(--panel);
+    border: 1px solid #303654;
+    border-radius: 10px;
     overflow: hidden;
-    border: 1px solid #e1e5ed;
 }
 
-.content-image {
+.content-cover {
+    height: 150px;
+    background: var(--panel2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 45px;
+}
+
+.content-cover img {
     width: 100%;
-    height: 180px;
+    height: 100%;
     object-fit: cover;
-    background: #e8ecf3;
 }
 
 .content-body {
-    padding: 16px;
+    padding: 15px;
 }
 
-.content-title {
-    font-size: 17px;
+.content-body h3 {
+    color: var(--gold);
+    margin-bottom: 7px;
+}
+
+.content-body p {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.admin-tools {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #303654;
+}
+
+.access-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    margin-bottom: 10px;
     font-weight: bold;
+}
+
+.access-free {
+    background: #315B3A;
+    color: #7FD897;
+}
+
+.access-subscription {
+    background: #684F00;
+    color: #E5C158;
+}
+
+/* =========================
+   COMMUNITIES
+========================= */
+
+.community-card {
+    background: var(--panel);
+    border-left: 4px solid var(--gold);
+    padding: 18px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.community-card h3 {
+    color: var(--gold);
     margin-bottom: 8px;
 }
 
-.content-description {
-    color: #6b7a99;
-    font-size: 14px;
-    line-height: 1.5;
+.community-card p {
+    color: #B8BDD0;
+    margin-bottom: 7px;
 }
 
-.content-link {
+.badge {
     display: inline-block;
-    margin-top: 12px;
-    color: #172033;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    background: var(--muted);
+    margin-right: 5px;
+}
+
+.badge-success {
+    background: var(--success);
+}
+
+.badge-pending {
+    background: #806A28;
+}
+
+.badge-admin {
+    background: #684F00;
+    color: white;
+}
+
+/* =========================
+   POSTS
+========================= */
+
+.post {
+    background: var(--panel);
+    border: 1px solid #303654;
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.post-author {
+    color: var(--gold);
     font-weight: bold;
-    text-decoration: none;
 }
 
-.empty {
-    background: white;
-    border: 1px dashed #cbd2df;
-    border-radius: 12px;
-    padding: 30px;
-    text-align: center;
-    color: #6b7a99;
+.post-date {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 5px 0 12px;
 }
 
-/* =====================================================
-   HOME
-===================================================== */
+.post-text {
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+
+    /* =========================
+   HOME — CARROSSÉIS
+========================= */
+
+.home-header {
+    margin-bottom: 30px;
+}
 
 .home-section {
     margin-bottom: 35px;
@@ -329,456 +435,1638 @@ button {
 
 .home-section-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    gap: 15px;
     margin-bottom: 14px;
 }
 
 .home-section-header h2 {
+    color: var(--gold);
+    font-size: 21px;
     margin: 0;
 }
 
 .home-see-all {
-    border: none;
     background: transparent;
-    color: #172033;
+    border: none;
+    color: var(--gold-light);
+    font-size: 14px;
     font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.home-see-all:hover {
+    color: white;
+    text-decoration: underline;
 }
 
 .home-carousel {
-    display: grid;
-    grid-template-columns:
-        repeat(auto-fill, minmax(190px, 1fr));
-    gap: 16px;
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 3px 2px 12px 2px;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+}
+
+.home-carousel::-webkit-scrollbar {
+    height: 7px;
+}
+
+.home-carousel::-webkit-scrollbar-track {
+    background: var(--panel);
+    border-radius: 10px;
+}
+
+.home-carousel::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 10px;
+}
+
+.home-carousel::-webkit-scrollbar-thumb:hover {
+    background: var(--gold-light);
+}
+
+.home-card {
+    flex: 0 0 190px;
+    width: 190px;
+    background: var(--panel);
+    border: 1px solid #303654;
+    border-radius: 10px;
+    overflow: hidden;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.home-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.home-card-cover {
+    width: 100%;
+    height: 250px;
+    background: var(--panel2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.home-card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-card-icon {
+    font-size: 48px;
+}
+
+.home-card-body {
+    padding: 13px;
+}
+
+.home-card-title {
+    color: var(--gold);
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1.3;
+    margin-bottom: 7px;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.home-card-description {
+    color: #B8BDD0;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 10px;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.home-card-access {
+    display: inline-block;
+    padding: 4px 7px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.home-card-access.free {
+    background: #315B3A;
+    color: #7FD897;
+}
+
+.home-card-access.subscription {
+    background: #684F00;
+    color: #E5C158;
+}
+
+.home-card-button {
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-top: 5px;
+    background: var(--gold);
+    color: var(--bg);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.home-card-button:hover {
+    background: var(--gold-light);
 }
 
 .home-loading {
-    color: #6b7a99;
-    padding: 20px 0;
+    color: var(--muted);
+    padding: 20px 5px;
 }
 
-/* =====================================================
-   COMUNIDADES
-===================================================== */
-
-.community-card {
-    background: white;
-    border: 1px solid #e1e5ed;
-    border-radius: 13px;
+.home-empty {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid #303654;
+    border-radius: 8px;
     padding: 20px;
-    margin-bottom: 14px;
+    color: var(--muted);
 }
 
-.community-card h3 {
-    margin-top: 0;
+.home-carousel-arrow {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    background: var(--panel);
+    color: var(--gold);
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
-.community-description {
-    color: #6b7a99;
+.home-carousel-arrow:hover {
+    background: var(--gold);
+    color: var(--bg);
 }
 
-.community-actions {
+
+/* =========================
+   HOME — DESTAQUE
+========================= */
+
+.home-featured-card {
+    width: 100%;
+    min-height: 280px;
+    background: var(--panel);
+    border: 1px solid #303654;
+    border-radius: 12px;
+    overflow: hidden;
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    align-items: stretch;
 }
 
-.small-btn {
-    padding: 8px 12px;
-    border-radius: 7px;
-    border: none;
-    background: #172033;
-    color: white;
+.home-featured-image {
+    width: 42%;
+    min-height: 280px;
+    background: var(--panel2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
-.small-btn.secondary {
-    background: #e8ecf3;
-    color: #172033;
+.home-featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-/* =====================================================
-   RESPONSIVO
-===================================================== */
+.home-featured-info {
+    flex: 1;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
 
-@media (max-width: 800px) {
+.home-featured-info h2 {
+    color: var(--gold);
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+.home-featured-info p {
+    color: #B8BDD0;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+
+/* =========================
+   HOME — RESPONSIVIDADE
+========================= */
+
+@media (max-width: 750px) {
+
+    .home-section {
+        margin-bottom: 28px;
+    }
+
+    .home-section-header h2 {
+        font-size: 18px;
+    }
+
+    .home-see-all {
+        font-size: 12px;
+    }
+
+    .home-card {
+        flex: 0 0 155px;
+        width: 155px;
+    }
+
+    .home-card-cover {
+        height: 210px;
+    }
+
+    .home-card-title {
+        font-size: 14px;
+    }
+
+    .home-card-description {
+        font-size: 12px;
+    }
+
+    .home-featured-card {
+        display: block;
+    }
+
+    .home-featured-image {
+        width: 100%;
+        height: 220px;
+        min-height: 220px;
+    }
+
+    .home-featured-info {
+        padding: 20px;
+    }
+
+    .home-featured-info h2 {
+        font-size: 22px;
+    }
+
+    }
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 750px) {
+
+    .app-layout {
+        display: block;
+    }
 
     .sidebar {
-        width: 200px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        z-index: 100;
+        border-right: none;
+        border-top: 1px solid var(--gold);
+        padding: 5px;
+        display: flex;
+        overflow-x: auto;
+        background: var(--panel);
+    }
+
+    .sidebar-title {
+        display: none;
+    }
+
+    .nav-item {
+        min-width: 75px;
+        text-align: center;
+        font-size: 11px;
+        padding: 7px 3px;
+        margin: 0;
     }
 
     .main {
-        margin-left: 200px;
-        padding-left: 18px;
-        padding-right: 18px;
+        padding: 18px;
+        padding-bottom: 85px;
     }
 
     .user-email {
         display: none;
     }
 
-}
-
-@media (max-width: 600px) {
-
-    .navbar {
-        padding: 0 14px;
+    .page-title {
+        font-size: 23px;
     }
-
-    .sidebar {
-        position: static;
-        width: 100%;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid #e1e5ed;
-        margin-top: 64px;
-    }
-
-    .main {
-        margin-left: 0;
-        padding-top: 25px;
-    }
-
-    .auth-card {
-        padding: 25px;
-    }
-
-}
-
-/* =====================================================
-   TOAST
-===================================================== */
-
-.toast {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    max-width: 350px;
-    background: #101a32;
-    color: white;
-    padding: 14px 18px;
-    border-radius: 9px;
-    z-index: 5000;
-    box-shadow: 0 8px 30px rgba(0,0,0,.2);
 }
 
 </style>
-
 </head>
 
 <body>
 
 <!-- =====================================================
-     LOGIN
+     AUTENTICAÇÃO
 ===================================================== -->
 
-<div
-    id="authScreen"
-    class="auth-container"
->
+<section id="authScreen">
 
-    <div class="auth-card">
+    <div class="auth-container">
 
-        <div class="logo">
-            ש SHALOM
-        </div>
+        <div class="auth-card">
 
-        <div class="subtitle">
-            Rede Social
-        </div>
+            <div class="logo">
+                ש SHALOM
+            </div>
 
-        <div
-            id="loginError"
-            class="error hidden"
-        ></div>
+            <div class="subtitle">
+                Rede Social
+            </div>
 
-        <div
-            id="signupError"
-            class="error hidden"
-        ></div>
+            <div id="loginError"
+                 class="error hidden">
+            </div>
 
-        <!-- LOGIN -->
+            <div id="signupError"
+                 class="error hidden">
+            </div>
 
-        <div id="loginForm">
+            <!-- LOGIN -->
 
-            <h2 style="margin-bottom:20px;">
-                Entrar
-            </h2>
+            <div id="loginForm">
 
-            <div class="form-group">
+                <h2 style="margin-bottom:20px;">
+                    Entrar
+                </h2>
 
-                <label>Email</label>
+                <div class="form-group">
 
-                <input
-                    type="email"
-                    id="loginEmail"
-                    placeholder="seu@email.com"
-                >
+                    <label>Email</label>
+
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        placeholder="seu@email.com">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Senha</label>
+
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        placeholder="Sua senha">
+
+                </div>
+
+                <button
+                    class="btn"
+                    style="width:100%;"
+                    onclick="handleLogin()">
+
+                    Entrar
+
+                </button>
+
+                <button
+                    class="btn btn-secondary"
+                    style="width:100%;"
+                    onclick="showSignup()">
+
+                    Criar Conta
+
+                </button>
 
             </div>
 
-            <div class="form-group">
 
-                <label>Senha</label>
+            <!-- CADASTRO -->
 
-                <input
-                    type="password"
-                    id="loginPassword"
-                    placeholder="Sua senha"
-                >
+            <div id="signupForm"
+                 class="hidden">
 
-            </div>
+                <h2 style="margin-bottom:20px;">
+                    Criar Conta
+                </h2>
 
-            <button
-                class="btn"
-                style="width:100%;"
-                onclick="handleLogin()"
-            >
-                Entrar
-            </button>
+                <div class="form-group">
 
-            <button
-                class="btn btn-secondary"
-                style="width:100%;"
-                onclick="showSignup()"
-            >
-                Criar Conta
-            </button>
+                    <label>Email</label>
 
-        </div>
+                    <input
+                        type="email"
+                        id="signupEmail"
+                        placeholder="seu@email.com">
 
-        <!-- CADASTRO -->
+                </div>
 
-        <div
-            id="signupForm"
-            class="hidden"
-        >
+                <div class="form-group">
 
-            <h2 style="margin-bottom:20px;">
-                Criar Conta
-            </h2>
+                    <label>Senha</label>
 
-            <div class="form-group">
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        placeholder="Mínimo de 6 caracteres">
 
-                <label>Email</label>
+                </div>
 
-                <input
-                    type="email"
-                    id="signupEmail"
-                    placeholder="seu@email.com"
-                >
+                <button
+                    class="btn"
+                    style="width:100%;"
+                    onclick="handleSignup()">
 
-            </div>
+                    Criar Conta
 
-            <div class="form-group">
+                </button>
 
-                <label>Senha</label>
+                <button
+                    class="btn btn-secondary"
+                    style="width:100%;"
+                    onclick="showLogin()">
 
-                <input
-                    type="password"
-                    id="signupPassword"
-                    placeholder="Mínimo de 6 caracteres"
-                >
+                    Voltar
+
+                </button>
 
             </div>
-
-            <button
-                class="btn"
-                style="width:100%;"
-                onclick="handleSignup()"
-            >
-                Criar Conta
-            </button>
-
-            <button
-                class="btn btn-secondary"
-                style="width:100%;"
-                onclick="showLogin()"
-            >
-                Voltar
-            </button>
 
         </div>
 
     </div>
 
-</div>
+</section>
 
 
 <!-- =====================================================
      APLICAÇÃO
 ===================================================== -->
 
-<div
-    id="app"
-    class="hidden"
->
+<section id="appScreen"
+         class="hidden">
 
-    <!-- NAVBAR -->
+<header class="navbar">
 
-    <div class="navbar">
+    <div class="navbar-brand">
+        ש SHALOM
+    </div>
 
-        <div class="navbar-brand">
-            ש SHALOM
+    <div class="navbar-user">
+
+        <span
+            id="userEmail"
+            class="user-email">
+        </span>
+
+        <button
+            class="logout-btn"
+            onclick="logout()">
+
+            Sair
+
+        </button>
+
+    </div>
+
+</header>
+
+
+<div class="app-layout">
+
+<!-- =====================================================
+     MENU
+===================================================== -->
+
+<aside class="sidebar">
+
+    <div class="sidebar-title">
+        Principal
+    </div>
+
+    <button
+        class="nav-item active"
+        onclick="openPage('home',this)">
+        🏠 Início
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('communities',this)">
+        👥 Comunidades
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('profile',this)">
+        👤 Perfil
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('notifications',this)">
+        🔔 Notificações
+    </button>
+
+
+    <div class="sidebar-title">
+        Conteúdo
+    </div>
+
+    <button
+        class="nav-item"
+        onclick="openPage('films',this)">
+        🎬 Filmes
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('series',this)">
+        📺 Séries
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('books',this)">
+        📚 Livros
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('articles',this)">
+        📰 Artigos
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('documentaries',this)">
+        🎞️ Documentários
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('studies',this)">
+        📖 Estudos
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('videos',this)">
+        🎥 Vídeos
+    </button>
+
+
+    <div class="sidebar-title">
+        Loja
+    </div>
+
+    <button
+        class="nav-item"
+        onclick="openPage('store',this)">
+        🛒 Loja
+    </button>
+
+
+    <div id="adminMenu"
+         class="hidden">
+
+        <div class="sidebar-title">
+            Administração
         </div>
 
-        <div class="navbar-user">
+        <button
+            class="nav-item"
+            onclick="openPage('admin',this)">
+            🛡️ Administração
+        </button>
 
-            <span
-                id="userEmail"
-                class="user-email"
-            ></span>
+    </div>
+
+</aside>
+
+
+<!-- =====================================================
+     CONTEÚDO
+===================================================== -->
+
+<main class="main">
+
+
+<!-- =====================================================
+     INÍCIO
+===================================================== -->
+
+<section id="page-home"
+         class="page active">
+
+    <div class="home-header">
+
+        <h1 class="page-title">
+            ש SHALOM
+        </h1>
+
+        <p class="page-description">
+            Conteúdo selecionado para você.
+        </p>
+
+    </div>
+
+
+    <!-- ================================
+         DESTAQUES
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                ⭐ Destaques
+            </h2>
+
+        </div>
+
+        <div
+            id="homeFeatured"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         FILMES
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                🎬 Filmes
+            </h2>
 
             <button
-                class="logout-btn"
-                onclick="logout()"
-            >
-                Sair
+                class="home-see-all"
+                onclick="openPageByName('films')">
+
+                Ver todos →
+
             </button>
 
+        </div>
+
+        <div
+            id="homeFilms"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         SÉRIES
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                📺 Séries
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('series')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeSeries"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         DOCUMENTÁRIOS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                🎞️ Documentários
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('documentaries')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeDocumentaries"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         LIVROS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                📚 Livros
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('books')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeBooks"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         ARTIGOS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                📰 Artigos
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('articles')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeArticles"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         ESTUDOS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                📖 Estudos
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('studies')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeStudies"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         VÍDEOS
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                🎥 Vídeos
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('videos')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeVideos"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         LOJA
+    ================================= -->
+
+    <section class="home-section">
+
+        <div class="home-section-header">
+
+            <h2>
+                🛒 Loja
+            </h2>
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('store')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+        <div
+            id="homeProducts"
+            class="home-carousel">
+
+            <div class="home-loading">
+                Carregando...
+            </div>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- =====================================================
+     COMUNIDADES
+===================================================== -->
+
+<section id="page-communities"
+         class="page">
+
+    <h1 class="page-title">
+        Comunidades
+    </h1>
+
+    <p class="page-description">
+        Participe de comunidades e
+        compartilhe conhecimento.
+    </p>
+
+
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
+
+    <div id="adminCommunityButton"
+         class="hidden card">
+
+        <button
+            class="btn"
+            onclick="showCreateCommunity()">
+
+            ＋ Adicionar comunidade
+
+        </button>
+
+    </div>
+
+
+    <div id="createCommunityBox"
+         class="card hidden">
+
+        <h2 class="card-title">
+            Nova comunidade
+        </h2>
+
+        <div class="form-group">
+
+            <label>Nome</label>
+
+            <input
+                id="communityName"
+                placeholder="Nome da comunidade">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Descrição</label>
+
+            <textarea
+                id="communityDescription"
+                placeholder="Descrição da comunidade">
+            </textarea>
+
+        </div>
+
+        <button
+            class="btn"
+            onclick="addCommunity()">
+
+            Criar comunidade
+
+        </button>
+
+    </div>
+
+
+    <div id="communitiesList"></div>
+
+
+    <!-- ÁREA DA COMUNIDADE -->
+
+    <div id="communityArea"
+         class="hidden">
+
+        <div class="card">
+
+            <h2
+                id="communityAreaTitle"
+                class="card-title">
+            </h2>
+
+            <p
+                id="communityAreaDescription"
+                style="color:#6B7A99;">
+            </p>
+
+        </div>
+
+
+        <!-- ADMINISTRADOR DA COMUNIDADE -->
+
+        <div id="communityStudyAdminTools"
+             class="card hidden">
+
+            <h2 class="card-title">
+                🎥 Administração de Estudos
+            </h2>
+
+            <p style="color:#6B7A99;">
+                Como administrador desta comunidade,
+                você pode adicionar vídeos de estudos.
+            </p>
+
+            <button
+                class="btn"
+                onclick="showStudyVideoForm()">
+
+                ＋ Adicionar vídeo de estudo
+
+            </button>
+
+        </div>
+
+
+        <!-- FORMULÁRIO DE VÍDEO -->
+
+        <div id="studyVideoForm"
+             class="card hidden">
+
+            <h2 class="card-title">
+                🎥 Novo vídeo de estudo
+            </h2>
+
+            <div class="form-group">
+
+                <label>Título</label>
+
+                <input
+                    id="studyVideoTitle"
+                    placeholder="Título do vídeo">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Descrição</label>
+
+                <textarea
+                    id="studyVideoDescription"
+                    placeholder="Descrição do estudo">
+                </textarea>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Link do vídeo</label>
+
+                <input
+                    id="studyVideoUrl"
+                    placeholder="https://...">
+
+            </div>
+
+            <button
+                class="btn"
+                onclick="saveStudyVideo()">
+
+                Salvar vídeo
+
+            </button>
+
+            <button
+                class="btn btn-secondary"
+                onclick="hideStudyVideoForm()">
+
+                Cancelar
+
+            </button>
+
+        </div>
+
+
+        <div id="communityStudyVideos"></div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CATEGORIAS
+===================================================== -->
+
+<section id="page-films"
+         class="page">
+
+    <h1 class="page-title">
+        🎬 Filmes
+    </h1>
+
+    <p class="page-description">
+        Filmes selecionados pelo SHALOM.
+    </p>
+
+    <div id="admin-films"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('films')">
+
+            ＋ Adicionar filme
+
+        </button>
+
+    </div>
+
+    <div id="filmsGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-series"
+         class="page">
+
+    <h1 class="page-title">
+        📺 Séries
+    </h1>
+
+    <p class="page-description">
+        Séries selecionadas pelo SHALOM.
+    </p>
+
+    <div id="admin-series"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('series')">
+
+            ＋ Adicionar série
+
+        </button>
+
+    </div>
+
+    <div id="seriesGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-books"
+         class="page">
+
+    <h1 class="page-title">
+        📚 Livros
+    </h1>
+
+    <p class="page-description">
+        Biblioteca do SHALOM.
+    </p>
+
+    <div id="admin-books"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('books')">
+
+            ＋ Adicionar livro
+
+        </button>
+
+    </div>
+
+    <div id="booksGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-articles"
+         class="page">
+
+    <h1 class="page-title">
+        📰 Artigos
+    </h1>
+
+    <p class="page-description">
+        Artigos publicados pelo SHALOM.
+    </p>
+
+    <div id="admin-articles"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('articles')">
+
+            ＋ Adicionar artigo
+
+        </button>
+
+    </div>
+
+    <div id="articlesGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-documentaries"
+         class="page">
+
+    <h1 class="page-title">
+        🎞️ Documentários
+    </h1>
+
+    <p class="page-description">
+        Documentários selecionados.
+    </p>
+
+    <div id="admin-documentaries"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('documentaries')">
+
+            ＋ Adicionar documentário
+
+        </button>
+
+    </div>
+
+    <div id="documentariesGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-studies"
+         class="page">
+
+    <h1 class="page-title">
+        📖 Estudos
+    </h1>
+
+    <p class="page-description">
+        Estudos publicados no SHALOM.
+    </p>
+
+    <div id="admin-studies"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('studies')">
+
+            ＋ Adicionar estudo
+
+        </button>
+
+    </div>
+
+    <div id="studiesGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<section id="page-videos"
+         class="page">
+
+    <h1 class="page-title">
+        🎥 Vídeos
+    </h1>
+
+    <p class="page-description">
+        Vídeos gerais publicados no SHALOM.
+    </p>
+
+    <div id="admin-videos"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('videos')">
+
+            ＋ Adicionar vídeo
+
+        </button>
+
+    </div>
+
+    <div id="videosGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     LOJA
+===================================================== -->
+
+<section id="page-store"
+         class="page">
+
+    <h1 class="page-title">
+        🛒 Loja
+    </h1>
+
+    <p class="page-description">
+        Produtos disponíveis no SHALOM.
+    </p>
+
+    <div id="admin-store"
+         class="card hidden">
+
+        <button
+            class="btn"
+            onclick="showContentForm('products')">
+
+            ＋ Adicionar produto
+
+        </button>
+
+    </div>
+
+    <div id="productsGrid"
+         class="grid">
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     PERFIL
+===================================================== -->
+
+<section id="page-profile"
+         class="page">
+
+    <h1 class="page-title">
+        👤 Perfil
+    </h1>
+
+    <div class="card">
+
+        <h2 class="card-title">
+            Meu perfil
+        </h2>
+
+        <p>
+            <strong>Email:</strong>
+        </p>
+
+        <p
+            id="profileEmail"
+            style="color:#D4AF37;margin-top:7px;">
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     NOTIFICAÇÕES
+===================================================== -->
+
+<section id="page-notifications"
+         class="page">
+
+    <h1 class="page-title">
+        🔔 Notificações
+    </h1>
+
+    <div class="card">
+
+        <p style="color:#6B7A99;">
+            Nenhuma notificação no momento.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     ADMINISTRAÇÃO GERAL
+===================================================== -->
+
+<section id="page-admin"
+         class="page">
+
+    <h1 class="page-title">
+        🛡️ Administração
+    </h1>
+
+    <p class="page-description">
+        Administração geral do SHALOM.
+    </p>
+
+
+    <!-- ADMINISTRADORES DE COMUNIDADE -->
+
+    <div class="card">
+
+        <h2 class="card-title">
+            👥 Administradores de Comunidade
+        </h2>
+
+        <p style="color:#6B7A99;margin-bottom:20px;">
+
+            O administrador geral pode definir
+            quem administra cada comunidade.
+
+        </p>
+
+
+        <div class="form-group">
+
+            <label>
+                Comunidade
+            </label>
+
+            <select
+                id="adminCommunitySelect">
+
+                <option value="">
+                    Selecione uma comunidade
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Email do administrador
+            </label>
+
+            <input
+                type="email"
+                id="communityAdminEmail"
+                placeholder="usuario@email.com">
+
+        </div>
+
+
+        <button
+            class="btn"
+            onclick="assignCommunityAdmin()">
+
+            Tornar administrador
+
+        </button>
+
+
+        <div
+            id="communityAdminsList"
+            style="margin-top:20px;">
         </div>
 
     </div>
 
 
-    <!-- SIDEBAR -->
+    <!-- ADMINISTRAÇÃO GERAL -->
 
-    <aside class="sidebar">
+    <div class="grid">
 
-        <div class="sidebar-title">
-            Principal
-        </div>
+        <div class="card">
 
-        <button
-            class="nav-item active"
-            onclick="openPage('home',this)"
-        >
-            🏠 Início
-        </button>
+            <h3 class="card-title">
+                👥 Usuários
+            </h3>
 
-        <button
-            class="nav-item"
-            onclick="openPage('communities',this)"
-        >
-            👥 Comunidades
-        </button>
-
-        <button
-            class="nav-item"
-            onclick="openPage('profile',this)"
-        >
-            👤 Perfil
-        </button>
-
-        <button
-            class="nav-item"
-            onclick="openPage('notifications',this)"
-        >
-            🔔 Notificações
-        </button>
-
-
-        <div class="sidebar-title">
-            Conteúdo
-        </div>
-
-        <button
-            class="nav-item"
-            onclick="openPage('films',this)"
-        >
-            🎬 Filmes
-        </button>
-
-        <button
-            class="nav-item"
-            onclick="openPage('series',this)"
-        >
-            📺 Séries
-        </button>
-
-        <button
-            class="nav-item"
-            onclick="openPage('books',this)"
-        >
-            📚 Livros
-        </button>
-
-        <button
-            class="nav-item"
-            onclick="openPage('articles',this)"
-        >
-            📰 Artigos
-        </button>
-
-        <button
-            class="nav-item"
-            onclick="openPage('documentaries',this)"
-        >
-            🎞️ Documentários
-        </button>
-
-        <button
-            class="nav-item"
-            onclick="openPage('studies',this)"
-        >
-            📖 Estudos
-        </button>
-
-        <button
-            class="nav-item"
-            onclick="openPage('videos',this)"
-        >
-            🎥 Vídeos
-        </button>
-
-
-        <div class="sidebar-title">
-            Loja
-        </div>
-
-        <button
-            class="nav-item"
-            onclick="openPage('store',this)"
-        >
-            🛒 Loja
-        </button>
-
-
-        <div
-            id="adminMenu"
-            class="hidden"
-        >
-
-            <div class="sidebar-title">
-                Administração
-            </div>
-
-            <button
-                class="nav-item"
-                onclick="openPage('admin',this)"
-            >
-                🛡️ Administração
-            </button>
+            <p style="color:#6B7A99;">
+                Gestão dos usuários.
+            </p>
 
         </div>
 
-    </aside>
+        <div class="card">
+
+            <h3 class="card-title">
+                🏘️ Comunidades
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão das comunidades.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                🚨 Moderação
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Denúncias e moderação.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                🛒 Loja
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão da loja.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                📚 Conteúdo
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão do catálogo.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                ⚙️ Configurações
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Configurações da plataforma.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
 
 
-    <!-- CONTEÚDO -->
-
-    <main class="main">
-
-        <div id="pageContent"></div>
-
-    </main>
+</main>
 
 </div>
 
-
-<div
-    id="toast"
-    class="toast hidden"
-></div>
+</section>
 
 
 <!-- =====================================================
@@ -789,7 +2077,8 @@ button {
 
 import {
     initializeApp
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+} from
+"https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
 import {
     getAuth,
@@ -797,21 +2086,25 @@ import {
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+} from
+"https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 import {
     getFirestore,
     collection,
-    doc,
-    getDoc,
-    getDocs,
     addDoc,
-    setDoc,
+    getDocs,
+    getDoc,
+    doc,
+    updateDoc,
     deleteDoc,
     query,
-    orderBy,
+    where,
+    arrayUnion,
+    arrayRemove,
     serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+} from
+"https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 
 /* =====================================================
@@ -821,229 +2114,146 @@ import {
 const firebaseConfig = {
 
     apiKey:
-        "AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",
+    "AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",
 
     authDomain:
-        "shalom-a1626.firebaseapp.com",
+    "shalom-a1626.firebaseapp.com",
 
     projectId:
-        "shalom-a1626",
+    "shalom-a1626",
 
     storageBucket:
-        "shalom-a1626.firebasestorage.app",
+    "shalom-a1626.firebasestorage.app",
 
     messagingSenderId:
-        "746323382164",
+    "746323382164",
 
     appId:
-        "1:746323382164:web:1bca1a1df5f5ec6f2b8981",
+    "1:746323382164:web:1bca1a1df5f5ec6f2b8981",
 
     measurementId:
-        "G-QXD13ER8SK"
+    "G-QXD13ER8SK"
+};
+
+
+const app =
+    initializeApp(firebaseConfig);
+
+const auth =
+    getAuth(app);
+
+const db =
+    getFirestore(app);
+
+
+/* =====================================================
+   PERMISSÕES
+===================================================== */
+
+const ADMIN_EMAIL =
+    "felucius@gmail.com";
+
+let isAdmin = false;
+
+let currentCommunityId = null;
+
+let currentCommunityIsAdmin = false;
+
+
+/* =====================================================
+   TIPOS DE CONTEÚDO
+===================================================== */
+
+const contentTypes = {
+
+    films: {
+        collection: "films",
+        title: "Filme",
+        icon: "🎬",
+        adminId: "admin-films"
+    },
+
+    series: {
+        collection: "series",
+        title: "Série",
+        icon: "📺",
+        adminId: "admin-series"
+    },
+
+    books: {
+        collection: "books",
+        title: "Livro",
+        icon: "📚",
+        adminId: "admin-books"
+    },
+
+    articles: {
+        collection: "articles",
+        title: "Artigo",
+        icon: "📰",
+        adminId: "admin-articles"
+    },
+
+    documentaries: {
+        collection: "documentaries",
+        title: "Documentário",
+        icon: "🎞️",
+        adminId: "admin-documentaries"
+    },
+
+    studies: {
+        collection: "studies",
+        title: "Estudo",
+        icon: "📖",
+        adminId: "admin-studies"
+    },
+
+    videos: {
+        collection: "videos",
+        title: "Vídeo",
+        icon: "🎥",
+        adminId: "admin-videos"
+    },
+
+    products: {
+        collection: "products",
+        title: "Produto",
+        icon: "🛒",
+        adminId: "admin-store"
+    }
 
 };
 
 
 /* =====================================================
-   INICIALIZAÇÃO
+   LOGIN
 ===================================================== */
 
-const app = initializeApp(firebaseConfig);
-
-const auth = getAuth(app);
-
-const db = getFirestore(app);
-
-
-/* =====================================================
-   ADMINISTRADOR
-===================================================== */
-
-/*
-   IMPORTANTE:
-
-   A administração não será liberada automaticamente
-   para qualquer usuário.
-
-   Para usar a área administrativa, coloque aqui o
-   e-mail do administrador da plataforma.
-
-   Não altere mais nada no código.
-*/
-
-const ADMIN_EMAIL = "";
-
-
-/* =====================================================
-   ESTADO
-===================================================== */
-
-let currentUser = null;
-
-let currentCommunity = null;
-
-
-/* =====================================================
-   FUNÇÕES AUXILIARES
-===================================================== */
-
-function $(id) {
-
-    return document.getElementById(id);
-
-}
-
-
-function escapeHtml(value) {
-
-    if (value === null || value === undefined) {
-        return "";
-    }
-
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-
-}
-
-
-function showToast(message) {
-
-    const toast = $("toast");
-
-    toast.textContent = message;
-
-    toast.classList.remove("hidden");
-
-    setTimeout(() => {
-
-        toast.classList.add("hidden");
-
-    }, 3500);
-
-}
-
-
-function showError(id, message) {
-
-    const element = $(id);
-
-    if (!element) return;
-
-    element.textContent = message;
-
-    element.classList.remove("hidden");
-
-}
-
-
-function hideError(id) {
-
-    const element = $(id);
-
-    if (!element) return;
-
-    element.textContent = "";
-
-    element.classList.add("hidden");
-
-}
-
-
-function firebaseError(error) {
-
-    console.error(error);
-
-    if (!error) {
-        return "Ocorreu um erro.";
-    }
-
-    switch (error.code) {
-
-        case "auth/invalid-credential":
-            return "Email ou senha incorretos.";
-
-        case "auth/invalid-email":
-            return "O email informado é inválido.";
-
-        case "auth/email-already-in-use":
-            return "Este email já está cadastrado.";
-
-        case "auth/weak-password":
-            return "A senha precisa ter pelo menos 6 caracteres.";
-
-        case "auth/user-not-found":
-            return "Usuário não encontrado.";
-
-        case "auth/wrong-password":
-            return "Senha incorreta.";
-
-        case "auth/network-request-failed":
-            return "Falha de conexão com a internet.";
-
-        case "permission-denied":
-            return "O Firebase bloqueou esta operação por falta de permissão.";
-
-        default:
-            return error.message || "Ocorreu um erro no Firebase.";
-
-    }
-
-}
-
-
-/* =====================================================
-   AUTENTICAÇÃO
-===================================================== */
-
-window.showSignup = function() {
-
-    hideError("loginError");
-
-    hideError("signupError");
-
-    $("loginForm").classList.add("hidden");
-
-    $("signupForm").classList.remove("hidden");
-
-};
-
-
-window.showLogin = function() {
-
-    hideError("loginError");
-
-    hideError("signupError");
-
-    $("signupForm").classList.add("hidden");
-
-    $("loginForm").classList.remove("hidden");
-
-};
-
-
-window.handleLogin = async function() {
-
-    hideError("loginError");
+window.handleLogin =
+async function() {
 
     const email =
-        $("loginEmail").value.trim();
+        document
+        .getElementById("loginEmail")
+        .value
+        .trim();
 
     const password =
-        $("loginPassword").value;
+        document
+        .getElementById("loginPassword")
+        .value;
+
 
     if (!email || !password) {
 
         showError(
-            "loginError",
-            "Informe seu email e sua senha."
+            "Preencha email e senha.",
+            "loginError"
         );
 
         return;
     }
+
 
     try {
 
@@ -1055,519 +2265,359 @@ window.handleLogin = async function() {
 
     } catch (error) {
 
-        showError(
-            "loginError",
-            firebaseError(error)
-        );
-
-    }
-
-};
-
-
-window.handleSignup = async function() {
-
-    hideError("signupError");
-
-    const email =
-        $("signupEmail").value.trim();
-
-    const password =
-        $("signupPassword").value;
-
-    if (!email || !password) {
-
-        showError(
-            "signupError",
-            "Informe email e senha."
-        );
-
-        return;
-    }
-
-    if (password.length < 6) {
-
-        showError(
-            "signupError",
-            "A senha precisa ter pelo menos 6 caracteres."
-        );
-
-        return;
-    }
-
-    try {
-
-        const credential =
-            await createUserWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
-
-        await setDoc(
-            doc(
-                db,
-                "users",
-                credential.user.uid
-            ),
-            {
-                email: email,
-                createdAt: serverTimestamp()
-            },
-            {
-                merge: true
-            }
-        );
-
-    } catch (error) {
-
-        showError(
-            "signupError",
-            firebaseError(error)
-        );
-
-    }
-
-};
-
-
-window.logout = async function() {
-
-    try {
-
-        await signOut(auth);
-
-    } catch (error) {
-
         console.error(error);
 
+        showError(
+            "Email ou senha incorretos.",
+            "loginError"
+        );
     }
 
 };
 
 
 /* =====================================================
-   ADMIN
+   CADASTRO
 ===================================================== */
 
-function isAdmin() {
+window.handleSignup =
+async function() {
 
-    if (!currentUser) {
-        return false;
+    const email =
+        document
+        .getElementById("signupEmail")
+        .value
+        .trim();
+
+    const password =
+        document
+        .getElementById("signupPassword")
+        .value;
+
+
+    if (!email || !password) {
+
+        showError(
+            "Preencha todos os campos.",
+            "signupError"
+        );
+
+        return;
     }
 
-    if (
-        ADMIN_EMAIL &&
-        currentUser.email.toLowerCase()
-            === ADMIN_EMAIL.toLowerCase()
-    ) {
-        return true;
+
+    if (password.length < 6) {
+
+        showError(
+            "A senha precisa ter pelo menos 6 caracteres.",
+            "signupError"
+        );
+
+        return;
     }
 
-    return false;
 
-}
+    try {
 
+        await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
 
-function updateAdminMenu() {
+    } catch (error) {
 
-    const menu = $("adminMenu");
+        console.error(error);
 
-    if (isAdmin()) {
-
-        menu.classList.remove("hidden");
-
-    } else {
-
-        menu.classList.add("hidden");
-
+        showError(
+            "Erro ao criar conta: " +
+            error.message,
+            "signupError"
+        );
     }
 
-}
+};
+
+
+/* =====================================================
+   TELAS LOGIN / CADASTRO
+===================================================== */
+
+window.showSignup =
+function() {
+
+    document
+        .getElementById("loginForm")
+        .classList
+        .add("hidden");
+
+    document
+        .getElementById("signupForm")
+        .classList
+        .remove("hidden");
+
+};
+
+
+window.showLogin =
+function() {
+
+    document
+        .getElementById("signupForm")
+        .classList
+        .add("hidden");
+
+    document
+        .getElementById("loginForm")
+        .classList
+        .remove("hidden");
+
+};
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+window.logout =
+async function() {
+
+    await signOut(auth);
+
+};
 
 
 /* =====================================================
    NAVEGAÇÃO
 ===================================================== */
 
-window.openPage = function(page, button) {
+window.openPage =
+function(page, button) {
+
+    document
+        .querySelectorAll(".page")
+        .forEach(
+            pageElement =>
+                pageElement
+                .classList
+                .remove("active")
+        );
+
+
+    const target =
+        document.getElementById(
+            "page-" + page
+        );
+
+
+    if (target) {
+
+        target
+            .classList
+            .add("active");
+
+    }
+
 
     document
         .querySelectorAll(".nav-item")
-        .forEach(item => {
+        .forEach(
+            item =>
+                item
+                .classList
+                .remove("active")
+        );
 
-            item.classList.remove("active");
-
-        });
 
     if (button) {
-        button.classList.add("active");
-    }
 
-    renderPage(page);
-
-};
-
-
-window.openPageByName = function(page) {
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(item => {
-
-            item.classList.remove("active");
-
-        });
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(item => {
-
-            const text =
-                item.getAttribute("onclick") || "";
-
-            if (
-                text.includes("'" + page + "'")
-            ) {
-
-                item.classList.add("active");
-
-            }
-
-        });
-
-    renderPage(page);
-
-};
-
-
-async function renderPage(page) {
-
-    const container = $("pageContent");
-
-    currentCommunity = null;
-
-    switch (page) {
-
-        case "home":
-            await renderHome();
-            break;
-
-        case "communities":
-            await renderCommunities();
-            break;
-
-        case "profile":
-            renderProfile();
-            break;
-
-        case "notifications":
-            renderNotifications();
-            break;
-
-        case "films":
-            await renderContentPage(
-                "films",
-                "🎬 Filmes",
-                "Filmes selecionados pelo SHALOM."
-            );
-            break;
-
-        case "series":
-            await renderContentPage(
-                "series",
-                "📺 Séries",
-                "Séries selecionadas pelo SHALOM."
-            );
-            break;
-
-        case "books":
-            await renderContentPage(
-                "books",
-                "📚 Livros",
-                "Biblioteca do SHALOM."
-            );
-            break;
-
-        case "articles":
-            await renderContentPage(
-                "articles",
-                "📰 Artigos",
-                "Artigos publicados pelo SHALOM."
-            );
-            break;
-
-        case "documentaries":
-            await renderContentPage(
-                "documentaries",
-                "🎞️ Documentários",
-                "Documentários selecionados."
-            );
-            break;
-
-        case "studies":
-            await renderContentPage(
-                "studies",
-                "📖 Estudos",
-                "Estudos publicados no SHALOM."
-            );
-            break;
-
-        case "videos":
-            await renderContentPage(
-                "videos",
-                "🎥 Vídeos",
-                "Vídeos gerais publicados no SHALOM."
-            );
-            break;
-
-        case "store":
-            await renderContentPage(
-                "products",
-                "🛒 Loja",
-                "Produtos disponíveis no SHALOM."
-            );
-            break;
-
-        case "admin":
-
-            if (!isAdmin()) {
-
-                container.innerHTML = `
-                    <div class="card">
-                        <h2>Acesso restrito</h2>
-                        <p>
-                            Esta área é exclusiva do
-                            administrador geral.
-                        </p>
-                    </div>
-                `;
-
-                return;
-            }
-
-            await renderAdmin();
-            break;
-
-        default:
-            await renderHome();
+        button
+            .classList
+            .add("active");
 
     }
 
-}
+
+    if (page === "home") {
+
+        loadHome();
+
+    }
+
+
+    if (page === "communities") {
+
+        loadCommunities();
+
+    }
+
+
+    if (
+        Object.keys(contentTypes)
+        .includes(page)
+    ) {
+
+        loadContent(page);
+
+    }
+
+
+    if (page === "admin") {
+
+        if (isAdmin) {
+
+            loadAdminCommunities();
+
+            loadCommunityAdmins();
+
+        }
+
+    }
+
+};
 
 
 /* =====================================================
-   HOME
+   CRIAR COMUNIDADE
 ===================================================== */
 
-async function renderHome() {
+window.showCreateCommunity =
+function() {
 
-    $("pageContent").innerHTML = `
+    document
+        .getElementById(
+            "createCommunityBox"
+        )
+        .classList
+        .toggle("hidden");
 
-        <div class="home-header">
-
-            <h1 class="page-title">
-                ש SHALOM
-            </h1>
-
-            <p class="page-description">
-                Conteúdo selecionado para você.
-            </p>
-
-        </div>
-
-        <section class="home-section">
-
-            <div class="home-section-header">
-
-                <h2>
-                    ⭐ Destaques
-                </h2>
-
-            </div>
-
-            <div
-                id="homeFeatured"
-                class="home-carousel"
-            >
-                <div class="home-loading">
-                    Carregando...
-                </div>
-            </div>
-
-        </section>
-
-        ${homeSection(
-            "films",
-            "🎬 Filmes",
-            "homeFilms"
-        )}
-
-        ${homeSection(
-            "series",
-            "📺 Séries",
-            "homeSeries"
-        )}
-
-        ${homeSection(
-            "documentaries",
-            "🎞️ Documentários",
-            "homeDocumentaries"
-        )}
-
-        ${homeSection(
-            "books",
-            "📚 Livros",
-            "homeBooks"
-        )}
-
-        ${homeSection(
-            "articles",
-            "📰 Artigos",
-            "homeArticles"
-        )}
-
-        ${homeSection(
-            "studies",
-            "📖 Estudos",
-            "homeStudies"
-        )}
-
-        ${homeSection(
-            "videos",
-            "🎥 Vídeos",
-            "homeVideos"
-        )}
-
-        ${homeSection(
-            "products",
-            "🛒 Loja",
-            "homeProducts"
-        )}
-
-    `;
-
-    await loadHome();
-
-}
+};
 
 
-function homeSection(
-    page,
-    title,
-    id
-) {
+window.addCommunity =
+async function() {
 
-    return `
+    if (!isAdmin) {
 
-        <section class="home-section">
+        alert(
+            "Somente o administrador geral pode criar comunidades."
+        );
 
-            <div class="home-section-header">
-
-                <h2>
-                    ${title}
-                </h2>
-
-                <button
-                    class="home-see-all"
-                    onclick="openPageByName('${page}')"
-                >
-                    Ver todos →
-                </button>
-
-            </div>
-
-            <div
-                id="${id}"
-                class="home-carousel"
-            >
-                <div class="home-loading">
-                    Carregando...
-                </div>
-            </div>
-
-        </section>
-
-    `;
-
-}
+        return;
+    }
 
 
-async function loadHome() {
+    const name =
+        document
+        .getElementById(
+            "communityName"
+        )
+        .value
+        .trim();
 
-    const categories = [
 
-        {
-            collection: "films",
-            element: "homeFilms"
-        },
+    const description =
+        document
+        .getElementById(
+            "communityDescription"
+        )
+        .value
+        .trim();
 
-        {
-            collection: "series",
-            element: "homeSeries"
-        },
 
-        {
-            collection: "documentaries",
-            element: "homeDocumentaries"
-        },
+    if (!name) {
 
-        {
-            collection: "books",
-            element: "homeBooks"
-        },
+        alert(
+            "Digite o nome da comunidade."
+        );
 
-        {
-            collection: "articles",
-            element: "homeArticles"
-        },
+        return;
+    }
 
-        {
-            collection: "studies",
-            element: "homeStudies"
-        },
 
-        {
-            collection: "videos",
-            element: "homeVideos"
-        },
+    try {
 
-        {
-            collection: "products",
-            element: "homeProducts"
-        }
+        await addDoc(
+            collection(
+                db,
+                "communities"
+            ),
+            {
 
-    ];
+                name,
 
-    for (
-        const category
-        of categories
-    ) {
+                description,
 
-        await loadHomeCategory(
-            category.collection,
-            category.element
+                createdBy:
+                    auth.currentUser.email,
+
+                createdAt:
+                    serverTimestamp(),
+
+                members:
+                    [
+                        auth.currentUser.email
+                    ],
+
+                pendingMembers:
+                    []
+
+            }
+        );
+
+
+        document
+        .getElementById(
+            "communityName"
+        )
+        .value = "";
+
+
+        document
+        .getElementById(
+            "communityDescription"
+        )
+        .value = "";
+
+
+        alert(
+            "Comunidade criada com sucesso."
+        );
+
+
+        loadCommunities();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao criar comunidade: " +
+            error.message
         );
 
     }
 
-    await loadFeatured();
-
-}
+};
 
 
-async function loadHomeCategory(
-    collectionName,
-    elementId
-) {
+/* =====================================================
+   CARREGAR COMUNIDADES
+===================================================== */
 
-    const element =
-        $(elementId);
+async function loadCommunities() {
 
-    if (!element) {
-        return;
-    }
+    const list =
+        document
+        .getElementById(
+            "communitiesList"
+        );
+
+
+    list.innerHTML =
+        "<p style='color:#6B7A99;'>Carregando...</p>";
+
 
     try {
 
@@ -1575,52 +2625,188 @@ async function loadHomeCategory(
             await getDocs(
                 collection(
                     db,
-                    collectionName
+                    "communities"
                 )
             );
 
-        const items =
-            snapshot.docs
-                .slice(0, 8)
-                .map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
 
-        if (!items.length) {
+        list.innerHTML = "";
 
-            element.innerHTML = `
-                <div class="empty">
-                    Nenhum conteúdo disponível.
-                </div>
+
+        if (snapshot.empty) {
+
+            list.innerHTML =
+            `
+            <div class="card">
+
+                <p style="color:#6B7A99;">
+                    Nenhuma comunidade disponível.
+                </p>
+
+            </div>
             `;
 
             return;
         }
 
-        element.innerHTML =
-            items
-                .map(item =>
-                    contentCard(
-                        item,
-                        collectionName
-                    )
-                )
-                .join("");
+
+        for (
+            const communityDoc
+            of snapshot.docs
+        ) {
+
+            const data =
+                communityDoc.data();
+
+            const id =
+                communityDoc.id;
+
+            const members =
+                data.members || [];
+
+            const pending =
+                data.pendingMembers || [];
+
+            const email =
+                auth.currentUser.email;
+
+            const member =
+                members.includes(email);
+
+            const pendingRequest =
+                pending.includes(email);
+
+            const communityAdmin =
+                await isCommunityAdmin(id);
+
+
+            let action = "";
+
+
+            if (member) {
+
+                action +=
+                `
+                <span class="badge badge-success">
+                    ✓ Membro
+                </span>
+                `;
+
+            }
+            else if (pendingRequest) {
+
+                action +=
+                `
+                <span class="badge badge-pending">
+                    ⏳ Solicitação pendente
+                </span>
+                `;
+
+            }
+            else {
+
+                action +=
+                `
+                <button
+                    class="btn btn-small"
+                    onclick="requestJoin('${id}')">
+
+                    Solicitar entrada
+
+                </button>
+                `;
+
+            }
+
+
+            if (communityAdmin) {
+
+                action +=
+                `
+                <span class="badge badge-admin">
+                    🛡️ Administrador
+                </span>
+                `;
+
+            }
+
+
+            if (member) {
+
+                action +=
+                `
+                <button
+                    class="btn btn-small"
+                    onclick="openCommunity('${id}')">
+
+                    Abrir
+
+                </button>
+                `;
+
+            }
+
+
+            if (
+                data.createdBy === email ||
+                isAdmin
+            ) {
+
+                action +=
+                `
+                <button
+                    class="btn btn-small btn-secondary"
+                    onclick="viewRequests('${id}')">
+
+                    🔔 Solicitações
+
+                </button>
+                `;
+
+            }
+
+
+            list.innerHTML +=
+            `
+            <div class="community-card">
+
+                <h3>
+                    ${escapeHtml(data.name)}
+                </h3>
+
+                <p>
+                    ${escapeHtml(
+                        data.description ||
+                        "Sem descrição."
+                    )}
+                </p>
+
+                <p>
+                    👥 ${members.length} membros
+                </p>
+
+                <div>
+                    ${action}
+                </div>
+
+            </div>
+            `;
+
+        }
+
 
     } catch (error) {
 
-        console.error(
-            "Erro carregando",
-            collectionName,
-            error
-        );
+        console.error(error);
 
-        element.innerHTML = `
-            <div class="empty">
-                Não foi possível carregar
-                este conteúdo.
-            </div>
+        list.innerHTML =
+        `
+        <div class="error">
+
+            Erro ao carregar comunidades:
+            ${escapeHtml(error.message)}
+
+        </div>
         `;
 
     }
@@ -1628,25 +2814,2645 @@ async function loadHomeCategory(
 }
 
 
-async function loadFeatured() {
+/* =====================================================
+   SOLICITAR ENTRADA
+===================================================== */
 
-    const element =
-        $("homeFeatured");
+window.requestJoin =
+async function(id) {
 
-    if (!element) {
+    try {
+
+        await updateDoc(
+            doc(
+                db,
+                "communities",
+                id
+            ),
+            {
+
+                pendingMembers:
+                    arrayUnion(
+                        auth.currentUser.email
+                    )
+
+            }
+        );
+
+
+        alert(
+            "Solicitação enviada."
+        );
+
+
+        loadCommunities();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao solicitar entrada: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =====================================================
+   SOLICITAÇÕES
+===================================================== */
+
+window.viewRequests =
+async function(id) {
+
+    try {
+
+        const snap =
+            await getDoc(
+                doc(
+                    db,
+                    "communities",
+                    id
+                )
+            );
+
+
+        if (!snap.exists()) {
+
+            alert(
+                "Comunidade não encontrada."
+            );
+
+            return;
+        }
+
+
+        const data =
+            snap.data();
+
+
+        const email =
+            auth.currentUser.email;
+
+
+        const canManage =
+            isAdmin ||
+            data.createdBy === email;
+
+
+        if (!canManage) {
+
+            alert(
+                "Você não administra esta comunidade."
+            );
+
+            return;
+        }
+
+
+        const pending =
+            data.pendingMembers || [];
+
+
+        if (pending.length === 0) {
+
+            alert(
+                "Não há solicitações pendentes."
+            );
+
+            return;
+        }
+
+
+        let html =
+        `
+        <div class="card">
+
+            <h2 class="card-title">
+                🔔 Solicitações
+            </h2>
+        `;
+
+
+        pending.forEach(
+            pendingEmail => {
+
+                html +=
+                `
+                <div
+                    style="
+                    background:#0A0E27;
+                    padding:12px;
+                    margin-bottom:10px;
+                    border-radius:6px;
+                    ">
+
+                    <strong>
+                        ${escapeHtml(
+                            pendingEmail
+                        )}
+                    </strong>
+
+                    <br>
+
+                    <button
+                        class="btn btn-small"
+                        onclick="approveMember(
+                            '${id}',
+                            '${encodeURIComponent(
+                                pendingEmail
+                            )}'
+                        )">
+
+                        Aprovar
+
+                    </button>
+
+                    <button
+                        class="btn btn-small btn-danger"
+                        onclick="rejectMember(
+                            '${id}',
+                            '${encodeURIComponent(
+                                pendingEmail
+                            )}'
+                        )">
+
+                        Recusar
+
+                    </button>
+
+                </div>
+                `;
+
+            }
+        );
+
+
+        html += "</div>";
+
+
+        document
+            .getElementById(
+                "communitiesList"
+            )
+            .innerHTML = html;
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =====================================================
+   APROVAR
+===================================================== */
+
+window.approveMember =
+async function(
+    communityId,
+    encodedEmail
+) {
+
+    const email =
+        decodeURIComponent(
+            encodedEmail
+        );
+
+
+    try {
+
+        await updateDoc(
+            doc(
+                db,
+                "communities",
+                communityId
+            ),
+            {
+
+                members:
+                    arrayUnion(email),
+
+                pendingMembers:
+                    arrayRemove(email)
+
+            }
+        );
+
+
+        alert(
+            "Membro aprovado."
+        );
+
+
+        loadCommunities();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao aprovar: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =====================================================
+   RECUSAR
+===================================================== */
+
+window.rejectMember =
+async function(
+    communityId,
+    encodedEmail
+) {
+
+    const email =
+        decodeURIComponent(
+            encodedEmail
+        );
+
+
+    try {
+
+        await updateDoc(
+            doc(
+                db,
+                "communities",
+                communityId
+            ),
+            {
+
+                pendingMembers:
+                    arrayRemove(email)
+
+            }
+        );
+
+
+        alert(
+            "Solicitação recusada."
+        );
+
+
+        loadCommunities();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao recusar: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =====================================================
+   VERIFICAR ADMINISTRADOR DE COMUNIDADE
+===================================================== */
+
+async function isCommunityAdmin(
+    communityId
+) {
+
+    if (!auth.currentUser) {
+
+        return false;
+
+    }
+
+
+    if (isAdmin) {
+
+        return true;
+
+    }
+
+
+    try {
+
+        const q =
+            query(
+                collection(
+                    db,
+                    "communityAdmins"
+                ),
+                where(
+                    "communityId",
+                    "==",
+                    communityId
+                ),
+                where(
+                    "userEmail",
+                    "==",
+                    auth.currentUser.email
+                )
+            );
+
+
+        const snapshot =
+            await getDocs(q);
+
+
+        return !snapshot.empty;
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro verificando administrador:",
+            error
+        );
+
+        return false;
+
+    }
+
+}
+
+
+/* =====================================================
+   ABRIR COMUNIDADE
+===================================================== */
+
+window.openCommunity =
+async function(id) {
+
+    try {
+
+        const snap =
+            await getDoc(
+                doc(
+                    db,
+                    "communities",
+                    id
+                )
+            );
+
+
+        if (!snap.exists()) {
+
+            alert(
+                "Comunidade não encontrada."
+            );
+
+            return;
+        }
+
+
+        const data =
+            snap.data();
+
+
+        const email =
+            auth.currentUser.email;
+
+
+        if (
+            !(
+                data.members ||
+                []
+            ).includes(email)
+        ) {
+
+            alert(
+                "Você ainda não é membro desta comunidade."
+            );
+
+            return;
+        }
+
+
+        currentCommunityId = id;
+
+
+        currentCommunityIsAdmin =
+            await isCommunityAdmin(id);
+
+
+        document
+            .getElementById(
+                "communityArea"
+            )
+            .classList
+            .remove("hidden");
+
+
+        document
+            .getElementById(
+                "communityAreaTitle"
+            )
+            .textContent =
+                "🏘️ " +
+                data.name;
+
+
+        document
+            .getElementById(
+                "communityAreaDescription"
+            )
+            .textContent =
+                data.description ||
+                "";
+
+
+        if (
+            currentCommunityIsAdmin
+        ) {
+
+            document
+                .getElementById(
+                    "communityStudyAdminTools"
+                )
+                .classList
+                .remove("hidden");
+
+        } else {
+
+            document
+                .getElementById(
+                    "communityStudyAdminTools"
+                )
+                .classList
+                .add("hidden");
+
+        }
+
+
+        loadCommunityStudyVideos(id);
+
+
+        document
+            .getElementById(
+                "communityArea"
+            )
+            .scrollIntoView({
+                behavior: "smooth"
+            });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao abrir comunidade: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =====================================================
+   VÍDEOS DE ESTUDO
+===================================================== */
+
+window.showStudyVideoForm =
+function() {
+
+    if (!currentCommunityIsAdmin) {
+
+        alert(
+            "Você não possui permissão."
+        );
+
         return;
     }
 
-    const collections = [
-        "films",
-        "series",
-        "books",
-        "documentaries"
-    ];
 
-    let items = [];
+    document
+        .getElementById(
+            "studyVideoForm"
+        )
+        .classList
+        .remove("hidden");
+
+};
+
+
+window.hideStudyVideoForm =
+function() {
+
+    document
+        .getElementById(
+            "studyVideoForm"
+        )
+        .classList
+        .add("hidden");
+
+};
+
+
+window.saveStudyVideo =
+async function() {
+
+    if (
+        !currentCommunityIsAdmin ||
+        !currentCommunityId
+    ) {
+
+        alert(
+            "Você não possui permissão."
+        );
+
+        return;
+    }
+
+
+    const title =
+        document
+        .getElementById(
+            "studyVideoTitle"
+        )
+        .value
+        .trim();
+
+
+    const description =
+        document
+        .getElementById(
+            "studyVideoDescription"
+        )
+        .value
+        .trim();
+
+
+    const url =
+        document
+        .getElementById(
+            "studyVideoUrl"
+        )
+        .value
+        .trim();
+
+
+    if (!title) {
+
+        alert(
+            "Digite o título."
+        );
+
+        return;
+    }
+
+
+    if (!url) {
+
+        alert(
+            "Digite o link do vídeo."
+        );
+
+        return;
+    }
+
 
     try {
+
+        await addDoc(
+            collection(
+                db,
+                "communityStudyVideos"
+            ),
+            {
+
+                communityId:
+                    currentCommunityId,
+
+                title,
+
+                description,
+
+                url,
+
+                createdBy:
+                    auth.currentUser.email,
+
+                createdAt:
+                    serverTimestamp()
+
+            }
+        );
+
+
+        document
+            .getElementById(
+                "studyVideoTitle"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "studyVideoDescription"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "studyVideoUrl"
+            )
+            .value = "";
+
+
+        hideStudyVideoForm();
+
+
+        await loadCommunityStudyVideos(
+            currentCommunityId
+        );
+
+
+        alert(
+            "Vídeo de estudo adicionado."
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao adicionar vídeo: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+async function loadCommunityStudyVideos(
+    communityId
+) {
+
+    const container =
+        document
+        .getElementById(
+            "communityStudyVideos"
+        );
+
+
+    container.innerHTML =
+        "<p style='color:#6B7A99;'>Carregando vídeos...</p>";
+
+
+    try {
+
+        const q =
+            query(
+                collection(
+                    db,
+                    "communityStudyVideos"
+                ),
+                where(
+                    "communityId",
+                    "==",
+                    communityId
+                )
+            );
+
+
+        const snapshot =
+            await getDocs(q);
+
+
+        container.innerHTML = "";
+
+
+        if (snapshot.empty) {
+
+            container.innerHTML =
+            `
+            <div class="card">
+
+                <p style="color:#6B7A99;">
+                    Ainda não existem vídeos
+                    de estudos nesta comunidade.
+                </p>
+
+            </div>
+            `;
+
+            return;
+        }
+
+
+        snapshot.forEach(
+            videoDoc => {
+
+                const data =
+                    videoDoc.data();
+
+
+                container.innerHTML +=
+                `
+                <div class="card">
+
+                    <h3 class="card-title">
+
+                        🎥
+                        ${escapeHtml(
+                            data.title
+                        )}
+
+                    </h3>
+
+                    <p style="
+                        color:#B8BDD0;
+                        margin-bottom:12px;
+                    ">
+
+                        ${escapeHtml(
+                            data.description || ""
+                        )}
+
+                    </p>
+
+                    <button
+                        class="btn"
+                        onclick="openVideo(
+                            '${escapeAttribute(
+                                data.url
+                            )}'
+                        )">
+
+                        ▶ Assistir vídeo
+
+                    </button>
+
+                </div>
+                `;
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+        `
+        <div class="error">
+
+            Erro ao carregar vídeos:
+            ${escapeHtml(
+                error.message
+            )}
+
+        </div>
+        `;
+
+    }
+
+}
+
+
+window.openVideo =
+function(url) {
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+};
+
+
+/* =====================================================
+   CONTEÚDO GERAL
+   SOMENTE ADMINISTRADOR GERAL
+===================================================== */
+
+        
+            /* =====================================================
+   FORMULÁRIO DE CONTEÚDO
+   VERSÃO NOVA
+===================================================== */
+
+window.showContentForm =
+function(type) {
+
+    if (!isAdmin) {
+
+        alert(
+            "Somente o administrador geral pode adicionar conteúdo."
+        );
+
+        return;
+    }
+
+    const info =
+        contentTypes[type];
+
+    const page =
+        document.querySelector(
+            ".page.active"
+        );
+
+    if (!page) {
+        return;
+    }
+
+    const old =
+        document.getElementById(
+            "dynamicContentForm"
+        );
+
+    if (old) {
+        old.remove();
+    }
+
+    const form =
+        document.createElement("div");
+
+    form.id =
+        "dynamicContentForm";
+
+    form.className =
+        "card";
+
+    /*
+       CAMPOS ESPECÍFICOS PARA FILMES,
+       SÉRIES E DOCUMENTÁRIOS
+    */
+
+    const isVideoContent =
+        (
+            type === "films" ||
+            type === "series" ||
+            type === "documentaries"
+        );
+
+    form.innerHTML =
+    `
+    <h2 class="card-title">
+
+        ${info.icon}
+        Adicionar ${info.title}
+
+    </h2>
+
+
+    <div class="form-group">
+
+        <label>
+            Título
+        </label>
+
+        <input
+            type="text"
+            id="newContentTitle"
+            placeholder="Ex.: O Nome do Filme">
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            Descrição
+        </label>
+
+        <textarea
+            id="newContentDescription"
+            placeholder="Escreva uma descrição do conteúdo">
+        </textarea>
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            Capa / imagem
+        </label>
+
+        <input
+            type="url"
+            id="newContentImage"
+            placeholder="https://...">
+
+        <small style="
+            display:block;
+            color:#6B7A99;
+            margin-top:6px;
+        ">
+
+            URL de uma imagem para a capa.
+
+        </small>
+
+    </div>
+
+
+    ${
+        isVideoContent
+        ?
+        `
+
+        <div class="form-group">
+
+            <label>
+                URL do vídeo
+            </label>
+
+            <input
+                type="url"
+                id="newContentUrl"
+                placeholder="https://...">
+
+            <small style="
+                display:block;
+                color:#6B7A99;
+                margin-top:6px;
+            ">
+
+                Endereço do vídeo ou do player
+                autorizado para reprodução.
+
+            </small>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Tipo de reprodução
+            </label>
+
+            <select id="newContentPlayer">
+
+                <option value="embed">
+                    ▶ Player incorporado
+                </option>
+
+                <option value="external">
+                    🔗 Abrir externamente
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Categoria
+            </label>
+
+            <input
+                type="text"
+                id="newContentCategory"
+                placeholder="Ex.: História, Drama, Educação">
+
+        </div>
+
+
+        <div class="grid">
+
+            <div class="form-group">
+
+                <label>
+                    Ano
+                </label>
+
+                <input
+                    type="number"
+                    id="newContentYear"
+                    placeholder="2026">
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Duração
+                </label>
+
+                <input
+                    type="text"
+                    id="newContentDuration"
+                    placeholder="Ex.: 1h 45min">
+
+            </div>
+
+        </div>
+
+        `
+        :
+        `
+
+        <div class="form-group">
+
+            <label>
+                Link do conteúdo
+            </label>
+
+            <input
+                type="url"
+                id="newContentUrl"
+                placeholder="https://...">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Categoria
+            </label>
+
+            <input
+                type="text"
+                id="newContentCategory"
+                placeholder="Ex.: História, Torá, Literatura">
+
+        </div>
+
+        `
+    }
+
+
+    <div class="form-group">
+
+        <label>
+            Tipo de acesso
+        </label>
+
+        <select
+            id="newContentAccess"
+            onchange="updateContentPriceField()">
+
+            <option value="free">
+                🔓 Gratuito
+            </option>
+
+            <option value="subscription">
+                🔐 Por assinatura
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div
+        id="contentPriceBox"
+        class="form-group hidden">
+
+        <label>
+            Valor da assinatura
+        </label>
+
+        <input
+            type="number"
+            id="newContentPrice"
+            min="0"
+            step="0.01"
+            placeholder="Ex.: 19.90">
+
+        <small style="
+            display:block;
+            color:#6B7A99;
+            margin-top:6px;
+        ">
+
+            Neste momento o valor será apenas
+            registrado. O sistema de pagamento
+            será implementado posteriormente.
+
+        </small>
+
+    </div>
+
+
+    <div
+        id="contentFormMessage"
+        class="hidden">
+    </div>
+
+
+    <button
+        class="btn"
+        onclick="saveContent('${type}')">
+
+        💾 Salvar ${info.title}
+
+    </button>
+
+
+    <button
+        class="btn btn-secondary"
+        onclick="
+            document
+                .getElementById('dynamicContentForm')
+                ?.remove()
+        ">
+
+        Cancelar
+
+    </button>
+
+    `;
+
+
+    page.prepend(form);
+
+};
+
+
+/* =====================================================
+   MOSTRAR CAMPO DE PREÇO
+===================================================== */
+
+window.updateContentPriceField =
+function() {
+
+    const access =
+        document
+        .getElementById(
+            "newContentAccess"
+        );
+
+    const priceBox =
+        document
+        .getElementById(
+            "contentPriceBox"
+        );
+
+    if (!access || !priceBox) {
+        return;
+    }
+
+    if (
+        access.value ===
+        "subscription"
+    ) {
+
+        priceBox
+            .classList
+            .remove("hidden");
+
+    } else {
+
+        priceBox
+            .classList
+            .add("hidden");
+
+    }
+
+};
+
+
+/* =====================================================
+   SALVAR CONTEÚDO
+===================================================== */
+
+window.saveContent =
+async function(type) {
+
+    if (!isAdmin) {
+
+        alert(
+            "Somente o administrador geral pode adicionar conteúdo."
+        );
+
+        return;
+    }
+
+
+    const info =
+        contentTypes[type];
+
+
+    const title =
+        document
+        .getElementById(
+            "newContentTitle"
+        )
+        ?.value
+        .trim();
+
+
+    const description =
+        document
+        .getElementById(
+            "newContentDescription"
+        )
+        ?.value
+        .trim();
+
+
+    const image =
+        document
+        .getElementById(
+            "newContentImage"
+        )
+        ?.value
+        .trim();
+
+
+    const url =
+        document
+        .getElementById(
+            "newContentUrl"
+        )
+        ?.value
+        .trim();
+
+
+    const access =
+        document
+        .getElementById(
+            "newContentAccess"
+        )
+        ?.value;
+
+
+    const priceElement =
+        document
+        .getElementById(
+            "newContentPrice"
+        );
+
+
+    const price =
+        priceElement
+        ?
+        Number(
+            priceElement.value || 0
+        )
+        :
+        0;
+
+
+    const category =
+        document
+        .getElementById(
+            "newContentCategory"
+        )
+        ?.value
+        .trim();
+
+
+    const yearElement =
+        document
+        .getElementById(
+            "newContentYear"
+        );
+
+
+    const year =
+        yearElement
+        ?
+        Number(
+            yearElement.value || 0
+        )
+        :
+        0;
+
+
+    const duration =
+        document
+        .getElementById(
+            "newContentDuration"
+        )
+        ?.value
+        .trim();
+
+
+    const playerElement =
+        document
+        .getElementById(
+            "newContentPlayer"
+        );
+
+
+    const player =
+        playerElement
+        ?
+        playerElement.value
+        :
+        "external";
+
+
+    /* =========================
+       VALIDAÇÕES
+    ========================= */
+
+    if (!title) {
+
+        alert(
+            "Digite o título."
+        );
+
+        return;
+    }
+
+
+    if (!description) {
+
+        alert(
+            "Digite uma descrição."
+        );
+
+        return;
+    }
+
+
+    if (
+        type === "films" ||
+        type === "series" ||
+        type === "documentaries"
+    ) {
+
+        if (!url) {
+
+            alert(
+                "Informe a URL do vídeo."
+            );
+
+            return;
+        }
+
+    }
+
+
+    if (
+        access ===
+        "subscription" &&
+        price <= 0
+    ) {
+
+        alert(
+            "Informe um valor válido para a assinatura."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        /*
+           DADOS SALVOS NO FIRESTORE
+        */
+
+        const contentData = {
+
+            title,
+
+            description,
+
+            image,
+
+            url,
+
+            access,
+
+            price,
+
+            category,
+
+            year,
+
+            duration,
+
+            player,
+
+            type,
+
+            createdBy:
+                auth.currentUser.email,
+
+            createdAt:
+                serverTimestamp(),
+
+            active:
+                true,
+
+            featured:
+                false,
+
+            views:
+                0,
+
+            rating:
+                0,
+
+            ratingCount:
+                0
+
+        };
+
+
+        await addDoc(
+            collection(
+                db,
+                info.collection
+            ),
+            contentData
+        );
+
+
+        document
+            .getElementById(
+                "dynamicContentForm"
+            )
+            ?.remove();
+
+
+        alert(
+            info.title +
+            " adicionado com sucesso!"
+        );
+
+
+        /*
+           RECARREGA O CATÁLOGO
+        */
+
+        await loadContent(type);
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao salvar conteúdo:",
+            error
+        );
+
+
+        alert(
+            "Erro ao adicionar conteúdo: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+        
+
+
+/* =====================================================
+   CARREGAR CONTEÚDO
+===================================================== */
+
+async function loadContent(type) {
+
+    const info =
+        contentTypes[type];
+
+
+    const gridId =
+        type === "products"
+        ? "productsGrid"
+        : type + "Grid";
+
+
+    const grid =
+        document.getElementById(
+            gridId
+        );
+
+
+    if (!grid) {
+
+        return;
+
+    }
+
+
+    grid.innerHTML =
+        "<p style='color:#6B7A99;'>Carregando...</p>";
+
+
+    try {
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    info.collection
+                )
+            );
+
+
+        grid.innerHTML = "";
+
+
+        if (snapshot.empty) {
+
+            grid.innerHTML =
+            `
+            <div class="card">
+
+                <p style="color:#6B7A99;">
+
+                    Nenhum
+                    ${info.title.toLowerCase()}
+                    adicionado ainda.
+
+                </p>
+
+            </div>
+            `;
+
+            return;
+
+        }
+
+
+        snapshot.forEach(
+            contentDoc => {
+
+                const data =
+                    contentDoc.data();
+
+
+                const id =
+                    contentDoc.id;
+
+
+                let cover =
+                    info.icon;
+
+
+                if (data.image) {
+
+                    cover =
+                    `
+                    <img
+                        src="${escapeAttribute(
+                            data.image
+                        )}"
+                        alt="">
+                    `;
+
+                }
+
+
+                let accessBadge = "";
+
+                if (data.access === "free") {
+
+                    accessBadge =
+                    `
+                    <span class="access-badge access-free">
+                        🔓 Gratuito
+                    </span>
+                    `;
+
+                } else if (data.access === "subscription") {
+
+                    accessBadge =
+                    `
+                    <span class="access-badge access-subscription">
+                        🔐 Assinatura
+                    </span>
+                    `;
+
+                }
+
+
+                grid.innerHTML +=
+                `
+                <article class="content-card">
+
+                    <div class="content-cover">
+
+                        ${cover}
+
+                    </div>
+
+
+                    <div class="content-body">
+
+                        ${accessBadge}
+
+                        <h3>
+
+                            ${escapeHtml(
+                                data.title
+                            )}
+
+                        </h3>
+
+
+                        <p>
+
+                            ${escapeHtml(
+                                data.description ||
+                                "Sem descrição."
+                            )}
+
+                        </p>
+
+
+                        ${
+                            data.url
+                            ?
+                            `
+                            <button
+                                class="btn btn-small"
+                                onclick="openVideo(
+                                    '${escapeAttribute(
+                                        data.url
+                                    )}'
+                                )">
+
+                                Abrir
+
+                            </button>
+                            `
+                            :
+                            ""
+                        }
+
+
+                        ${
+                            isAdmin
+                            ?
+                            `
+                            <div
+                                class="admin-tools">
+
+                                <button
+                                    class="btn btn-small btn-danger"
+                                    onclick="deleteContent(
+                                        '${type}',
+                                        '${id}'
+                                    )">
+
+                                    Excluir
+
+                                </button>
+
+                            </div>
+                            `
+                            :
+                            ""
+                        }
+
+                    </div>
+
+                </article>
+                `;
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        grid.innerHTML =
+        `
+        <div class="error">
+
+            Erro ao carregar conteúdo:
+            ${escapeHtml(
+                error.message
+            )}
+
+        </div>
+        `;
+
+    }
+
+}
+
+
+/* =====================================================
+   EXCLUIR
+===================================================== */
+
+window.deleteContent =
+async function(
+    type,
+    id
+) {
+
+    if (!isAdmin) {
+
+        alert(
+            "Somente o administrador geral pode excluir conteúdo."
+        );
+
+        return;
+    }
+
+
+    if (
+        !confirm(
+            "Deseja realmente excluir este conteúdo?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await deleteDoc(
+            doc(
+                db,
+                contentTypes[type].collection,
+                id
+            )
+        );
+
+
+        alert(
+            "Conteúdo excluído."
+        );
+
+
+        loadContent(type);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao excluir: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =====================================================
+   ADMINISTRAÇÃO DE COMUNIDADES
+===================================================== */
+
+async function loadAdminCommunities() {
+
+    if (!isAdmin) {
+
+        return;
+
+    }
+
+
+    const select =
+        document.getElementById(
+            "adminCommunitySelect"
+        );
+
+
+    select.innerHTML =
+        `
+        <option value="">
+            Selecione uma comunidade
+        </option>
+        `;
+
+
+    try {
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "communities"
+                )
+            );
+
+
+        snapshot.forEach(
+            communityDoc => {
+
+                const data =
+                    communityDoc.data();
+
+
+                select.innerHTML +=
+                `
+                <option
+                    value="${communityDoc.id}">
+
+                    ${escapeHtml(
+                        data.name
+                    )}
+
+                </option>
+                `;
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
+/* =====================================================
+   NOMEAR ADMINISTRADOR
+===================================================== */
+
+window.assignCommunityAdmin =
+async function() {
+
+    if (!isAdmin) {
+
+        alert(
+            "Somente o administrador geral pode fazer isso."
+        );
+
+        return;
+    }
+
+
+    const communityId =
+        document
+        .getElementById(
+            "adminCommunitySelect"
+        )
+        .value;
+
+
+    const email =
+        document
+        .getElementById(
+            "communityAdminEmail"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    if (!communityId) {
+
+        alert(
+            "Selecione uma comunidade."
+        );
+
+        return;
+    }
+
+
+    if (!email) {
+
+        alert(
+            "Digite o email do usuário."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const communitySnap =
+            await getDoc(
+                doc(
+                    db,
+                    "communities",
+                    communityId
+                )
+            );
+
+
+        if (!communitySnap.exists()) {
+
+            alert(
+                "Comunidade não encontrada."
+            );
+
+            return;
+        }
+
+
+        const community =
+            communitySnap.data();
+
+
+        if (
+            !(
+                community.members ||
+                []
+            ).includes(email)
+        ) {
+
+            alert(
+                "Esse usuário precisa ser membro da comunidade antes de ser nomeado administrador."
+            );
+
+            return;
+        }
+
+
+        const existing =
+            await getDocs(
+                query(
+                    collection(
+                        db,
+                        "communityAdmins"
+                    ),
+                    where(
+                        "communityId",
+                        "==",
+                        communityId
+                    ),
+                    where(
+                        "userEmail",
+                        "==",
+                        email
+                    )
+                )
+            );
+
+
+        if (!existing.empty) {
+
+            alert(
+                "Este usuário já é administrador desta comunidade."
+            );
+
+            return;
+        }
+
+
+        await addDoc(
+            collection(
+                db,
+                "communityAdmins"
+            ),
+            {
+
+                userEmail:
+                    email,
+
+                communityId:
+                    communityId,
+
+                assignedBy:
+                    auth.currentUser.email,
+
+                createdAt:
+                    serverTimestamp()
+
+            }
+        );
+
+
+        document
+        .getElementById(
+            "communityAdminEmail"
+        )
+        .value = "";
+
+
+        alert(
+            "Administrador de comunidade definido com sucesso."
+        );
+
+
+        loadCommunityAdmins();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao definir administrador: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =====================================================
+   LISTAR ADMINS DE COMUNIDADE
+===================================================== */
+
+async function loadCommunityAdmins() {
+
+    if (!isAdmin) {
+
+        return;
+
+    }
+
+
+    const container =
+        document.getElementById(
+            "communityAdminsList"
+        );
+
+
+    container.innerHTML =
+        "<p style='color:#6B7A99;'>Carregando...</p>";
+
+
+    try {
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "communityAdmins"
+                )
+            );
+
+
+        container.innerHTML = "";
+
+
+        if (snapshot.empty) {
+
+            container.innerHTML =
+            `
+            <p style="color:#6B7A99;">
+                Nenhum administrador de comunidade definido.
+            </p>
+            `;
+
+            return;
+
+        }
+
+
+        for (
+            const adminDoc
+            of snapshot.docs
+        ) {
+
+            const data =
+                adminDoc.data();
+
+
+            let communityName =
+                "Comunidade";
+
+
+            try {
+
+                const communitySnap =
+                    await getDoc(
+                        doc(
+                            db,
+                            "communities",
+                            data.communityId
+                        )
+                    );
+
+
+                if (
+                    communitySnap.exists()
+                ) {
+
+                    communityName =
+                        communitySnap
+                        .data()
+                        .name;
+
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+
+            container.innerHTML +=
+            `
+            <div
+                style="
+                background:#0A0E27;
+                padding:12px;
+                border-radius:6px;
+                margin-bottom:10px;
+                ">
+
+                <strong
+                    style="color:#D4AF37;">
+
+                    ${escapeHtml(
+                        data.userEmail
+                    )}
+
+                </strong>
+
+                <br>
+
+                <span
+                    style="
+                    color:#6B7A99;
+                    font-size:13px;
+                    ">
+
+                    Comunidade:
+                    ${escapeHtml(
+                        communityName
+                    )}
+
+                </span>
+
+                <br>
+
+                <button
+                    class="btn btn-small btn-danger"
+                    onclick="removeCommunityAdmin(
+                        '${adminDoc.id}'
+                    )">
+
+                    Remover administrador
+
+                </button>
+
+            </div>
+            `;
+
+        }
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+        `
+        <div class="error">
+
+            Erro ao carregar administradores:
+            ${escapeHtml(
+                error.message
+            )}
+
+        </div>
+        `;
+
+    }
+
+}
+
+
+/* =====================================================
+   REMOVER ADMIN
+===================================================== */
+
+window.removeCommunityAdmin =
+async function(id) {
+
+    if (!isAdmin) {
+
+        alert(
+            "Somente o administrador geral pode fazer isso."
+        );
+
+        return;
+    }
+
+
+    if (
+        !confirm(
+            "Remover este administrador da comunidade?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await deleteDoc(
+            doc(
+                db,
+                "communityAdmins",
+                id
+            )
+        );
+
+
+        alert(
+            "Administrador removido."
+        );
+
+
+        loadCommunityAdmins();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao remover administrador: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =====================================================
+/* =====================================================
+   HOME DINÂMICA
+===================================================== */
+
+async function loadHome() {
+
+    /*
+     * Cada seção da Home corresponde
+     * a uma coleção do Firebase.
+     */
+
+    const homeSections = {
+
+        films: {
+            collection: "films",
+            element: "homeFilms",
+            icon: "🎬"
+        },
+
+        series: {
+            collection: "series",
+            element: "homeSeries",
+            icon: "📺"
+        },
+
+        documentaries: {
+            collection: "documentaries",
+            element: "homeDocumentaries",
+            icon: "🎞️"
+        },
+
+        books: {
+            collection: "books",
+            element: "homeBooks",
+            icon: "📚"
+        },
+
+        articles: {
+            collection: "articles",
+            element: "homeArticles",
+            icon: "📰"
+        },
+
+        studies: {
+            collection: "studies",
+            element: "homeStudies",
+            icon: "📖"
+        },
+
+        videos: {
+            collection: "videos",
+            element: "homeVideos",
+            icon: "🎥"
+        },
+
+        products: {
+            collection: "products",
+            element: "homeProducts",
+            icon: "🛒"
+        }
+
+    };
+
+
+    /*
+     * Carrega cada categoria.
+     */
+
+    for (
+        const type
+        of Object.keys(homeSections)
+    ) {
+
+        await loadHomeSection(
+            type,
+            homeSections[type]
+        );
+
+    }
+
+
+    /*
+     * Carrega os destaques.
+     */
+
+    await loadHomeFeatured(
+        homeSections
+    );
+
+}
+
+
+/* =====================================================
+   CARREGAR UMA SEÇÃO DA HOME
+===================================================== */
+
+async function loadHomeSection(
+    type,
+    config
+) {
+
+    const container =
+        document.getElementById(
+            config.element
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        `
+        <div class="home-loading">
+            Carregando...
+        </div>
+        `;
+
+
+    try {
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    config.collection
+                )
+            );
+
+
+        container.innerHTML = "";
+
+
+        if (snapshot.empty) {
+
+            container.innerHTML =
+                `
+                <div class="home-empty">
+                    Nenhum conteúdo disponível ainda.
+                </div>
+                `;
+
+            return;
+
+        }
+
+
+        /*
+         * Mostramos inicialmente os conteúdos
+         * encontrados no Firebase.
+         */
+
+        snapshot.forEach(
+            contentDoc => {
+
+                const data =
+                    contentDoc.data();
+
+                const id =
+                    contentDoc.id;
+
+
+                let cover =
+                    `
+                    <span class="home-card-icon">
+                        ${config.icon}
+                    </span>
+                    `;
+
+
+                if (data.image) {
+
+                    cover =
+                        `
+                        <img
+                            src="${escapeAttribute(
+                                data.image
+                            )}"
+                            alt="${escapeAttribute(
+                                data.title || ""
+                            )}"
+                            loading="lazy">
+                        `;
+
+                }
+
+
+                let accessBadge = "";
+
+
+                if (
+                    data.access === "free"
+                ) {
+
+                    accessBadge =
+                        `
+                        <span
+                            class="home-card-access free">
+
+                            🔓 Gratuito
+
+                        </span>
+                        `;
+
+                }
+
+
+                if (
+                    data.access === "subscription"
+                ) {
+
+                    accessBadge =
+                        `
+                        <span
+                            class="home-card-access subscription">
+
+                            🔐 Assinatura
+
+                        </span>
+                        `;
+
+                }
+
+
+                container.innerHTML +=
+                    `
+                    <article
+                        class="home-card">
+
+                        <div
+                            class="home-card-cover">
+
+                            ${cover}
+
+                        </div>
+
+
+                        <div
+                            class="home-card-body">
+
+                            ${accessBadge}
+
+
+                            <div
+                                class="home-card-title">
+
+                                ${escapeHtml(
+                                    data.title ||
+                                    "Sem título"
+                                )}
+
+                            </div>
+
+
+                            <div
+                                class="home-card-description">
+
+                                ${escapeHtml(
+                                    data.description ||
+                                    "Sem descrição."
+                                )}
+
+                            </div>
+
+
+                            <button
+                                class="home-card-button"
+                                onclick="openHomeContent(
+                                    '${type}',
+                                    '${id}'
+                                )">
+
+                                Ver conteúdo
+
+                            </button>
+
+                        </div>
+
+                    </article>
+                    `;
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro carregando Home:",
+            error
+        );
+
+
+        container.innerHTML =
+            `
+            <div class="home-empty">
+
+                Erro ao carregar conteúdo.
+
+            </div>
+            `;
+
+    }
+
+}
+
+
+/* =====================================================
+   DESTAQUES
+===================================================== */
+
+async function loadHomeFeatured(
+    homeSections
+) {
+
+    const container =
+        document.getElementById(
+            "homeFeatured"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        `
+        <div class="home-loading">
+            Carregando destaques...
+        </div>
+        `;
+
+
+    try {
+
+        /*
+         * Neste primeiro momento,
+         * buscamos conteúdos das principais
+         * categorias e selecionamos alguns.
+         */
+
+        const collections = [
+            "films",
+            "series",
+            "documentaries"
+        ];
+
+
+        let featured = [];
+
 
         for (
             const collectionName
@@ -1661,1868 +5467,261 @@ async function loadFeatured() {
                     )
                 );
 
-            snapshot.docs
-                .slice(0, 2)
-                .forEach(item => {
 
-                    items.push({
-                        id: item.id,
-                        ...item.data(),
-                        category:
-                            collectionName
-                    });
-
-                });
-
-        }
-
-        items =
-            items.slice(0, 8);
-
-        if (!items.length) {
-
-            element.innerHTML = `
-                <div class="empty">
-                    Nenhum destaque disponível.
-                </div>
-            `;
-
-            return;
-        }
-
-        element.innerHTML =
-            items
-                .map(item =>
-                    contentCard(
-                        item,
-                        item.category
-                    )
-                )
-                .join("");
-
-    } catch (error) {
-
-        console.error(
-            "Erro nos destaques:",
-            error
-        );
-
-        element.innerHTML = `
-            <div class="empty">
-                Nenhum destaque disponível.
-            </div>
-        `;
-
-    }
-
-}
-
-
-/* =====================================================
-   CONTEÚDO
-===================================================== */
-
-async function renderContentPage(
-    collectionName,
-    title,
-    description
-) {
-
-    const adminId =
-        "admin-" + collectionName;
-
-    $("pageContent").innerHTML = `
-
-        <h1 class="page-title">
-            ${title}
-        </h1>
-
-        <p class="page-description">
-            ${description}
-        </p>
-
-        ${
-            isAdmin()
-            ?
-            `
-            <div
-                id="${adminId}"
-                class="card"
-            >
-
-                <button
-                    class="btn"
-                    onclick="showContentForm('${collectionName}')"
-                >
-                    ＋ Adicionar
-                </button>
-
-            </div>
-            `
-            :
-            ""
-        }
-
-        <div
-            id="contentGrid"
-            class="grid"
-        >
-            <div class="empty">
-                Carregando...
-            </div>
-        </div>
-
-    `;
-
-    await loadContentGrid(
-        collectionName,
-        "contentGrid"
-    );
-
-}
-
-
-async function loadContentGrid(
-    collectionName,
-    elementId
-) {
-
-    const grid =
-        $(elementId);
-
-    if (!grid) {
-        return;
-    }
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    collectionName
-                )
-            );
-
-        const items =
-            snapshot.docs.map(
-                item => ({
-                    id: item.id,
-                    ...item.data()
-                })
-            );
-
-        if (!items.length) {
-
-            grid.innerHTML = `
-                <div class="empty">
-                    Nenhum conteúdo cadastrado ainda.
-                </div>
-            `;
-
-            return;
-        }
-
-        grid.innerHTML =
-            items
-                .map(item =>
-                    contentCard(
-                        item,
-                        collectionName
-                    )
-                )
-                .join("");
-
-    } catch (error) {
-
-        console.error(error);
-
-        grid.innerHTML = `
-            <div class="empty">
-                Erro ao carregar conteúdo:
-                ${escapeHtml(
-                    firebaseError(error)
-                )}
-            </div>
-        `;
-
-    }
-
-}
-
-
-function contentCard(
-    item,
-    collectionName
-) {
-
-    const image =
-        item.imageUrl ||
-        item.image ||
-        "";
-
-    const title =
-        item.title ||
-        item.name ||
-        "Sem título";
-
-    const description =
-        item.description ||
-        "";
-
-    const url =
-        item.url ||
-        item.link ||
-        "";
-
-    return `
-
-        <article class="content-card">
-
-            ${
-                image
-                ?
-                `
-                <img
-                    class="content-image"
-                    src="${escapeHtml(image)}"
-                    alt="${escapeHtml(title)}"
-                    onerror="
-                        this.style.display='none';
-                    "
-                >
-                `
-                :
-                `
-                <div
-                    class="content-image"
-                ></div>
-                `
-            }
-
-            <div class="content-body">
-
-                <div class="content-title">
-                    ${escapeHtml(title)}
-                </div>
-
-                ${
-                    description
-                    ?
-                    `
-                    <div class="content-description">
-                        ${escapeHtml(description)}
-                    </div>
-                    `
-                    :
-                    ""
-                }
-
-                ${
-                    url
-                    ?
-                    `
-                    <a
-                        class="content-link"
-                        href="${escapeHtml(url)}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Abrir →
-                    </a>
-                    `
-                    :
-                    ""
-                }
-
-                ${
-                    isAdmin()
-                    ?
-                    `
-                    <div
-                        style="
-                            margin-top:12px;
-                            display:flex;
-                            gap:6px;
-                        "
-                    >
-
-                        <button
-                            class="small-btn"
-                            onclick="
-                                editContent(
-                                    '${collectionName}',
-                                    '${item.id}'
-                                )
-                            "
-                        >
-                            Editar
-                        </button>
-
-                        <button
-                            class="small-btn secondary"
-                            onclick="
-                                deleteContent(
-                                    '${collectionName}',
-                                    '${item.id}'
-                                )
-                            "
-                        >
-                            Excluir
-                        </button>
-
-                    </div>
-                    `
-                    :
-                    ""
-                }
-
-            </div>
-
-        </article>
-
-    `;
-
-}
-
-
-/* =====================================================
-   FORMULÁRIO DE CONTEÚDO
-===================================================== */
-
-window.showContentForm =
-function(collectionName, id = "") {
-
-    const title =
-        id
-        ? "Editar conteúdo"
-        : "Novo conteúdo";
-
-    const form =
-        document.createElement("div");
-
-    form.id = "contentFormOverlay";
-
-    form.style.position = "fixed";
-    form.style.inset = "0";
-    form.style.background =
-        "rgba(0,0,0,.45)";
-    form.style.zIndex = "4000";
-    form.style.overflowY = "auto";
-    form.style.padding = "30px";
-
-    form.innerHTML = `
-
-        <div
-            class="card"
-            style="
-                max-width:600px;
-                margin:30px auto;
-            "
-        >
-
-            <h2 class="card-title">
-                ${title}
-            </h2>
-
-            <div class="form-group">
-
-                <label>
-                    Título
-                </label>
-
-                <input
-                    id="contentTitle"
-                    placeholder="Título"
-                >
-
-            </div>
-
-            <div class="form-group">
-
-                <label>
-                    Descrição
-                </label>
-
-                <textarea
-                    id="contentDescription"
-                    placeholder="Descrição"
-                ></textarea>
-
-            </div>
-
-            <div class="form-group">
-
-                <label>
-                    Imagem
-                </label>
-
-                <input
-                    id="contentImage"
-                    placeholder="https://..."
-                >
-
-            </div>
-
-            <div class="form-group">
-
-                <label>
-                    Link
-                </label>
-
-                <input
-                    id="contentUrl"
-                    placeholder="https://..."
-                >
-
-            </div>
-
-            <button
-                class="btn"
-                onclick="
-                    saveContent(
-                        '${collectionName}',
-                        '${id}'
-                    )
-                "
-            >
-                Salvar
-            </button>
-
-            <button
-                class="btn btn-secondary"
-                onclick="
-                    document
-                        .getElementById(
-                            'contentFormOverlay'
-                        )
-                        .remove()
-                "
-            >
-                Cancelar
-            </button>
-
-        </div>
-
-    `;
-
-    document.body.appendChild(form);
-
-};
-
-
-window.saveContent =
-async function(
-    collectionName,
-    id
-) {
-
-    if (!isAdmin()) {
-
-        showToast(
-            "Você não tem permissão."
-        );
-
-        return;
-    }
-
-    const title =
-        $("contentTitle").value.trim();
-
-    const description =
-        $("contentDescription").value.trim();
-
-    const imageUrl =
-        $("contentImage").value.trim();
-
-    const url =
-        $("contentUrl").value.trim();
-
-    if (!title) {
-
-        showToast(
-            "Informe o título."
-        );
-
-        return;
-    }
-
-    try {
-
-        const data = {
-
-            title,
-            description,
-            imageUrl,
-            url,
-            updatedAt:
-                serverTimestamp()
-
-        };
-
-        if (id) {
-
-            await setDoc(
-                doc(
-                    db,
-                    collectionName,
-                    id
-                ),
-                data,
-                {
-                    merge: true
-                }
-            );
-
-        } else {
-
-            await addDoc(
-                collection(
-                    db,
-                    collectionName
-                ),
-                {
-                    ...data,
-                    createdAt:
-                        serverTimestamp()
-                }
-            );
-
-        }
-
-        const overlay =
-            $("contentFormOverlay");
-
-        if (overlay) {
-            overlay.remove();
-        }
-
-        showToast(
-            "Conteúdo salvo."
-        );
-
-        await renderContentPage(
-            collectionName,
-            getCollectionTitle(
-                collectionName
-            ),
-            getCollectionDescription(
-                collectionName
-            )
-        );
-
-    } catch (error) {
-
-        showToast(
-            firebaseError(error)
-        );
-
-    }
-
-};
-
-
-function getCollectionTitle(
-    collectionName
-) {
-
-    const titles = {
-
-        films: "🎬 Filmes",
-        series: "📺 Séries",
-        books: "📚 Livros",
-        articles: "📰 Artigos",
-        documentaries:
-            "🎞️ Documentários",
-        studies: "📖 Estudos",
-        videos: "🎥 Vídeos",
-        products: "🛒 Loja"
-
-    };
-
-    return (
-        titles[collectionName] ||
-        "Conteúdo"
-    );
-
-}
-
-
-function getCollectionDescription(
-    collectionName
-) {
-
-    const descriptions = {
-
-        films:
-            "Filmes selecionados pelo SHALOM.",
-
-        series:
-            "Séries selecionadas pelo SHALOM.",
-
-        books:
-            "Biblioteca do SHALOM.",
-
-        articles:
-            "Artigos publicados pelo SHALOM.",
-
-        documentaries:
-            "Documentários selecionados.",
-
-        studies:
-            "Estudos publicados no SHALOM.",
-
-        videos:
-            "Vídeos gerais publicados no SHALOM.",
-
-        products:
-            "Produtos disponíveis no SHALOM."
-
-    };
-
-    return (
-        descriptions[collectionName] ||
-        ""
-    );
-
-}
-
-
-window.deleteContent =
-async function(
-    collectionName,
-    id
-) {
-
-    if (!isAdmin()) {
-        return;
-    }
-
-    const confirmed =
-        confirm(
-            "Tem certeza que deseja excluir este conteúdo?"
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-    try {
-
-        await deleteDoc(
-            doc(
-                db,
-                collectionName,
-                id
-            )
-        );
-
-        showToast(
-            "Conteúdo excluído."
-        );
-
-        await renderContentPage(
-            collectionName,
-            getCollectionTitle(
-                collectionName
-            ),
-            getCollectionDescription(
-                collectionName
-            )
-        );
-
-    } catch (error) {
-
-        showToast(
-            firebaseError(error)
-        );
-
-    }
-
-};
-
-
-window.editContent =
-async function(
-    collectionName,
-    id
-) {
-
-    if (!isAdmin()) {
-        return;
-    }
-
-    try {
-
-        const snapshot =
-            await getDoc(
-                doc(
-                    db,
-                    collectionName,
-                    id
-                )
-            );
-
-        if (!snapshot.exists()) {
-
-            showToast(
-                "Conteúdo não encontrado."
-            );
-
-            return;
-        }
-
-        const data =
-            snapshot.data();
-
-        showContentForm(
-            collectionName,
-            id
-        );
-
-        setTimeout(() => {
-
-            $("contentTitle").value =
-                data.title ||
-                data.name ||
-                "";
-
-            $("contentDescription").value =
-                data.description ||
-                "";
-
-            $("contentImage").value =
-                data.imageUrl ||
-                data.image ||
-                "";
-
-            $("contentUrl").value =
-                data.url ||
-                data.link ||
-                "";
-
-        }, 50);
-
-    } catch (error) {
-
-        showToast(
-            firebaseError(error)
-        );
-
-    }
-
-};
-
-
-/* =====================================================
-   PERFIL
-===================================================== */
-
-function renderProfile() {
-
-    $("pageContent").innerHTML = `
-
-        <h1 class="page-title">
-            👤 Perfil
-        </h1>
-
-        <div class="card">
-
-            <h2 class="card-title">
-                Meu perfil
-            </h2>
-
-            <p>
-                <strong>Email:</strong>
-            </p>
-
-            <p
-                id="profileEmail"
-                style="
-                    color:#D4AF37;
-                    margin-top:7px;
-                "
-            >
-                ${escapeHtml(
-                    currentUser?.email || ""
-                )}
-            </p>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =====================================================
-   NOTIFICAÇÕES
-===================================================== */
-
-function renderNotifications() {
-
-    $("pageContent").innerHTML = `
-
-        <h1 class="page-title">
-            🔔 Notificações
-        </h1>
-
-        <div class="card">
-
-            <p style="color:#6B7A99;">
-                Nenhuma notificação no momento.
-            </p>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =====================================================
-   COMUNIDADES
-===================================================== */
-
-async function renderCommunities() {
-
-    $("pageContent").innerHTML = `
-
-        <h1 class="page-title">
-            Comunidades
-        </h1>
-
-        <p class="page-description">
-            Participe de comunidades e
-            compartilhe conhecimento.
-        </p>
-
-        ${
-            isAdmin()
-            ?
-            `
-            <div class="card">
-
-                <button
-                    class="btn"
-                    onclick="showCreateCommunity()"
-                >
-                    ＋ Adicionar comunidade
-                </button>
-
-            </div>
-
-            <div
-                id="createCommunityBox"
-                class="card hidden"
-            >
-
-                <h2 class="card-title">
-                    Nova comunidade
-                </h2>
-
-                <div class="form-group">
-
-                    <label>
-                        Nome
-                    </label>
-
-                    <input
-                        id="communityName"
-                        placeholder="Nome da comunidade"
-                    >
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>
-                        Descrição
-                    </label>
-
-                    <textarea
-                        id="communityDescription"
-                        placeholder="Descrição da comunidade"
-                    ></textarea>
-
-                </div>
-
-                <button
-                    class="btn"
-                    onclick="addCommunity()"
-                >
-                    Criar comunidade
-                </button>
-
-                <button
-                    class="btn btn-secondary"
-                    onclick="
-                        $('createCommunityBox')
-                            .classList.add('hidden')
-                    "
-                >
-                    Cancelar
-                </button>
-
-            </div>
-            `
-            :
-            ""
-        }
-
-        <div id="communitiesList">
-
-            <div class="empty">
-                Carregando...
-            </div>
-
-        </div>
-
-        <div
-            id="communityArea"
-            class="hidden"
-        ></div>
-
-    `;
-
-    await loadCommunities();
-
-}
-
-
-window.showCreateCommunity =
-function() {
-
-    const box =
-        $("createCommunityBox");
-
-    if (box) {
-
-        box.classList.remove(
-            "hidden"
-        );
-
-    }
-
-};
-
-
-window.addCommunity =
-async function() {
-
-    if (!isAdmin()) {
-
-        showToast(
-            "Você não tem permissão."
-        );
-
-        return;
-    }
-
-    const name =
-        $("communityName")
-            .value
-            .trim();
-
-    const description =
-        $("communityDescription")
-            .value
-            .trim();
-
-    if (!name) {
-
-        showToast(
-            "Informe o nome da comunidade."
-        );
-
-        return;
-    }
-
-    try {
-
-        await addDoc(
-            collection(
-                db,
-                "communities"
-            ),
-            {
-                name,
-                description,
-                createdAt:
-                    serverTimestamp(),
-                createdBy:
-                    currentUser.uid
-            }
-        );
-
-        $("communityName").value = "";
-
-        $("communityDescription").value = "";
-
-        $("createCommunityBox")
-            .classList.add("hidden");
-
-        showToast(
-            "Comunidade criada."
-        );
-
-        await loadCommunities();
-
-    } catch (error) {
-
-        showToast(
-            firebaseError(error)
-        );
-
-    }
-
-};
-
-
-async function loadCommunities() {
-
-    const container =
-        $("communitiesList");
-
-    if (!container) {
-        return;
-    }
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "communities"
-                )
-            );
-
-        if (snapshot.empty) {
-
-            container.innerHTML = `
-
-                <div class="empty">
-                    Nenhuma comunidade criada ainda.
-                </div>
-
-            `;
-
-            return;
-        }
-
-        container.innerHTML =
-            snapshot.docs
-                .map(item => {
+            snapshot.forEach(
+                contentDoc => {
 
                     const data =
-                        item.data();
+                        contentDoc.data();
 
-                    return `
 
-                        <div
-                            class="community-card"
-                        >
+                    featured.push({
 
-                            <h3>
-                                ${escapeHtml(
-                                    data.name ||
-                                    "Comunidade"
-                                )}
-                            </h3>
+                        type:
+                            collectionName,
 
-                            <p
-                                class="community-description"
-                            >
-                                ${escapeHtml(
-                                    data.description ||
-                                    ""
-                                )}
-                            </p>
+                        id:
+                            contentDoc.id,
+
+                        data:
+                            data
+
+                    });
+
+                }
+            );
+
+        }
+
+
+        container.innerHTML = "";
+
+
+        if (
+            featured.length === 0
+        ) {
+
+            container.innerHTML =
+                `
+                <div class="home-empty">
+
+                    Ainda não existem
+                    conteúdos em destaque.
+
+                </div>
+                `;
+
+            return;
+
+        }
+
+
+        /*
+         * Mostra até 10 conteúdos.
+         */
+
+        featured
+            .slice(0, 10)
+            .forEach(
+                item => {
+
+                    const data =
+                        item.data;
+
+
+                    let cover =
+                        "";
+
+
+                    if (data.image) {
+
+                        cover =
+                            `
+                            <img
+                                src="${escapeAttribute(
+                                    data.image
+                                )}"
+                                alt="${escapeAttribute(
+                                    data.title || ""
+                                )}"
+                                loading="lazy">
+                            `;
+
+                    }
+
+
+                    container.innerHTML +=
+                        `
+                        <article
+                            class="home-card">
 
                             <div
-                                class="community-actions"
-                            >
-
-                                <button
-                                    class="small-btn"
-                                    onclick="
-                                        openCommunity(
-                                            '${item.id}'
-                                        )
-                                    "
-                                >
-                                    Abrir comunidade
-                                </button>
+                                class="home-card-cover">
 
                                 ${
-                                    isAdmin()
-                                    ?
+                                    cover ||
                                     `
-                                    <button
-                                        class="small-btn secondary"
-                                        onclick="
-                                            deleteCommunity(
-                                                '${item.id}'
-                                            )
-                                        "
-                                    >
-                                        Excluir
-                                    </button>
+                                    <span
+                                        class="home-card-icon">
+
+                                        ⭐
+
+                                    </span>
                                     `
-                                    :
-                                    ""
                                 }
 
                             </div>
 
-                        </div>
 
-                    `;
+                            <div
+                                class="home-card-body">
 
-                })
-                .join("");
+                                <div
+                                    class="home-card-title">
+
+                                    ${escapeHtml(
+                                        data.title ||
+                                        "Sem título"
+                                    )}
+
+                                </div>
+
+
+                                <div
+                                    class="home-card-description">
+
+                                    ${escapeHtml(
+                                        data.description ||
+                                        "Conteúdo selecionado pelo SHALOM."
+                                    )}
+
+                                </div>
+
+
+                                <button
+                                    class="home-card-button"
+                                    onclick="openHomeContent(
+                                        '${item.type}',
+                                        '${item.id}'
+                                    )">
+
+                                    Ver conteúdo
+
+                                </button>
+
+                            </div>
+
+                        </article>
+                        `;
+
+                }
+            );
+
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erro carregando destaques:",
+            error
+        );
 
-        container.innerHTML = `
 
-            <div class="empty">
-                ${escapeHtml(
-                    firebaseError(error)
-                )}
+        container.innerHTML =
+            `
+            <div class="home-empty">
+
+                Não foi possível carregar
+                os destaques.
+
             </div>
-
-        `;
+            `;
 
     }
 
 }
 
 
-window.deleteCommunity =
-async function(id) {
+/* =====================================================
+   ABRIR CONTEÚDO A PARTIR DA HOME
+===================================================== */
 
-    if (!isAdmin()) {
+window.openHomeContent =
+async function(
+    type,
+    id
+) {
+
+    const info =
+        contentTypes[type];
+
+
+    if (!info) {
+
         return;
+
     }
 
-    if (
-        !confirm(
-            "Excluir esta comunidade?"
-        )
-    ) {
-        return;
-    }
 
     try {
 
-        await deleteDoc(
-            doc(
-                db,
-                "communities",
-                id
-            )
-        );
-
-        showToast(
-            "Comunidade excluída."
-        );
-
-        await loadCommunities();
-
-    } catch (error) {
-
-        showToast(
-            firebaseError(error)
-        );
-
-    }
-
-};
-
-
-window.openCommunity =
-async function(id) {
-
-    try {
-
-        const snapshot =
+        const contentDoc =
             await getDoc(
                 doc(
                     db,
-                    "communities",
+                    info.collection,
                     id
                 )
             );
 
-        if (!snapshot.exists()) {
 
-            showToast(
-                "Comunidade não encontrada."
+        if (
+            !contentDoc.exists()
+        ) {
+
+            alert(
+                "Este conteúdo não está mais disponível."
             );
 
             return;
+
         }
+
 
         const data =
-            snapshot.data();
+            contentDoc.data();
 
-        currentCommunity = {
-            id,
-            ...data
-        };
 
-        const area =
-            $("communityArea");
+        /*
+         * Por enquanto, antes de criarmos
+         * o player interno, usamos a mesma
+         * lógica de abertura já existente.
+         *
+         * Na próxima etapa substituiremos
+         * isso pelo player do próprio SHALOM.
+         */
 
-        area.classList.remove(
-            "hidden"
-        );
+        if (data.url) {
 
-        area.innerHTML = `
-
-            <div class="card">
-
-                <h2 class="card-title">
-                    ${escapeHtml(
-                        data.name ||
-                        "Comunidade"
-                    )}
-                </h2>
-
-                <p style="color:#6B7A99;">
-                    ${escapeHtml(
-                        data.description ||
-                        ""
-                    )}
-                </p>
-
-            </div>
-
-            ${
-                isAdmin()
-                ?
-                `
-                <div class="card">
-
-                    <h2 class="card-title">
-                        🎥 Administração de Estudos
-                    </h2>
-
-                    <p style="color:#6B7A99;">
-                        Como administrador da plataforma,
-                        você pode adicionar vídeos de estudos
-                        nesta comunidade.
-                    </p>
-
-                    <button
-                        class="btn"
-                        onclick="
-                            showStudyVideoForm()
-                        "
-                    >
-                        ＋ Adicionar vídeo de estudo
-                    </button>
-
-                </div>
-                `
-                :
-                ""
-            }
-
-            <div
-                id="studyVideoForm"
-                class="card hidden"
-            >
-
-                <h2 class="card-title">
-                    🎥 Novo vídeo de estudo
-                </h2>
-
-                <div class="form-group">
-
-                    <label>
-                        Título
-                    </label>
-
-                    <input
-                        id="studyVideoTitle"
-                        placeholder="Título do vídeo"
-                    >
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>
-                        Descrição
-                    </label>
-
-                    <textarea
-                        id="studyVideoDescription"
-                        placeholder="Descrição do estudo"
-                    ></textarea>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label>
-                        Link do vídeo
-                    </label>
-
-                    <input
-                        id="studyVideoUrl"
-                        placeholder="https://..."
-                    >
-
-                </div>
-
-                <button
-                    class="btn"
-                    onclick="saveStudyVideo()"
-                >
-                    Salvar vídeo
-                </button>
-
-                <button
-                    class="btn btn-secondary"
-                    onclick="hideStudyVideoForm()"
-                >
-                    Cancelar
-                </button>
-
-            </div>
-
-            <div
-                id="communityStudyVideos"
-            >
-                <div class="empty">
-                    Carregando vídeos...
-                </div>
-            </div>
-
-        `;
-
-        await loadCommunityVideos();
-
-    } catch (error) {
-
-        showToast(
-            firebaseError(error)
-        );
-
-    }
-
-};
-
-
-window.showStudyVideoForm =
-function() {
-
-    const form =
-        $("studyVideoForm");
-
-    if (form) {
-
-        form.classList.remove(
-            "hidden"
-        );
-
-    }
-
-};
-
-
-window.hideStudyVideoForm =
-function() {
-
-    const form =
-        $("studyVideoForm");
-
-    if (form) {
-
-        form.classList.add(
-            "hidden"
-        );
-
-    }
-
-};
-
-
-window.saveStudyVideo =
-async function() {
-
-    if (!currentCommunity) {
-        return;
-    }
-
-    const title =
-        $("studyVideoTitle")
-            .value
-            .trim();
-
-    const description =
-        $("studyVideoDescription")
-            .value
-            .trim();
-
-    const url =
-        $("studyVideoUrl")
-            .value
-            .trim();
-
-    if (!title || !url) {
-
-        showToast(
-            "Informe o título e o link."
-        );
-
-        return;
-    }
-
-    try {
-
-        await addDoc(
-            collection(
-                db,
-                "communityStudyVideos"
-            ),
-            {
-                communityId:
-                    currentCommunity.id,
-
-                title,
-                description,
-                url,
-
-                createdAt:
-                    serverTimestamp(),
-
-                createdBy:
-                    currentUser.uid
-
-            }
-        );
-
-        $("studyVideoTitle").value = "";
-
-        $("studyVideoDescription").value = "";
-
-        $("studyVideoUrl").value = "";
-
-        hideStudyVideoForm();
-
-        showToast(
-            "Vídeo salvo."
-        );
-
-        await loadCommunityVideos();
-
-    } catch (error) {
-
-        showToast(
-            firebaseError(error)
-        );
-
-    }
-
-};
-
-
-async function loadCommunityVideos() {
-
-    const container =
-        $("communityStudyVideos");
-
-    if (
-        !container ||
-        !currentCommunity
-    ) {
-        return;
-    }
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "communityStudyVideos"
-                )
+            openVideo(
+                data.url
             );
 
-        const videos =
-            snapshot.docs
-                .map(item => ({
-                    id: item.id,
-                    ...item.data()
-                }))
-                .filter(
-                    item =>
-                        item.communityId
-                        === currentCommunity.id
-                );
+        } else {
 
-        if (!videos.length) {
+            alert(
+                "Este conteúdo ainda não possui um link."
+            );
 
-            container.innerHTML = `
-
-                <div class="empty">
-                    Nenhum vídeo de estudo
-                    publicado nesta comunidade.
-                </div>
-
-            `;
-
-            return;
         }
 
-        container.innerHTML =
-            videos
-                .map(video => `
-
-                    <div class="card">
-
-                        <h3>
-                            ${escapeHtml(
-                                video.title
-                            )}
-                        </h3>
-
-                        <p
-                            style="color:#6B7A99;"
-                        >
-                            ${escapeHtml(
-                                video.description ||
-                                ""
-                            )}
-                        </p>
-
-                        <a
-                            class="content-link"
-                            href="${escapeHtml(
-                                video.url
-                            )}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Assistir →
-                        </a>
-
-                    </div>
-
-                `)
-                .join("");
-
-    } catch (error) {
-
-        container.innerHTML = `
-
-            <div class="empty">
-                Não foi possível carregar
-                os vídeos.
-            </div>
-
-        `;
-
-    }
-
-}
-
-
-/* =====================================================
-   ADMINISTRAÇÃO
-===================================================== */
-
-async function renderAdmin() {
-
-    $("pageContent").innerHTML = `
-
-        <h1 class="page-title">
-            🛡️ Administração
-        </h1>
-
-        <p class="page-description">
-            Administração geral do SHALOM.
-        </p>
-
-        <div class="card">
-
-            <h2 class="card-title">
-                👥 Administradores de Comunidade
-            </h2>
-
-            <p
-                style="
-                    color:#6B7A99;
-                    margin-bottom:20px;
-                "
-            >
-                O administrador geral pode definir
-                quem administra cada comunidade.
-            </p>
-
-            <div class="form-group">
-
-                <label>
-                    Comunidade
-                </label>
-
-                <select
-                    id="adminCommunitySelect"
-                >
-
-                    <option value="">
-                        Selecione uma comunidade
-                    </option>
-
-                </select>
-
-            </div>
-
-            <div class="form-group">
-
-                <label>
-                    Email do administrador
-                </label>
-
-                <input
-                    type="email"
-                    id="communityAdminEmail"
-                    placeholder="usuario@email.com"
-                >
-
-            </div>
-
-            <button
-                class="btn"
-                onclick="assignCommunityAdmin()"
-            >
-                Tornar administrador
-            </button>
-
-            <div
-                id="communityAdminsList"
-                style="margin-top:20px;"
-            ></div>
-
-        </div>
-
-
-        <div class="grid">
-
-            <div class="card">
-
-                <h3 class="card-title">
-                    👥 Usuários
-                </h3>
-
-                <p style="color:#6B7A99;">
-                    Gestão dos usuários.
-                </p>
-
-            </div>
-
-            <div class="card">
-
-                <h3 class="card-title">
-                    🏘️ Comunidades
-                </h3>
-
-                <p style="color:#6B7A99;">
-                    Gestão das comunidades.
-                </p>
-
-            </div>
-
-            <div class="card">
-
-                <h3 class="card-title">
-                    🚨 Moderação
-                </h3>
-
-                <p style="color:#6B7A99;">
-                    Denúncias e moderação.
-                </p>
-
-            </div>
-
-            <div class="card">
-
-                <h3 class="card-title">
-                    🛒 Loja
-                </h3>
-
-                <p style="color:#6B7A99;">
-                    Gestão da loja.
-                </p>
-
-            </div>
-
-            <div class="card">
-
-                <h3 class="card-title">
-                    📚 Conteúdo
-                </h3>
-
-                <p style="color:#6B7A99;">
-                    Gestão do catálogo.
-                </p>
-
-            </div>
-
-            <div class="card">
-
-                <h3 class="card-title">
-                    ⚙️ Configurações
-                </h3>
-
-                <p style="color:#6B7A99;">
-                    Configurações da plataforma.
-                </p>
-
-            </div>
-
-        </div>
-
-    `;
-
-    await loadAdminCommunities();
-
-}
-
-
-async function loadAdminCommunities() {
-
-    const select =
-        $("adminCommunitySelect");
-
-    if (!select) {
-        return;
-    }
-
-    try {
-
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "communities"
-                )
-            );
-
-        select.innerHTML = `
-
-            <option value="">
-                Selecione uma comunidade
-            </option>
-
-        `;
-
-        snapshot.docs
-            .forEach(item => {
-
-                const data =
-                    item.data();
-
-                const option =
-                    document.createElement(
-                        "option"
-                    );
-
-                option.value =
-                    item.id;
-
-                option.textContent =
-                    data.name ||
-                    "Comunidade";
-
-                select.appendChild(
-                    option
-                );
-
-            });
-
-        await loadCommunityAdmins();
 
     } catch (error) {
 
         console.error(error);
 
-    }
-
-}
-
-
-window.assignCommunityAdmin =
-async function() {
-
-    if (!isAdmin()) {
-        return;
-    }
-
-    const communityId =
-        $("adminCommunitySelect")
-            .value;
-
-    const email =
-        $("communityAdminEmail")
-            .value
-            .trim();
-
-    if (!communityId) {
-
-        showToast(
-            "Selecione uma comunidade."
-        );
-
-        return;
-    }
-
-    if (!email) {
-
-        showToast(
-            "Informe o email."
-        );
-
-        return;
-    }
-
-    try {
-
-        await addDoc(
-            collection(
-                db,
-                "communityAdmins"
-            ),
-            {
-                communityId,
-                email,
-                createdAt:
-                    serverTimestamp(),
-                createdBy:
-                    currentUser.uid
-            }
-        );
-
-        $("communityAdminEmail")
-            .value = "";
-
-        showToast(
-            "Administrador definido."
-        );
-
-        await loadCommunityAdmins();
-
-    } catch (error) {
-
-        showToast(
-            firebaseError(error)
+        alert(
+            "Erro ao abrir conteúdo: " +
+            error.message
         );
 
     }
@@ -3530,171 +5729,310 @@ async function() {
 };
 
 
-async function loadCommunityAdmins() {
+window.openPageByName =
+function(page) {
 
-    const container =
-        $("communityAdminsList");
+    const buttons =
+        document.querySelectorAll(
+            ".nav-item"
+        );
 
-    if (!container) {
-        return;
-    }
 
-    try {
+    let targetButton = null;
 
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    "communityAdmins"
+
+    buttons.forEach(
+        button => {
+
+            const onclick =
+                button
+                .getAttribute(
+                    "onclick"
+                );
+
+
+            if (
+                onclick &&
+                onclick.includes(
+                    "'" + page + "'"
                 )
-            );
+            ) {
 
-        if (snapshot.empty) {
+                targetButton =
+                    button;
 
-            container.innerHTML = `
+            }
 
-                <p style="color:#6B7A99;">
-                    Nenhum administrador de comunidade
-                    cadastrado.
-                </p>
-
-            `;
-
-            return;
         }
+    );
 
-        container.innerHTML =
-            snapshot.docs
-                .map(item => {
 
-                    const data =
-                        item.data();
+    openPage(
+        page,
+        targetButton
+    );
 
-                    return `
-
-                        <div
-                            style="
-                                padding:12px;
-                                border-bottom:
-                                    1px solid #e5e8ef;
-                            "
-                        >
-
-                            <strong>
-                                ${escapeHtml(
-                                    data.email
-                                )}
-                            </strong>
-
-                            <div
-                                style="
-                                    color:#6B7A99;
-                                    font-size:13px;
-                                "
-                            >
-                                Comunidade:
-                                ${escapeHtml(
-                                    data.communityId
-                                )}
-                            </div>
-
-                        </div>
-
-                    `;
-
-                })
-                .join("");
-
-    } catch (error) {
-
-        console.error(error);
-
-    }
-
-}
+};
 
 
 /* =====================================================
-   ESTADO DE AUTENTICAÇÃO
+   AUTENTICAÇÃO
 ===================================================== */
 
 onAuthStateChanged(
     auth,
     async user => {
 
-        currentUser = user;
-
         if (user) {
 
-            $("authScreen")
+            isAdmin =
+                user.email
+                .toLowerCase() ===
+                ADMIN_EMAIL
+                .toLowerCase();
+
+
+            document
+                .getElementById(
+                    "authScreen"
+                )
                 .classList
                 .add("hidden");
 
-            $("app")
+
+            document
+                .getElementById(
+                    "appScreen"
+                )
                 .classList
                 .remove("hidden");
 
-            $("userEmail")
+
+            document
+                .getElementById(
+                    "userEmail"
+                )
                 .textContent =
-                user.email || "";
+                user.email;
 
-            updateAdminMenu();
 
-            try {
+            document
+                .getElementById(
+                    "profileEmail"
+                )
+                .textContent =
+                user.email;
 
-                await setDoc(
-                    doc(
-                        db,
-                        "users",
-                        user.uid
-                    ),
-                    {
-                        email:
-                            user.email || "",
-                        lastLogin:
-                            serverTimestamp()
-                    },
-                    {
-                        merge: true
+
+            /* ADMIN GERAL */
+
+            if (isAdmin) {
+
+                document
+                    .getElementById(
+                        "adminMenu"
+                    )
+                    .classList
+                    .remove("hidden");
+
+
+                document
+                    .getElementById(
+                        "adminCommunityButton"
+                    )
+                    .classList
+                    .remove("hidden");
+
+
+                Object.keys(
+                    contentTypes
+                ).forEach(
+                    type => {
+
+                        document
+                            .getElementById(
+                                contentTypes[type]
+                                .adminId
+                            )
+                            ?.classList
+                            .remove(
+                                "hidden"
+                            );
+
                     }
                 );
 
-            } catch (error) {
 
-                /*
-                    Não interromper o aplicativo
-                    se as regras do Firestore ainda
-                    não permitirem gravar usuários.
-                */
+            } else {
 
-                console.warn(
-                    "Não foi possível atualizar usuário:",
-                    error
+                document
+                    .getElementById(
+                        "adminMenu"
+                    )
+                    .classList
+                    .add("hidden");
+
+
+                document
+                    .getElementById(
+                        "adminCommunityButton"
+                    )
+                    .classList
+                    .add("hidden");
+
+
+                Object.keys(
+                    contentTypes
+                ).forEach(
+                    type => {
+
+                        document
+                            .getElementById(
+                                contentTypes[type]
+                                .adminId
+                            )
+                            ?.classList
+                            .add("hidden");
+
+                    }
                 );
 
             }
 
-            await renderPage("home");
+
+            loadHome();
+
 
         } else {
 
-            $("app")
-                .classList
-                .add("hidden");
+            isAdmin = false;
 
-            $("authScreen")
+            currentCommunityId = null;
+
+            currentCommunityIsAdmin = false;
+
+
+            document
+                .getElementById(
+                    "authScreen"
+                )
                 .classList
                 .remove("hidden");
 
-            showLogin();
+
+            document
+                .getElementById(
+                    "appScreen"
+                )
+                .classList
+                .add("hidden");
 
         }
 
     }
 );
 
+
+/* =====================================================
+   UTILITÁRIOS
+===================================================== */
+
+function showError(
+    message,
+    elementId
+) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+
+    element.textContent =
+        message;
+
+
+    element
+        .classList
+        .remove("hidden");
+
+
+    setTimeout(
+        () => {
+
+            element
+                .classList
+                .add("hidden");
+
+        },
+        4000
+    );
+
+}
+
+
+function escapeHtml(text) {
+
+    if (
+        text === null ||
+        text === undefined
+    ) {
+
+        return "";
+
+    }
+
+
+    return String(text)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+function escapeAttribute(text) {
+
+    if (
+        text === null ||
+        text === undefined
+    ) {
+
+        return "";
+
+    }
+
+
+    return String(text)
+        .replace(
+            /'/g,
+            "%27"
+        )
+        .replace(
+            /"/g,
+            "%22"
+        );
+
+}
+
 </script>
 
 </body>
-
-</html>
+    </html>
