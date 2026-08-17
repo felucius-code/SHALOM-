@@ -707,6 +707,105 @@ select option {
     line-height: 1.6;
 }
 
+
+/* =====================================================
+   PUBLICAÇÕES DENTRO DAS COMUNIDADES
+===================================================== */
+
+.community-post {
+    background: var(--panel);
+    border: 1px solid #303654;
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.community-post-author {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 8px;
+}
+
+.community-post-avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    background: var(--panel2);
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-weight: bold;
+}
+
+.community-post-author-name {
+    color: var(--gold);
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.community-post-date {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.community-post-text {
+    color: white;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+
+/* =====================================================
+   AÇÕES DA PUBLICAÇÃO
+===================================================== */
+
+.community-post-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #303654;
+}
+
+.community-post-action {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 4px;
+}
+
+.community-post-action:hover {
+    color: var(--gold);
+}
+
+
+/* =====================================================
+   COMENTÁRIOS
+===================================================== */
+
+.community-comments {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #303654;
+}
+
+.community-comment {
+    padding: 7px 0;
+    color: #D5D8E2;
+    font-size: 13px;
+}
+
+.community-comment-author {
+    color: var(--gold);
+    font-weight: bold;
+    margin-right: 5px;
+}
     /* =========================
    HOME — CARROSSÉIS
 ========================= */
