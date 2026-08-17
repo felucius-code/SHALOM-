@@ -320,8 +320,8 @@ select option {
     width: 100%;
     background: var(--panel);
     border-bottom: 1px solid #303654;
-    padding: 12px 5px;
-    overflow-x: auto;
+    padding: 12px 12px;
+    overflow: hidden;
 }
 
 .communities-list {
@@ -329,6 +329,8 @@ select option {
     align-items: center;
     gap: 12px;
     overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 }
 
@@ -338,15 +340,77 @@ select option {
 
 .community-item {
     flex: 0 0 auto;
-    min-width: 85px;
+    min-width: 90px;
     text-align: center;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
 }
 
 .community-avatar {
-    width: 52px;
-    height: 52px;
-    margin: 0 auto 5px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--panel2);
+    border: 2px solid #303654;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-size: 22px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.community-item:hover .community-avatar {
+    border-color: var(--gold-light);
+    transform: scale(1.08);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+}
+
+.community-name {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+    transition: all 0.2s ease;
+}
+
+.community-item:hover .community-name {
+    color: var(--white);
+}
+
+/* Estado ATIVO */
+.community-item.active .community-avatar {
+    background: var(--gold);
+    color: var(--bg);
+    border-color: var(--gold-light);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+.community-item.active .community-name {
+    color: var(--gold);
+}
+
+/* Botão "Ver Todas" / "+" */
+.community-view-all {
+    flex: 0 0 auto;
+    min-width: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.community-view-all-btn {
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background: var(--panel2);
     border: 2px solid var(--gold);
@@ -354,26 +418,60 @@ select option {
     align-items: center;
     justify-content: center;
     color: var(--gold);
-    font-size: 21px;
+    font-size: 28px;
     font-weight: bold;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-.community-name {
-    color: white;
-    font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 85px;
-}
-
-.community-item.active .community-avatar {
+.community-view-all-btn:hover {
     background: var(--gold);
     color: var(--bg);
+    transform: scale(1.08);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
 }
 
-.community-item.active .community-name {
+.community-view-all-text {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.community-view-all:hover .community-view-all-text {
     color: var(--gold);
+}
+
+/* Tablet e Desktop */
+@media (min-width: 768px) {
+    .communities-bar {
+        padding: 15px 20px;
+    }
+
+    .community-item {
+        min-width: 100px;
+    }
+
+    .community-avatar {
+        width: 65px;
+        height: 65px;
+        font-size: 26px;
+    }
+
+    .community-name {
+        font-size: 14px;
+        max-width: 100px;
+    }
+
+    .community-view-all-btn {
+        width: 65px;
+        height: 65px;
+        font-size: 32px;
+    }
+
+    .community-view-all-text {
+        font-size: 14px;
+    }
 }
 
 /* =========================
