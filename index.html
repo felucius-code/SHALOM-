@@ -1778,40 +1778,40 @@ select option {
     </section>
 
 
-    <!-- ================================
-         VÍDEOS
-    ================================= -->
+    
+<!-- ================================
+     VÍDEOS
+================================= -->
 
-    <section class="home-section">
+<section class="home-section">
 
-        <div class="home-section-header">
+    <div class="home-section-header">
 
-            <h2>
-                🎥 Vídeos
-            </h2>
+        <h2>
+            🎥 Vídeos
+        </h2>
 
-            <button
-                class="home-see-all"
-                onclick="openPageByName('videos')">
+        <button
+            class="home-see-all"
+            onclick="openPageByName('videos')">
 
-                Ver todos →
+            Ver todos →
 
-            </button>
+        </button>
 
+    </div>
+
+    <div
+        id="homeVideos"
+        class="home-carousel">
+
+        <div class="home-loading">
+            Carregando...
         </div>
 
-        <div
-            id="homeVideos"
-            class="home-carousel">
+    </div>
 
-            <div class="home-loading">
-                Carregando...
-            </div>
-
-        </div>
-
-    </section>
-
+</section>
 
     <!-- ================================
          LOJA
@@ -1964,77 +1964,79 @@ select option {
                 onclick="showStudyVideoForm()">
 
                 ＋ Adicionar vídeo de estudo
+<!-- =====================================================
+     VÍDEOS DE ESTUDO DA COMUNIDADE
+===================================================== -->
 
-            </button>
+<!-- FORMULÁRIO DE VÍDEO DE ESTUDO -->
 
-        </div>
+<div id="studyVideoForm"
+     class="card hidden">
 
+    <h2 class="card-title">
+        🎥 Novo vídeo de estudo
+    </h2>
 
-        <!-- FORMULÁRIO DE VÍDEO -->
+    <p class="page-description">
+        Adicione um vídeo de estudo para os membros desta comunidade.
+    </p>
 
-        <div id="studyVideoForm"
-             class="card hidden">
+    <div class="form-group">
 
-            <h2 class="card-title">
-                🎥 Novo vídeo de estudo
-            </h2>
+        <label>Título</label>
 
-            <div class="form-group">
-
-                <label>Título</label>
-
-                <input
-                    id="studyVideoTitle"
-                    placeholder="Título do vídeo">
-
-            </div>
-
-            <div class="form-group">
-
-                <label>Descrição</label>
-
-                <textarea
-                    id="studyVideoDescription"
-                    placeholder="Descrição do estudo">
-                </textarea>
-
-            </div>
-
-            <div class="form-group">
-
-                <label>Link do vídeo</label>
-
-                <input
-                    id="studyVideoUrl"
-                    placeholder="https://...">
-
-            </div>
-
-            <button
-                class="btn"
-                onclick="saveStudyVideo()">
-
-                Salvar vídeo
-
-            </button>
-
-            <button
-                class="btn btn-secondary"
-                onclick="hideStudyVideoForm()">
-
-                Cancelar
-
-            </button>
-
-        </div>
-
-
-        <div id="communityStudyVideos"></div>
+        <input
+            type="text"
+            id="studyVideoTitle"
+            placeholder="Título do vídeo">
 
     </div>
 
-</section>
+    <div class="form-group">
 
+        <label>Descrição</label>
+
+        <textarea
+            id="studyVideoDescription"
+            placeholder="Descrição do estudo"></textarea>
+
+    </div>
+
+    <div class="form-group">
+
+        <label>Link do vídeo</label>
+
+        <input
+            type="url"
+            id="studyVideoUrl"
+            placeholder="https://...">
+
+    </div>
+
+    <button
+        class="btn"
+        onclick="saveStudyVideo()">
+
+        🎥 Acrescentar vídeo à comunidade
+
+    </button>
+
+    <button
+        class="btn btn-secondary"
+        onclick="hideStudyVideoForm()">
+
+        Cancelar
+
+    </button>
+
+</div>
+
+
+<!-- =====================================================
+     VÍDEOS DE ESTUDO DA COMUNIDADE
+===================================================== -->
+
+<div id="communityStudyVideos"></div>
 
 <!-- =====================================================
      CATEGORIAS
