@@ -2932,23 +2932,10 @@ function(page, button) {
 window.showCreateCommunity =
 function() {
 
-    const box =
-        document.getElementById(
+    document
+        .getElementById(
             "createCommunityBox"
-        );
-
-
-    if (!box) {
-
-        console.error(
-            "createCommunityBox não encontrado."
-        );
-
-        return;
-    }
-
-
-    box
+        )
         .classList
         .toggle("hidden");
 
@@ -2957,16 +2944,6 @@ function() {
 
 window.addCommunity =
 async function() {
-
-    if (!auth.currentUser) {
-
-        alert(
-            "Você precisa estar conectado."
-        );
-
-        return;
-    }
-
 
     if (!isAdmin) {
 
@@ -2978,39 +2955,20 @@ async function() {
     }
 
 
-    const nameElement =
-        document.getElementById(
-            "communityName"
-        );
-
-
-    const descriptionElement =
-        document.getElementById(
-            "communityDescription"
-        );
-
-
-    if (
-        !nameElement ||
-        !descriptionElement
-    ) {
-
-        alert(
-            "Formulário de comunidade não encontrado."
-        );
-
-        return;
-    }
-
-
     const name =
-        nameElement
+        document
+        .getElementById(
+            "communityName"
+        )
         .value
         .trim();
 
 
     const description =
-        descriptionElement
+        document
+        .getElementById(
+            "communityDescription"
+        )
         .value
         .trim();
 
@@ -3025,11 +2983,115 @@ async function() {
     }
 
 
+    try {
+
+        await addDoc(
+            collection(
+                db,
+                "communities"
+            ),
+            {
+
+                name,
+
+                description,
+
+                createdBy:
+                    auth.currentUser.email,
+
+                createdAt:
+                    serverTimestamp(),
+
+                members:
+                    [
+                        auth.currentUser.email
+                    ],
+
+                pendingMembers:
+                    []
+
+            }
+        );
+/* =====================================================
+   CRIAR COMUNIDADE
+===================================================== */
+
+window.showCreateCommunity =
+function() {
+
+    const box =
+        document.getElementById(
+            "createCommunityBox"
+        );
+
+    if (box) {
+
+        box.classList.toggle("hidden");
+
+    }
+
+};
+
+
+window.addCommunity =
+async function() {
+
     const user =
         auth.currentUser;
 
 
+    if (!user) {
+
+        alert(
+            "Você precisa estar conectado para criar uma comunidade."
+        );
+
+        return;
+    }
+
+
+    const name =
+        document
+        .getElementById(
+            "communityName"
+        )
+        .value
+        .trim();
+
+
+    const description =
+        document
+        .getElementById(
+            "communityDescription"
+        )
+        .value
+        .trim();
+
+
+    if (!name) {
+
+        alert(
+            "Digite o nome da comunidade."
+        );
+
+        return;
+    }
+
+
     try {
+
+        /*
+         * A comunidade é criada inicialmente
+         * como uma solicitação.
+         *
+         * O criador entra automaticamente
+         * como primeiro membro e administrador
+         * da comunidade.
+         *
+         * A aprovação geral da comunidade
+         * continuará sendo responsabilidade
+         * do administrador da plataforma.
+         */
 
         await addDoc(
             collection(
@@ -3052,7 +3114,7 @@ async function() {
                     serverTimestamp(),
 
                 status:
-                    "approved",
+                    "pending",
 
                 members:
                     [
@@ -3073,285 +3135,45 @@ async function() {
                     ],
 
                 studyVideos:
-                    [],
-
-                posts:
-                    [],
-
-                messages:
                     []
 
             }
         );
 
 
-        nameElement.value =
-            "";
-
-
-        descriptionElement.value =
-            "";
-
-
-        const box =
-            document.getElementById(
-                "createCommunityBox"
-            );
-
-
-        if (box) {
-
-            box
-                .classList
-                .add("hidden");
-
-        }
-
-
-        alert(
-            "Comunidade criada com sucesso."
-        );
-
-
-        await loadCommunities();
-
-
-    } catch (error) {
-
-        console.error(
-            "Erro ao criar comunidade:",
-            error
-        );
-
-
-        alert(
-            "Erro ao criar comunidade: " +
-            error.message
-        );
-
-    }
-
-};
-/* =====================================================
-   CRIAR COMUNIDADE
-===================================================== */
-
-window.showCreateCommunity =
-function() {
-
-    const box =
-        document.getElementById(
-            "createCommunityBox"
-        );
-
-
-    if (!box) {
-
-        console.error(
-            "createCommunityBox não encontrado."
-        );
-
-        return;
-    }
-
-
-    box
-        .classList
-        .toggle("hidden");
-
-};
-
-
-window.addCommunity =
-async function() {
-
-    const user =
-        auth.currentUser;
-
-
-    if (!user) {
-
-        alert(
-            "Você precisa estar conectado para criar uma comunidade."
-        );
-
-        return;
-    }
-
-
-    const nameElement =
-        document.getElementById(
+        document
+        .getElementById(
             "communityName"
-        );
+        )
+        .value = "";
 
 
-    const descriptionElement =
-        document.getElementById(
+        document
+        .getElementById(
             "communityDescription"
-        );
+        )
+        .value = "";
 
 
-    if (
-        !nameElement ||
-        !descriptionElement
-    ) {
+        document
+        .getElementById(
+            "createCommunityBox"
+        )
+        .classList
+        .add("hidden");
+
 
         alert(
-            "Formulário de comunidade não encontrado."
-        );
-
-        return;
-    }
-
-
-    const name =
-        nameElement
-        .value
-        .trim();
-
-
-    const description =
-        descriptionElement
-        .value
-        .trim();
-
-
-    if (!name) {
-
-        alert(
-            "Digite o nome da comunidade."
-        );
-
-        return;
-    }
-
-
-    /*
-       O administrador geral pode criar
-       comunidades diretamente aprovadas.
-
-       Outros usuários criam uma solicitação
-       que ficará pendente de aprovação.
-    */
-
-    const status =
-        isAdmin
-        ?
-        "approved"
-        :
-        "pending";
-
-
-    try {
-
-        await addDoc(
-            collection(
-                db,
-                "communities"
-            ),
-            {
-
-                name,
-
-                description,
-
-                createdBy:
-                    user.email,
-
-                createdByUid:
-                    user.uid,
-
-                createdAt:
-                    serverTimestamp(),
-
-                status,
-
-                members:
-                    [
-                        user.email
-                    ],
-
-                memberUids:
-                    [
-                        user.uid
-                    ],
-
-                pendingMembers:
-                    [],
-
-                communityAdmins:
-                    [
-                        user.email
-                    ],
-
-                studyVideos:
-                    [],
-
-                posts:
-                    [],
-
-                messages:
-                    []
-
-            }
+            "Comunidade criada e enviada para aprovação."
         );
 
 
-        nameElement.value =
-            "";
-
-
-        descriptionElement.value =
-            "";
-
-
-        const box =
-            document.getElementById(
-                "createCommunityBox"
-            );
-
-
-        if (box) {
-
-            box
-                .classList
-                .add("hidden");
-
-        }
-
-
-        if (isAdmin) {
-
-            alert(
-                "Comunidade criada com sucesso."
-            );
-
-        } else {
-
-            alert(
-                "Comunidade criada e enviada para aprovação."
-            );
-
-        }
-
-
-        if (
-            typeof loadCommunities ===
-            "function"
-        ) {
-
-            await loadCommunities();
-
-        }
+        loadCommunities();
 
 
     } catch (error) {
 
-        console.error(
-            "Erro ao criar comunidade:",
-            error
-        );
-
+        console.error(error);
 
         alert(
             "Erro ao criar comunidade: " +
@@ -6419,250 +6241,6 @@ async function loadHomeFeatured(
 
 }
 
-    /* =====================================================
-   ABRIR COMUNIDADE
-===================================================== */
-
-window.openCommunity =
-async function(communityId) {
-
-    try {
-
-        if (!auth.currentUser) {
-
-            alert(
-                "Você precisa estar conectado."
-            );
-
-            return;
-        }
-
-
-        if (!communityId) {
-
-            alert(
-                "Não foi possível identificar a comunidade."
-            );
-
-            return;
-        }
-
-
-        const snap =
-            await getDoc(
-                doc(
-                    db,
-                    "communities",
-                    communityId
-                )
-            );
-
-
-        if (!snap.exists()) {
-
-            alert(
-                "Comunidade não encontrada."
-            );
-
-            return;
-        }
-
-
-        const data =
-            snap.data();
-
-
-        const email =
-            auth.currentUser.email;
-
-
-        const members =
-            data.members || [];
-
-
-        if (
-            !members.includes(email)
-        ) {
-
-            alert(
-                "Você ainda não é membro desta comunidade."
-            );
-
-            return;
-        }
-
-
-        /* =====================================
-           COMUNIDADE ATUAL
-        ===================================== */
-
-        currentCommunityId =
-            communityId;
-
-
-        if (
-            typeof isCommunityAdmin ===
-            "function"
-        ) {
-
-            currentCommunityIsAdmin =
-                await isCommunityAdmin(
-                    communityId
-                );
-
-        } else {
-
-            currentCommunityIsAdmin =
-                isAdmin;
-
-        }
-
-
-        /* =====================================
-           ABRIR ÁREA DA COMUNIDADE
-        ===================================== */
-
-        const communityArea =
-            document.getElementById(
-                "communityArea"
-            );
-
-
-        if (!communityArea) {
-
-            alert(
-                "Área da comunidade não encontrada."
-            );
-
-            return;
-        }
-
-
-        communityArea
-            .classList
-            .remove("hidden");
-
-
-        const title =
-            document.getElementById(
-                "communityAreaTitle"
-            );
-
-
-        if (title) {
-
-            title.textContent =
-                "🏘️ " +
-                (data.name ||
-                "Comunidade");
-
-        }
-
-
-        const description =
-            document.getElementById(
-                "communityAreaDescription"
-            );
-
-
-        if (description) {
-
-            description.textContent =
-                data.description ||
-                "";
-
-        }
-
-
-        /* =====================================
-           FERRAMENTAS DO ADMINISTRADOR
-        ===================================== */
-
-        const adminTools =
-            document.getElementById(
-                "communityStudyAdminTools"
-            );
-
-
-        if (adminTools) {
-
-            if (
-                currentCommunityIsAdmin
-            ) {
-
-                adminTools
-                    .classList
-                    .remove("hidden");
-
-            } else {
-
-                adminTools
-                    .classList
-                    .add("hidden");
-
-            }
-
-        }
-
-
-        /* =====================================
-           VÍDEOS DE ESTUDOS
-        ===================================== */
-
-        if (
-            typeof loadCommunityStudyVideos ===
-            "function"
-        ) {
-
-            await loadCommunityStudyVideos(
-                communityId
-            );
-
-        }
-
-
-        /* =====================================
-           MENSAGENS DA COMUNIDADE
-        ===================================== */
-
-        if (
-            typeof loadCommunityMessages ===
-            "function"
-        ) {
-
-            await loadCommunityMessages(
-                communityId
-            );
-
-        }
-
-
-        /* =====================================
-           ROLAR ATÉ A COMUNIDADE
-        ===================================== */
-
-        communityArea
-            .scrollIntoView({
-                behavior: "smooth"
-            });
-
-
-    } catch (error) {
-
-        console.error(
-            "Erro ao abrir comunidade:",
-            error
-        );
-
-
-        alert(
-            "Erro ao abrir comunidade: " +
-            error.message
-        );
-
-    }
-
-};
 
 /* =====================================================
    ABRIR CONTEÚDO A PARTIR DA HOME
@@ -6999,10 +6577,17 @@ onAuthStateChanged(
 
 
                 /* =====================================
-   FINALIZAÇÃO DA AUTENTICAÇÃO
-===================================== */
+                   COMUNIDADES DO USUÁRIO
+                ===================================== */
 
-                await loadHome();
+                if (
+                    typeof loadCommunities ===
+                    "function"
+                ) {
+
+                    await loadCommunities();
+
+                }
 
 
             } else {
@@ -7196,4 +6781,4 @@ function escapeAttribute(text) {
 </script>
 
 </body>
-    </html>
+                </html>
