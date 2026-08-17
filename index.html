@@ -200,16 +200,89 @@ select option {
 }
 
 /* =========================
+/* =========================
    LAYOUT
 ========================= */
 
 .app-layout {
     max-width: 1200px;
     margin: auto;
-    display: grid;
-    grid-template-columns: 220px 1fr;
     min-height: calc(100vh - 65px);
 }
+
+/* Área principal do aplicativo */
+.main {
+    padding: 0 25px 25px;
+    min-width: 0;
+}
+
+/* =========================
+   COMUNIDADES NO TOPO
+========================= */
+
+.communities-bar {
+    width: 100%;
+    background: var(--panel);
+    border-bottom: 1px solid #303654;
+    padding: 12px 5px;
+    overflow-x: auto;
+}
+
+.communities-list {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.communities-list::-webkit-scrollbar {
+    display: none;
+}
+
+.community-item {
+    flex: 0 0 auto;
+    min-width: 85px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.community-avatar {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 5px;
+    border-radius: 50%;
+    background: var(--panel2);
+    border: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.community-name {
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 85px;
+}
+
+.community-item.active .community-avatar {
+    background: var(--gold);
+    color: var(--bg);
+}
+
+.community-item.active .community-name {
+    color: var(--gold);
+}
+
+/* =========================
+   SIDEBAR
+========================= */
 
 .sidebar {
     background: var(--panel);
@@ -241,10 +314,9 @@ select option {
     color: var(--gold);
 }
 
-.main {
-    padding: 25px;
-    min-width: 0;
-}
+/* =========================
+   PÁGINAS
+========================= */
 
 .page {
     display: none;
@@ -263,7 +335,7 @@ select option {
 .page-description {
     color: var(--muted);
     margin-bottom: 25px;
-}
+    }
 
 /* =========================
    CARDS
