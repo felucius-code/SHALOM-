@@ -6538,6 +6538,10 @@ onAuthStateChanged(
    UTILITÁRIOS
 ===================================================== */
 
+/* =====================================================
+   UTILITÁRIOS
+===================================================== */
+
 function showError(
     message,
     elementId
@@ -6547,6 +6551,19 @@ function showError(
         document.getElementById(
             elementId
         );
+
+
+    if (!element) {
+
+        console.error(
+            "Elemento de erro não encontrado:",
+            elementId,
+            message
+        );
+
+        return;
+
+    }
 
 
     element.textContent =
@@ -6561,9 +6578,13 @@ function showError(
     setTimeout(
         () => {
 
-            element
-                .classList
-                .add("hidden");
+            if (element) {
+
+                element
+                    .classList
+                    .add("hidden");
+
+            }
 
         },
         4000
@@ -6571,6 +6592,10 @@ function showError(
 
 }
 
+
+/* =====================================================
+   ESCAPAR TEXTO HTML
+===================================================== */
 
 function escapeHtml(text) {
 
@@ -6609,6 +6634,10 @@ function escapeHtml(text) {
 }
 
 
+/* =====================================================
+   ESCAPAR ATRIBUTOS HTML
+===================================================== */
+
 function escapeAttribute(text) {
 
     if (
@@ -6623,15 +6652,27 @@ function escapeAttribute(text) {
 
     return String(text)
         .replace(
-            /'/g,
-            "%27"
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
         )
         .replace(
             /"/g,
-            "%22"
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
         );
 
-}
+    }
 
 </script>
 
