@@ -3363,7 +3363,7 @@ async function() {
 };
 
 
- /* =====================================================
+/* =====================================================
    CARREGAR COMUNIDADES DO USUÁRIO
 ===================================================== */
 
@@ -3382,11 +3382,22 @@ async function loadCommunities() {
     }
 
 
-    list.innerHTML =
-        "<p style='color:#6B7A99;'>Carregando...</p>";
-
-
     try {
+
+        const user =
+            auth.currentUser;
+
+
+        if (!user) {
+
+            return;
+
+        }
+
+
+        list.innerHTML =
+            "<p style='color:#6B7A99;'>Carregando...</p>";
+
 
         const snapshot =
             await getDocs(
@@ -3398,17 +3409,6 @@ async function loadCommunities() {
 
 
         list.innerHTML = "";
-
-
-        const user =
-            auth.currentUser;
-
-
-        if (!user) {
-
-            return;
-
-        }
 
 
         const email =
@@ -3478,117 +3478,35 @@ async function loadCommunities() {
                     community.data;
 
 
-                const image =
-                    data.image || "";
+                list.innerHTML +=
+                `
+                <button
+                    type="button"
+                    class="community-circle"
+                    onclick="openCommunity('${communityId}')">
+
+                    <div
+                        class="community-circle-image">
+
+                        <span>
+                            👥
+                        </span>
+
+                    </div>
 
 
-                const button =
-                    document.createElement(
-                        "button"
-                    );
+                    <span
+                        class="community-circle-name">
 
+                        ${escapeHtml(
+                            data.name ||
+                            "Comunidade"
+                        )}
 
-                button.className =
-                    "community-circle";
+                    </span>
 
-
-                button.type =
-                    "button";
-
-
-                button.title =
-                    data.name ||
-                    "Comunidade";
-
-
-                button.addEventListener(
-                    "click",
-                    function() {
-
-                        openCommunity(
-                            communityId
-                        );
-
-                    }
-                );
-
-
-                const imageContainer =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                imageContainer.className =
-                    "community-circle-image";
-
-
-                if (image) {
-
-                    const img =
-                        document.createElement(
-                            "img"
-                        );
-
-
-                    img.src =
-                        image;
-
-
-                    img.alt =
-                        data.name ||
-                        "Comunidade";
-
-
-                    imageContainer
-                        .appendChild(img);
-
-                } else {
-
-                    const icon =
-                        document.createElement(
-                            "span"
-                        );
-
-
-                    icon.textContent =
-                        "👥";
-
-
-                    imageContainer
-                        .appendChild(icon);
-
-                }
-
-
-                button.appendChild(
-                    imageContainer
-                );
-
-
-                const name =
-                    document.createElement(
-                        "span"
-                    );
-
-
-                name.className =
-                    "community-circle-name";
-
-
-                name.textContent =
-                    data.name ||
-                    "Comunidade";
-
-
-                button.appendChild(
-                    name
-                );
-
-
-                list.appendChild(
-                    button
-                );
+                </button>
+                `;
 
             }
         );
