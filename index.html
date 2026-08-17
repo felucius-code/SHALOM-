@@ -262,20 +262,54 @@ select option {
 }
 
 /* =========================
-/* =========================
    LAYOUT
 ========================= */
 
 .app-layout {
-    max-width: 1200px;
+    min-height: calc(100vh - 65px - 70px); /* 65px navbar top + 70px navbar bottom mobile */
     margin: auto;
-    min-height: calc(100vh - 65px);
 }
 
 /* Área principal do aplicativo */
 .main {
-    padding: 0 25px 25px;
+    padding: 15px 12px 20px; /* mobile-first: padding menor */
     min-width: 0;
+}
+
+/* Carrosséis horizontais (deslizáveis) */
+.carousel {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 8px; /* espaço para scrollbar */
+    -webkit-overflow-scrolling: touch; /* smooth scroll em iOS */
+}
+
+/* Hide scrollbar but keep functionality */
+.carousel::-webkit-scrollbar {
+    height: 4px;
+}
+
+.carousel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.carousel::-webkit-scrollbar-thumb {
+    background: var(--muted);
+    border-radius: 2px;
+}
+
+/* Tablet e desktop */
+@media (min-width: 768px) {
+    .app-layout {
+        max-width: 1200px;
+        min-height: calc(100vh - 65px); /* sem navbar bottom em desktop */
+    }
+
+    .main {
+        padding: 0 25px 25px;
+    }
 }
 
 /* =========================
