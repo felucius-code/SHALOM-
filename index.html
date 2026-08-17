@@ -1,4 +1,39 @@
 <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SHALOM - Rede Social</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #0A0E27;
+    --panel: #1A1F3A;
+    --panel2: #222846;
+    --gold: #D4AF37;
+    --gold-light: #E5C158;
+    --muted: #6B7A99;
+    --white: #FFFFFF;
+    --danger: #8B0000;
+    --success: #315B3A;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    min-height: 100vh;
+}
+
+button {
     cursor: pointer;
 }
 
@@ -3328,9 +3363,9 @@ async function() {
 };
 
 
-/* =====================================================
-   CARREGAR COMUNIDADES DO USUÁRIO
-===================================================== */
+ /* =====================================================
+    CARREGAR COMUNIDADES DO USUÁRIO
+ ===================================================== */
 
 async function loadCommunities() {
 
@@ -3347,22 +3382,11 @@ async function loadCommunities() {
     }
 
 
+    list.innerHTML =
+        "<p style='color:#6B7A99;'>Carregando...</p>";
+
+
     try {
-
-        const user =
-            auth.currentUser;
-
-
-        if (!user) {
-
-            return;
-
-        }
-
-
-        list.innerHTML =
-            "<p style='color:#6B7A99;'>Carregando...</p>";
-
 
         const snapshot =
             await getDocs(
@@ -3377,7 +3401,7 @@ async function loadCommunities() {
 
 
         const email =
-            user.email;
+            auth.currentUser.email;
 
 
         let userCommunities = [];
@@ -3435,27 +3459,49 @@ async function loadCommunities() {
         userCommunities.forEach(
             community => {
 
-                const communityId =
+                const data =
+                    community.data;
+
+                const id =
                     community.id;
 
 
-                const data =
-                    community.data;
+                const image =
+                    data.image ||
+                    "";
 
 
                 list.innerHTML +=
                 `
                 <button
-                    type="button"
                     class="community-circle"
-                    onclick="openCommunity('${communityId}')">
+                    onclick="openCommunity('${id}')"
+                    title="${escapeAttribute(
+                        data.name || "Comunidade"
+                    )}">
 
                     <div
                         class="community-circle-image">
 
-                        <span>
-                            👥
-                        </span>
+                        ${
+                            image
+                            ?
+                            `
+                            <img
+                                src="${escapeAttribute(
+                                    image
+                                )}"
+                                alt="${escapeAttribute(
+                                    data.name || ""
+                                )}">
+                            `
+                            :
+                            `
+                            <span>
+                                👥
+                            </span>
+                            `
+                        }
 
                     </div>
 
