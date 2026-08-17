@@ -48,7 +48,7 @@ hr {
 }
 
 /* =========================
-   LOGIN
+   LOGIN & FORMULÁRIOS
 ========================= */
 
 .auth-container {
@@ -78,6 +78,7 @@ hr {
     text-align: center;
     color: var(--muted);
     margin-bottom: 30px;
+    font-size: 14px;
 }
 
 .form-group {
@@ -88,17 +89,38 @@ hr {
     display: block;
     color: var(--muted);
     margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 input,
 textarea,
 select {
     width: 100%;
-    padding: 11px;
+    padding: 12px;
     border-radius: 6px;
-    border: 1px solid var(--gold);
+    border: 1px solid #303654;
     background: var(--bg);
-    color: white;
+    color: var(--white);
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--gold);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #151a2f;
 }
 
 textarea {
@@ -108,52 +130,92 @@ textarea {
 
 select option {
     background: var(--bg);
-    color: white;
+    color: var(--white);
 }
+
+/* ===== BUTTONS ===== */
 
 .btn {
     border: none;
     border-radius: 7px;
-    padding: 11px 15px;
+    padding: 12px 15px;
     background: var(--gold);
     color: var(--bg);
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 14px;
     margin-top: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .btn:hover {
     background: var(--gold-light);
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .btn-secondary {
     background: var(--muted);
-    color: white;
+    color: var(--white);
+}
+
+.btn-secondary:hover {
+    background: #7A8BA8;
+}
+
+.btn-secondary:disabled {
+    opacity: 0.5;
 }
 
 .btn-danger {
     background: var(--danger);
-    color: white;
+    color: var(--white);
+}
+
+.btn-danger:hover {
+    background: #A61818;
+}
+
+.btn-danger:disabled {
+    opacity: 0.5;
 }
 
 .btn-small {
-    padding: 7px 10px;
+    padding: 8px 12px;
     font-size: 13px;
     margin-right: 5px;
 }
 
+/* ===== FEEDBACK ===== */
+
 .error,
 .success {
-    padding: 10px;
+    padding: 12px;
     border-radius: 6px;
     margin-bottom: 15px;
+    font-size: 14px;
+    border-left: 4px solid currentColor;
 }
 
 .error {
-    background: var(--danger);
+    background: rgba(139, 0, 0, 0.15);
+    color: #FF6B6B;
+    border-left-color: #FF6B6B;
 }
 
 .success {
-    background: var(--success);
+    background: rgba(49, 91, 58, 0.15);
+    color: #51CF66;
+    border-left-color: #51CF66;
 }
 
 /* =========================
