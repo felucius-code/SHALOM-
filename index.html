@@ -6755,17 +6755,10 @@ onAuthStateChanged(
 
 
                 /* =====================================
-                   COMUNIDADES DO USUÁRIO
-                ===================================== */
+   FINALIZAÇÃO DA AUTENTICAÇÃO
+===================================== */
 
-                if (
-                    typeof loadCommunities ===
-                    "function"
-                ) {
-
-                    await loadCommunities();
-
-                }
+                await loadHome();
 
 
             } else {
