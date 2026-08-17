@@ -6384,160 +6384,264 @@ onAuthStateChanged(
     auth,
     async user => {
 
-        if (user) {
+        try {
 
-            isAdmin =
-                user.email
-                .toLowerCase() ===
-                ADMIN_EMAIL
-                .toLowerCase();
+            if (user) {
 
-
-            document
-                .getElementById(
-                    "authScreen"
-                )
-                .classList
-                .add("hidden");
+                isAdmin =
+                    user.email
+                    .toLowerCase() ===
+                    ADMIN_EMAIL
+                    .toLowerCase();
 
 
-            document
-                .getElementById(
-                    "appScreen"
-                )
-                .classList
-                .remove("hidden");
+                const authScreen =
+                    document.getElementById(
+                        "authScreen"
+                    );
 
 
-            document
-                .getElementById(
-                    "userEmail"
-                )
-                .textContent =
-                user.email;
+                const appScreen =
+                    document.getElementById(
+                        "appScreen"
+                    );
 
 
-            document
-                .getElementById(
-                    "profileEmail"
-                )
-                .textContent =
-                user.email;
+                const userEmail =
+                    document.getElementById(
+                        "userEmail"
+                    );
 
 
-            /* ADMIN GERAL */
+                const profileEmail =
+                    document.getElementById(
+                        "profileEmail"
+                    );
 
-            if (isAdmin) {
 
-                document
-                    .getElementById(
+                const adminMenu =
+                    document.getElementById(
                         "adminMenu"
-                    )
-                    .classList
-                    .remove("hidden");
+                    );
 
 
-                document
-                    .getElementById(
+                const adminCommunityButton =
+                    document.getElementById(
                         "adminCommunityButton"
-                    )
-                    .classList
-                    .remove("hidden");
+                    );
 
 
-                Object.keys(
-                    contentTypes
-                ).forEach(
-                    type => {
+                if (authScreen) {
 
-                        document
-                            .getElementById(
-                                contentTypes[type]
-                                .adminId
-                            )
-                            ?.classList
-                            .remove(
-                                "hidden"
-                            );
+                    authScreen
+                        .classList
+                        .add("hidden");
+
+                }
+
+
+                if (appScreen) {
+
+                    appScreen
+                        .classList
+                        .remove("hidden");
+
+                }
+
+
+                if (userEmail) {
+
+                    userEmail
+                        .textContent =
+                        user.email;
+
+                }
+
+
+                if (profileEmail) {
+
+                    profileEmail
+                        .textContent =
+                        user.email;
+
+                }
+
+
+                /* =====================================
+                   ADMINISTRADOR GERAL
+                ===================================== */
+
+                if (isAdmin) {
+
+                    if (adminMenu) {
+
+                        adminMenu
+                            .classList
+                            .remove("hidden");
 
                     }
-                );
+
+
+                    if (
+                        adminCommunityButton
+                    ) {
+
+                        adminCommunityButton
+                            .classList
+                            .remove("hidden");
+
+                    }
+
+
+                    Object.keys(
+                        contentTypes
+                    ).forEach(
+                        type => {
+
+                            const element =
+                                document
+                                .getElementById(
+                                    contentTypes[type]
+                                    .adminId
+                                );
+
+
+                            if (element) {
+
+                                element
+                                    .classList
+                                    .remove(
+                                        "hidden"
+                                    );
+
+                            }
+
+                        }
+                    );
+
+
+                } else {
+
+                    if (adminMenu) {
+
+                        adminMenu
+                            .classList
+                            .add("hidden");
+
+                    }
+
+
+                    if (
+                        adminCommunityButton
+                    ) {
+
+                        adminCommunityButton
+                            .classList
+                            .add("hidden");
+
+                    }
+
+
+                    Object.keys(
+                        contentTypes
+                    ).forEach(
+                        type => {
+
+                            const element =
+                                document
+                                .getElementById(
+                                    contentTypes[type]
+                                    .adminId
+                                );
+
+
+                            if (element) {
+
+                                element
+                                    .classList
+                                    .add("hidden");
+
+                            }
+
+                        }
+                    );
+
+                }
+
+
+                /* =====================================
+                   INICIALIZAÇÃO DA HOME
+                ===================================== */
+
+                await loadHome();
+
+
+                /* =====================================
+                   COMUNIDADES DO USUÁRIO
+                ===================================== */
+
+                if (
+                    typeof loadCommunities ===
+                    "function"
+                ) {
+
+                    await loadCommunities();
+
+                }
 
 
             } else {
 
-                document
-                    .getElementById(
-                        "adminMenu"
-                    )
-                    .classList
-                    .add("hidden");
+                isAdmin = false;
+
+                currentCommunityId = null;
+
+                currentCommunityIsAdmin = false;
 
 
-                document
-                    .getElementById(
-                        "adminCommunityButton"
-                    )
-                    .classList
-                    .add("hidden");
+                const authScreen =
+                    document.getElementById(
+                        "authScreen"
+                    );
 
 
-                Object.keys(
-                    contentTypes
-                ).forEach(
-                    type => {
+                const appScreen =
+                    document.getElementById(
+                        "appScreen"
+                    );
 
-                        document
-                            .getElementById(
-                                contentTypes[type]
-                                .adminId
-                            )
-                            ?.classList
-                            .add("hidden");
 
-                    }
-                );
+                if (authScreen) {
+
+                    authScreen
+                        .classList
+                        .remove("hidden");
+
+                }
+
+
+                if (appScreen) {
+
+                    appScreen
+                        .classList
+                        .add("hidden");
+
+                }
 
             }
 
 
-            loadHome();
+        } catch (error) {
 
-
-        } else {
-
-            isAdmin = false;
-
-            currentCommunityId = null;
-
-            currentCommunityIsAdmin = false;
-
-
-            document
-                .getElementById(
-                    "authScreen"
-                )
-                .classList
-                .remove("hidden");
-
-
-            document
-                .getElementById(
-                    "appScreen"
-                )
-                .classList
-                .add("hidden");
+            console.error(
+                "Erro ao inicializar o SHALOM:",
+                error
+            );
 
         }
 
     }
 );
-
-
-/* =====================================================
-   UTILITÁRIOS
-===================================================== */
-
 /* =====================================================
    UTILITÁRIOS
 ===================================================== */
