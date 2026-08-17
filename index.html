@@ -3736,30 +3736,39 @@ async function isCommunityAdmin(
 
     try {
 
-        const q =
-            query(
-                collection(
-                    db,
-                    "communityAdmins"
-                ),
-                where(
-                    "communityId",
-                    "==",
-                    communityId
-                ),
-                where(
-                    "userEmail",
-                    "==",
-                    auth.currentUser.email
-                )
+        const communityRef =
+            doc(
+                db,
+                "communities",
+                communityId
             );
 
 
-        const snapshot =
-            await getDocs(q);
+        const communitySnap =
+            await getDoc(
+                communityRef
+            );
 
 
-        return !snapshot.empty;
+        if (!communitySnap.exists()) {
+
+            return false;
+
+        }
+
+
+        const data =
+            communitySnap.data();
+
+
+        const admins =
+            data.communityAdmins ||
+            [];
+
+
+        return admins.includes(
+            auth.currentUser.email
+        );
 
 
     } catch (error) {
@@ -3777,6 +3786,7 @@ async function isCommunityAdmin(
 
 
 
+        
 /* =====================================================
    ABRIR COMUNIDADE
 ===================================================== */
@@ -3909,62 +3919,6 @@ async function(id) {
     }
 
 };
-
-
-        currentCommunityId = id;
-
-
-currentCommunityIsAdmin =
-    await isCommunityAdmin(id);
-
-
-                document
-            .getElementById(
-                "communityArea"
-            )
-            .classList
-            .remove("hidden");
-
-
-        document
-            .getElementById(
-                "communityAreaTitle"
-            )
-            .textContent =
-                "🏘️ " +
-                data.name;
-
-
-        document
-            .getElementById(
-                "communityAreaDescription"
-            )
-            .textContent =
-                data.description ||
-                "";
-
-
-                if (
-            currentCommunityIsAdmin
-        ) {
-
-            document
-                .getElementById(
-                    "communityStudyAdminTools"
-                )
-                .classList
-                .remove("hidden");
-
-        } else {
-
-            document
-                .getElementById(
-                    "communityStudyAdminTools"
-                )
-                .classList
-                .add("hidden");
-
-    }
 
 
     
