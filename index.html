@@ -3776,7 +3776,8 @@ async function isCommunityAdmin(
 }
 
 
-/* =====================================================
+
+        /* =====================================================
    ABRIR COMUNIDADE
 ===================================================== */
 
@@ -3826,6 +3827,88 @@ async function(id) {
 
             return;
         }
+
+
+        currentCommunityId = id;
+
+
+        currentCommunityIsAdmin =
+            await isCommunityAdmin(id);
+
+
+        document
+            .getElementById(
+                "communityArea"
+            )
+            .classList
+            .remove("hidden");
+
+
+        document
+            .getElementById(
+                "communityAreaTitle"
+            )
+            .textContent =
+                "🏘️ " +
+                data.name;
+
+
+        document
+            .getElementById(
+                "communityAreaDescription"
+            )
+            .textContent =
+                data.description ||
+                "";
+
+
+        if (
+            currentCommunityIsAdmin
+        ) {
+
+            document
+                .getElementById(
+                    "communityStudyAdminTools"
+                )
+                .classList
+                .remove("hidden");
+
+        } else {
+
+            document
+                .getElementById(
+                    "communityStudyAdminTools"
+                )
+                .classList
+                .add("hidden");
+
+        }
+
+
+        loadCommunityStudyVideos(id);
+
+
+        document
+            .getElementById(
+                "communityArea"
+            )
+            .scrollIntoView({
+                behavior: "smooth"
+            });
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Erro ao abrir comunidade: " +
+            error.message
+        );
+
+    }
+
+};
 
 
         /* =================================================
