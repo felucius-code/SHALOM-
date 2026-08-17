@@ -3185,17 +3185,23 @@ async function() {
 };
 
 
-/* =====================================================
-   CARREGAR COMUNIDADES
-===================================================== */
+ /* =====================================================
+    CARREGAR COMUNIDADES DO USUÁRIO
+ ===================================================== */
 
 async function loadCommunities() {
 
     const list =
-        document
-        .getElementById(
+        document.getElementById(
             "communitiesList"
         );
+
+
+    if (!list) {
+
+        return;
+
+    }
 
 
     list.innerHTML =
@@ -3216,178 +3222,145 @@ async function loadCommunities() {
         list.innerHTML = "";
 
 
-        if (snapshot.empty) {
+        const email =
+            auth.currentUser.email;
+
+
+        let userCommunities = [];
+
+
+        snapshot.forEach(
+            communityDoc => {
+
+                const data =
+                    communityDoc.data();
+
+
+                const members =
+                    data.members || [];
+
+
+                if (
+                    members.includes(email)
+                ) {
+
+                    userCommunities.push({
+
+                        id:
+                            communityDoc.id,
+
+                        data:
+                            data
+
+                    });
+
+                }
+
+            }
+        );
+
+
+        if (
+            userCommunities.length === 0
+        ) {
 
             list.innerHTML =
             `
-            <div class="card">
+            <div class="community-empty">
 
-                <p style="color:#6B7A99;">
-                    Nenhuma comunidade disponível.
-                </p>
+                Nenhuma comunidade ainda.
 
             </div>
             `;
 
             return;
-        }
-
-
-        for (
-            const communityDoc
-            of snapshot.docs
-        ) {
-
-            const data =
-                communityDoc.data();
-
-            const id =
-                communityDoc.id;
-
-            const members =
-                data.members || [];
-
-            const pending =
-                data.pendingMembers || [];
-
-            const email =
-                auth.currentUser.email;
-
-            const member =
-                members.includes(email);
-
-            const pendingRequest =
-                pending.includes(email);
-
-            const communityAdmin =
-                await isCommunityAdmin(id);
-
-
-            let action = "";
-
-
-            if (member) {
-
-                action +=
-                `
-                <span class="badge badge-success">
-                    ✓ Membro
-                </span>
-                `;
-
-            }
-            else if (pendingRequest) {
-
-                action +=
-                `
-                <span class="badge badge-pending">
-                    ⏳ Solicitação pendente
-                </span>
-                `;
-
-            }
-            else {
-
-                action +=
-                `
-                <button
-                    class="btn btn-small"
-                    onclick="requestJoin('${id}')">
-
-                    Solicitar entrada
-
-                </button>
-                `;
-
-            }
-
-
-            if (communityAdmin) {
-
-                action +=
-                `
-                <span class="badge badge-admin">
-                    🛡️ Administrador
-                </span>
-                `;
-
-            }
-
-
-            if (member) {
-
-                action +=
-                `
-                <button
-                    class="btn btn-small"
-                    onclick="openCommunity('${id}')">
-
-                    Abrir
-
-                </button>
-                `;
-
-            }
-
-
-            if (
-                data.createdBy === email ||
-                isAdmin
-            ) {
-
-                action +=
-                `
-                <button
-                    class="btn btn-small btn-secondary"
-                    onclick="viewRequests('${id}')">
-
-                    🔔 Solicitações
-
-                </button>
-                `;
-
-            }
-
-
-            list.innerHTML +=
-            `
-            <div class="community-card">
-
-                <h3>
-                    ${escapeHtml(data.name)}
-                </h3>
-
-                <p>
-                    ${escapeHtml(
-                        data.description ||
-                        "Sem descrição."
-                    )}
-                </p>
-
-                <p>
-                    👥 ${members.length} membros
-                </p>
-
-                <div>
-                    ${action}
-                </div>
-
-            </div>
-            `;
 
         }
+
+
+        userCommunities.forEach(
+            community => {
+
+                const data =
+                    community.data;
+
+                const id =
+                    community.id;
+
+
+                const image =
+                    data.image ||
+                    "";
+
+
+                list.innerHTML +=
+                `
+                <button
+                    class="community-circle"
+                    onclick="openCommunity('${id}')"
+                    title="${escapeAttribute(
+                        data.name || "Comunidade"
+                    )}">
+
+                    <div
+                        class="community-circle-image">
+
+                        ${
+                            image
+                            ?
+                            `
+                            <img
+                                src="${escapeAttribute(
+                                    image
+                                )}"
+                                alt="${escapeAttribute(
+                                    data.name || ""
+                                )}">
+                            `
+                            :
+                            `
+                            <span>
+                                👥
+                            </span>
+                            `
+                        }
+
+                    </div>
+
+
+                    <span
+                        class="community-circle-name">
+
+                        ${escapeHtml(
+                            data.name ||
+                            "Comunidade"
+                        )}
+
+                    </span>
+
+                </button>
+                `;
+
+            }
+        );
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erro ao carregar comunidades:",
+            error
+        );
+
 
         list.innerHTML =
         `
         <div class="error">
 
             Erro ao carregar comunidades:
-            ${escapeHtml(error.message)}
+            ${escapeHtml(
+                error.message
+            )}
 
         </div>
         `;
@@ -3395,8 +3368,6 @@ async function loadCommunities() {
     }
 
 }
-
-
 /* =====================================================
    SOLICITAR ENTRADA
 ===================================================== */
