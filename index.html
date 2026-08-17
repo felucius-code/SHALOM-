@@ -6419,6 +6419,250 @@ async function loadHomeFeatured(
 
 }
 
+    /* =====================================================
+   ABRIR COMUNIDADE
+===================================================== */
+
+window.openCommunity =
+async function(communityId) {
+
+    try {
+
+        if (!auth.currentUser) {
+
+            alert(
+                "Você precisa estar conectado."
+            );
+
+            return;
+        }
+
+
+        if (!communityId) {
+
+            alert(
+                "Não foi possível identificar a comunidade."
+            );
+
+            return;
+        }
+
+
+        const snap =
+            await getDoc(
+                doc(
+                    db,
+                    "communities",
+                    communityId
+                )
+            );
+
+
+        if (!snap.exists()) {
+
+            alert(
+                "Comunidade não encontrada."
+            );
+
+            return;
+        }
+
+
+        const data =
+            snap.data();
+
+
+        const email =
+            auth.currentUser.email;
+
+
+        const members =
+            data.members || [];
+
+
+        if (
+            !members.includes(email)
+        ) {
+
+            alert(
+                "Você ainda não é membro desta comunidade."
+            );
+
+            return;
+        }
+
+
+        /* =====================================
+           COMUNIDADE ATUAL
+        ===================================== */
+
+        currentCommunityId =
+            communityId;
+
+
+        if (
+            typeof isCommunityAdmin ===
+            "function"
+        ) {
+
+            currentCommunityIsAdmin =
+                await isCommunityAdmin(
+                    communityId
+                );
+
+        } else {
+
+            currentCommunityIsAdmin =
+                isAdmin;
+
+        }
+
+
+        /* =====================================
+           ABRIR ÁREA DA COMUNIDADE
+        ===================================== */
+
+        const communityArea =
+            document.getElementById(
+                "communityArea"
+            );
+
+
+        if (!communityArea) {
+
+            alert(
+                "Área da comunidade não encontrada."
+            );
+
+            return;
+        }
+
+
+        communityArea
+            .classList
+            .remove("hidden");
+
+
+        const title =
+            document.getElementById(
+                "communityAreaTitle"
+            );
+
+
+        if (title) {
+
+            title.textContent =
+                "🏘️ " +
+                (data.name ||
+                "Comunidade");
+
+        }
+
+
+        const description =
+            document.getElementById(
+                "communityAreaDescription"
+            );
+
+
+        if (description) {
+
+            description.textContent =
+                data.description ||
+                "";
+
+        }
+
+
+        /* =====================================
+           FERRAMENTAS DO ADMINISTRADOR
+        ===================================== */
+
+        const adminTools =
+            document.getElementById(
+                "communityStudyAdminTools"
+            );
+
+
+        if (adminTools) {
+
+            if (
+                currentCommunityIsAdmin
+            ) {
+
+                adminTools
+                    .classList
+                    .remove("hidden");
+
+            } else {
+
+                adminTools
+                    .classList
+                    .add("hidden");
+
+            }
+
+        }
+
+
+        /* =====================================
+           VÍDEOS DE ESTUDOS
+        ===================================== */
+
+        if (
+            typeof loadCommunityStudyVideos ===
+            "function"
+        ) {
+
+            await loadCommunityStudyVideos(
+                communityId
+            );
+
+        }
+
+
+        /* =====================================
+           MENSAGENS DA COMUNIDADE
+        ===================================== */
+
+        if (
+            typeof loadCommunityMessages ===
+            "function"
+        ) {
+
+            await loadCommunityMessages(
+                communityId
+            );
+
+        }
+
+
+        /* =====================================
+           ROLAR ATÉ A COMUNIDADE
+        ===================================== */
+
+        communityArea
+            .scrollIntoView({
+                behavior: "smooth"
+            });
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao abrir comunidade:",
+            error
+        );
+
+
+        alert(
+            "Erro ao abrir comunidade: " +
+            error.message
+        );
+
+    }
+
+};
 
 /* =====================================================
    ABRIR CONTEÚDO A PARTIR DA HOME
