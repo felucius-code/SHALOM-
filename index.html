@@ -3364,8 +3364,8 @@ async function() {
 
 
  /* =====================================================
-    CARREGAR COMUNIDADES DO USUÁRIO
- ===================================================== */
+   CARREGAR COMUNIDADES DO USUÁRIO
+===================================================== */
 
 async function loadCommunities() {
 
@@ -3400,8 +3400,19 @@ async function loadCommunities() {
         list.innerHTML = "";
 
 
+        const user =
+            auth.currentUser;
+
+
+        if (!user) {
+
+            return;
+
+        }
+
+
         const email =
-            auth.currentUser.email;
+            user.email;
 
 
         let userCommunities = [];
@@ -3459,65 +3470,125 @@ async function loadCommunities() {
         userCommunities.forEach(
             community => {
 
-                const data =
-                    community.data;
-
-                const id =
+                const communityId =
                     community.id;
 
 
+                const data =
+                    community.data;
+
+
                 const image =
-                    data.image ||
-                    "";
+                    data.image || "";
 
 
-                list.innerHTML +=
-                `
-                <button
-                    class="community-circle"
-                    onclick="openCommunity('${id}')"
-                    title="${escapeAttribute(
-                        data.name || "Comunidade"
-                    )}">
-
-                    <div
-                        class="community-circle-image">
-
-                        ${
-                            image
-                            ?
-                            `
-                            <img
-                                src="${escapeAttribute(
-                                    image
-                                )}"
-                                alt="${escapeAttribute(
-                                    data.name || ""
-                                )}">
-                            `
-                            :
-                            `
-                            <span>
-                                👥
-                            </span>
-                            `
-                        }
-
-                    </div>
+                const button =
+                    document.createElement(
+                        "button"
+                    );
 
 
-                    <span
-                        class="community-circle-name">
+                button.className =
+                    "community-circle";
 
-                        ${escapeHtml(
-                            data.name ||
-                            "Comunidade"
-                        )}
 
-                    </span>
+                button.type =
+                    "button";
 
-                </button>
-                `;
+
+                button.title =
+                    data.name ||
+                    "Comunidade";
+
+
+                button.addEventListener(
+                    "click",
+                    function() {
+
+                        openCommunity(
+                            communityId
+                        );
+
+                    }
+                );
+
+
+                const imageContainer =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                imageContainer.className =
+                    "community-circle-image";
+
+
+                if (image) {
+
+                    const img =
+                        document.createElement(
+                            "img"
+                        );
+
+
+                    img.src =
+                        image;
+
+
+                    img.alt =
+                        data.name ||
+                        "Comunidade";
+
+
+                    imageContainer
+                        .appendChild(img);
+
+                } else {
+
+                    const icon =
+                        document.createElement(
+                            "span"
+                        );
+
+
+                    icon.textContent =
+                        "👥";
+
+
+                    imageContainer
+                        .appendChild(icon);
+
+                }
+
+
+                button.appendChild(
+                    imageContainer
+                );
+
+
+                const name =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                name.className =
+                    "community-circle-name";
+
+
+                name.textContent =
+                    data.name ||
+                    "Comunidade";
+
+
+                button.appendChild(
+                    name
+                );
+
+
+                list.appendChild(
+                    button
+                );
 
             }
         );
