@@ -3828,12 +3828,20 @@ async function(id) {
         }
 
 
+        /* =================================================
+           COMUNIDADE ATUAL
+        ================================================= */
+
         currentCommunityId = id;
 
 
         currentCommunityIsAdmin =
             await isCommunityAdmin(id);
 
+
+        /* =================================================
+           ABRIR ÁREA DA COMUNIDADE
+        ================================================= */
 
         document
             .getElementById(
@@ -3861,6 +3869,10 @@ async function(id) {
                 "";
 
 
+        /* =================================================
+           FERRAMENTAS DO ADMINISTRADOR
+        ================================================= */
+
         if (
             currentCommunityIsAdmin
         ) {
@@ -3884,8 +3896,34 @@ async function(id) {
         }
 
 
+        /* =================================================
+           MENSAGENS DA COMUNIDADE
+           
+           A área de conversa será carregada aqui.
+           A função será implementada no bloco próprio
+           de mensagens.
+        ================================================= */
+
+        if (
+            typeof loadCommunityMessages ===
+            "function"
+        ) {
+
+            loadCommunityMessages(id);
+
+        }
+
+
+        /* =================================================
+           VÍDEOS DE ESTUDOS
+        ================================================= */
+
         loadCommunityStudyVideos(id);
 
+
+        /* =================================================
+           ROLAR ATÉ A COMUNIDADE
+        ================================================= */
 
         document
             .getElementById(
