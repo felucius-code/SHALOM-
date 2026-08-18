@@ -3069,239 +3069,140 @@ select option {
         max-width: none;
     }
 }
-/* =========================
-   AUTENTICAÇÃO
-========================= */
+<!-- =====================================================
+     AUTENTICAÇÃO
+===================================================== -->
 
-#authScreen {
-    width: 100%;
-    min-height: 100vh;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
+<section id="authScreen">
 
-.auth-container {
-    width: 100%;
-    max-width: 430px;
-    margin: auto;
-    padding: 0;
-}
+    <div class="auth-container">
 
-.auth-card {
-    background: var(--panel);
-    padding: 30px;
-    border-radius: 14px;
-    border: 1px solid #303654;
-}
+        <div class="auth-card">
 
-.logo {
-    text-align: center;
-    color: var(--gold);
-    font-size: 30px;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
+            <div class="logo">
+                ש SHALOM
+            </div>
 
-.subtitle {
-    text-align: center;
-    color: var(--muted);
-    margin-bottom: 30px;
-    font-size: 14px;
-}
+            <div class="subtitle">
+                Rede Social
+            </div>
 
-#loginForm,
-#signupForm {
-    display: block;
-}
+            <div id="loginError"
+                 class="error hidden">
+            </div>
 
-#loginForm h2,
-#signupForm h2 {
-    color: var(--gold);
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    margin-top: 0;
-}
+            <div id="signupError"
+                 class="error hidden">
+            </div>
 
-.form-group {
-    margin-bottom: 16px;
-}
+            <!-- LOGIN -->
 
-.form-group label {
-    display: block;
-    color: var(--muted);
-    margin-bottom: 6px;
-    font-size: 13px;
-    font-weight: 500;
-}
+            <div id="loginForm">
 
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid #303654;
-    background: var(--bg);
-    color: var(--white);
-    font-family: inherit;
-    font-size: 14px;
-    box-sizing: border-box;
-    transition: all 0.2s ease;
-}
+                <h2 style="margin-bottom:20px;">
+                    Entrar
+                </h2>
 
-.form-group input:focus {
-    border-color: var(--gold);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-}
+                <div class="form-group">
 
-.form-group input::placeholder {
-    color: var(--muted);
-}
+                    <label>Email</label>
 
-.error {
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    font-size: 14px;
-    background: rgba(139, 0, 0, 0.15);
-    color: #FF6B6B;
-    border-left: 4px solid #FF6B6B;
-}
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        placeholder="seu@email.com">
 
-.error.hidden {
-    display: none !important;
-}
+                </div>
 
-.btn {
-    width: 100%;
-    border: none;
-    border-radius: 7px;
-    padding: 12px 15px;
-    background: var(--gold);
-    color: var(--bg);
-    font-weight: 600;
-    font-size: 14px;
-    margin-top: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-}
+                <div class="form-group">
 
-.btn:hover {
-    background: var(--gold-light);
-    transform: translateY(-1px);
-}
+                    <label>Senha</label>
 
-.btn:active {
-    transform: translateY(0);
-}
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        placeholder="Sua senha">
 
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
+                </div>
 
-.btn-secondary {
-    background: var(--muted);
-    color: var(--white);
-}
+                <button
+                    class="btn"
+                    style="width:100%;"
+                    onclick="handleLogin()">
 
-.btn-secondary:hover {
-    background: #7A8BA8;
-}
+                    Entrar
 
-.btn-secondary:disabled {
-    opacity: 0.5;
-}
+                </button>
 
-.hidden {
-    display: none !important;
-}
+                <button
+                    class="btn btn-secondary"
+                    style="width:100%;"
+                    onclick="showSignup()">
 
-/* MOBILE */
-@media (max-width: 640px) {
-    #authScreen {
-        padding: 15px;
-        min-height: 100vh;
-    }
+                    Criar Conta
 
-    .auth-card {
-        padding: 25px;
-    }
+                </button>
 
-    .logo {
-        font-size: 26px;
-        margin-bottom: 8px;
-    }
+            </div>
 
-    .subtitle {
-        font-size: 13px;
-        margin-bottom: 25px;
-    }
+       <!-- CADASTRO -->
 
-    #loginForm h2,
-    #signupForm h2 {
-        font-size: 18px;
-        margin-bottom: 18px;
-    }
+            <div id="signupForm"
+                 class="hidden">
 
-    .form-group {
-        margin-bottom: 14px;
-    }
+                <h2 style="margin-bottom:20px;">
+                    Criar Conta
+                </h2>
 
-    .form-group input {
-        padding: 10px;
-        font-size: 13px;
-    }
+                <div class="form-group">
 
-    .btn {
-        padding: 10px 12px;
-        font-size: 13px;
-        margin-top: 6px;
-    }
-}
+                    <label>Email</label>
 
-/* TABLET+ */
-@media (min-width: 641px) {
-    .auth-card {
-        padding: 40px;
-    }
+                    <input
+                        type="email"
+                        id="signupEmail"
+                        placeholder="seu@email.com">
 
-    .logo {
-        font-size: 36px;
-        margin-bottom: 12px;
-    }
+                </div>
 
-    .subtitle {
-        font-size: 15px;
-        margin-bottom: 35px;
-    }
+                <div class="form-group">
 
-    #loginForm h2,
-    #signupForm h2 {
-        font-size: 22px;
-        margin-bottom: 25px;
-    }
+                    <label>Senha</label>
 
-    .form-group {
-        margin-bottom: 18px;
-    }
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        placeholder="Mínimo de 6 caracteres">
 
-    .form-group input {
-        padding: 14px;
-        font-size: 15px;
-    }
+                </div>
 
-    .btn {
-        padding: 13px 18px;
-        font-size: 15px;
-        margin-top: 10px;
-    }
-}
+                <button
+                    class="btn"
+                    style="width:100%;"
+                    onclick="handleSignup()">
+
+                    Criar Conta
+
+                </button>
+
+                <button
+                    class="btn btn-secondary"
+                    style="width:100%;"
+                    onclick="showLogin()">
+
+                    Voltar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
 <!-- =====================================================
      APLICAÇÃO
 ===================================================== -->
