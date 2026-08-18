@@ -3818,87 +3818,53 @@ async function() {
    NAVEGAÇÃO
 ===================================================== */
 
-window.openPage =
-function(page, button) {
+window.openPage = async function(page, button) {
 
-    document
-        .querySelectorAll(".page")
-        .forEach(
-            pageElement =>
-                pageElement
-                .classList
-                .remove("active")
-        );
+    try {
+        // Esconde todas as páginas
+        document.querySelectorAll(".page").forEach(pageElement => {
+            pageElement.classList.remove("active");
+        });
 
+        // Mostra página selecionada
+        const target = document.getElementById("page-" + page);
+        if (!target) {
+            console.warn(`Página "page-${page}" não encontrada`);
+            return;
+        }
+        target.classList.add("active");
 
-    const target =
-        document.getElementById(
-            "page-" + page
-        );
+        // Remove active de botões
+        document.querySelectorAll(".nav-item").forEach(item => {
+            item.classList.remove("active");
+        });
 
-
-    if (target) {
-
-        target
-            .classList
-            .add("active");
-
-    }
-
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(
-            item =>
-                item
-                .classList
-                .remove("active")
-        );
-
-
-    if (button) {
-
-        button
-            .classList
-            .add("active");
-
-    }
-
-
-    if (page === "home") {
-
-        loadHome();
-
-    }
-
-
-    if (page === "communities") {
-
-        loadCommunities();
-
-    }
-
-
-    if (
-        Object.keys(contentTypes)
-        .includes(page)
-    ) {
-
-        loadContent(page);
-
-    }
-
-
-    if (page === "admin") {
-
-        if (isAdmin) {
-
-            loadAdminCommunities();
-
-            loadCommunityAdmins();
-
+        // Marca botão como ativo
+        if (button) {
+            button.classList.add("active");
         }
 
+        // Carrega conteúdo específico da página
+        if (page === "home") {
+            await loadHome();
+        } else if (page === "communities") {
+            await loadCommunities();
+        } else if (Object.keys(contentTypes).includes(page)) {
+            await loadContent(page);
+        } else if (page === "profile") {
+            await loadProfile();
+        } else if (page === "notifications") {
+            await loadNotifications();
+        } else if (page === "admin") {
+            if (window.isAdmin) {
+                await loadAdminCommunities();
+                await loadCommunityAdmins();
+            }
+        }
+
+    } catch (error) {
+        console.error(`Erro ao abrir página ${page}:`, error);
+        showToast(`Erro ao carregar página`, "error");
     }
 
 };
