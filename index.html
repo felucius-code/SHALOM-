@@ -3207,20 +3207,37 @@ select option {
      APLICAÇÃO
 ===================================================== -->
 
-<section id="appScreen" class="hidden">
+<section id="appScreen"
+         class="hidden">
 
-    <header class="navbar">
+<header class="navbar">
 
-        <div class="navbar-left">
-            <div class="navbar-brand">ש SHALOM</div>
-        </div>
+    <div class="navbar-brand">
+        ש SHALOM
+    </div>
 
-        <div class="navbar-right">
-            <span id="userEmail" class="user-email"></span>
-            <button class="logout-btn" onclick="logout()">Sair</button>
-        </div>
+    <div class="navbar-user">
 
-    </header>
+        <span
+            id="userEmail"
+            class="user-email">
+        </span>
+
+        <button
+            class="logout-btn"
+            onclick="logout()">
+
+            Sair
+
+        </button>
+
+    </div>
+
+</header>
+
+
+<div class="app-layout">
+
 
 <!-- =====================================================
      COMUNIDADES DO USUÁRIO (Barra Horizontal)
