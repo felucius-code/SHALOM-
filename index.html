@@ -3874,261 +3874,75 @@ window.openPage = async function(page, button) {
    CRIAR COMUNIDADE
 ===================================================== */
 
-window.showCreateCommunity =
-function() {
-
-    document
-        .getElementById(
-            "createCommunityBox"
-        )
-        .classList
-        .toggle("hidden");
-
-};
-
-
-window.addCommunity =
-async function() {
-
-    if (!isAdmin) {
-
-        alert(
-            "Somente o administrador geral pode criar comunidades."
-        );
-
-        return;
-    }
-
-
-    const name =
-        document
-        .getElementById(
-            "communityName"
-        )
-        .value
-        .trim();
-
-
-    const description =
-        document
-        .getElementById(
-            "communityDescription"
-        )
-        .value
-        .trim();
-
-
-    if (!name) {
-
-        alert(
-            "Digite o nome da comunidade."
-        );
-
-        return;
-    }
-
-
-    try {
-
-        await addDoc(
-            collection(
-                db,
-                "communities"
-            ),
-            {
-
-                name,
-
-                description,
-
-                createdBy:
-                    auth.currentUser.email,
-
-                createdAt:
-                    serverTimestamp(),
-
-                members:
-                    [
-                        auth.currentUser.email
-                    ],
-
-                pendingMembers:
-                    []
-
-            }
-        );
-/* =====================================================
-   CRIAR COMUNIDADE
-===================================================== */
-
-window.showCreateCommunity =
-function() {
-
-    const box =
-        document.getElementById(
-            "createCommunityBox"
-        );
-
+window.showCreateCommunity = function() {
+    const box = document.getElementById("createCommunityBox");
     if (box) {
-
         box.classList.toggle("hidden");
-
     }
-
 };
 
+window.addCommunity = async function() {
 
-window.addCommunity =
-async function() {
-
-    const user =
-        auth.currentUser;
-
+    const user = auth.currentUser;
 
     if (!user) {
-
-        alert(
-            "Você precisa estar conectado para criar uma comunidade."
-        );
-
+        showToast("Você precisa estar conectado para criar uma comunidade.", "error");
         return;
     }
 
-
-    const name =
-        document
-        .getElementById(
-            "communityName"
-        )
-        .value
-        .trim();
-
-
-    const description =
-        document
-        .getElementById(
-            "communityDescription"
-        )
-        .value
-        .trim();
-
+    const name = document.getElementById("communityName")?.value.trim();
+    const description = document.getElementById("communityDescription")?.value.trim();
 
     if (!name) {
-
-        alert(
-            "Digite o nome da comunidade."
-        );
-
+        showToast("Digite o nome da comunidade.", "error");
         return;
     }
 
+    const btn = document.querySelector("[onclick='addCommunity()']");
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Criando...";
+    }
 
     try {
+        await addDoc(collection(db, "communities"), {
+            name,
+            description,
+            createdBy: user.email,
+            createdByUid: user.uid,
+            createdAt: serverTimestamp(),
+            status: "pending",
+            members: [user.email],
+            memberUids: [user.uid],
+            pendingMembers: [],
+            communityAdmins: [user.email],
+            studyVideos: []
+        });
 
-        /*
-         * A comunidade é criada inicialmente
-         * como uma solicitação.
-         *
-         * O criador entra automaticamente
-         * como primeiro membro e administrador
-         * da comunidade.
-         *
-         * A aprovação geral da comunidade
-         * continuará sendo responsabilidade
-         * do administrador da plataforma.
-         */
+        // Sucesso
+        showToast("Comunidade criada e enviada para aprovação.", "success");
 
-        await addDoc(
-            collection(
-                db,
-                "communities"
-            ),
-            {
+        // Limpa campos
+        document.getElementById("communityName").value = "";
+        document.getElementById("communityDescription").value = "";
 
-                name,
+        // Esconde formulário
+        document.getElementById("createCommunityBox").classList.add("hidden");
 
-                description,
-
-                createdBy:
-                    user.email,
-
-                createdByUid:
-                    user.uid,
-
-                createdAt:
-                    serverTimestamp(),
-
-                status:
-                    "pending",
-
-                members:
-                    [
-                        user.email
-                    ],
-
-                memberUids:
-                    [
-                        user.uid
-                    ],
-
-                pendingMembers:
-                    [],
-
-                communityAdmins:
-                    [
-                        user.email
-                    ],
-
-                studyVideos:
-                    []
-
-            }
-        );
-
-
-        document
-        .getElementById(
-            "communityName"
-        )
-        .value = "";
-
-
-        document
-        .getElementById(
-            "communityDescription"
-        )
-        .value = "";
-
-
-        document
-        .getElementById(
-            "createCommunityBox"
-        )
-        .classList
-        .add("hidden");
-
-
-        alert(
-            "Comunidade criada e enviada para aprovação."
-        );
-
-
-        loadCommunities();
-
+        // Recarrega
+        await loadCommunities();
 
     } catch (error) {
-
         console.error(error);
-
-        alert(
-            "Erro ao criar comunidade: " +
-            error.message
-        );
-
+        showToast("Erro ao criar comunidade: " + error.message, "error");
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Criar comunidade";
+        }
     }
 
 };
-
 
  /* =====================================================
     CARREGAR COMUNIDADES DO USUÁRIO
