@@ -3087,14 +3087,13 @@ select option {
     width: 100%;
     max-width: 430px;
     margin: auto;
-    padding: 25px;
+    padding: 0;
 }
 
 .auth-card {
     background: var(--panel);
     padding: 30px;
     border-radius: 14px;
-    margin-top: 60px;
     border: 1px solid #303654;
 }
 
@@ -3102,7 +3101,7 @@ select option {
     text-align: center;
     color: var(--gold);
     font-size: 30px;
-    font-weight: bold;
+    font-weight: 700;
     margin-bottom: 10px;
 }
 
@@ -3124,6 +3123,7 @@ select option {
     font-size: 20px;
     font-weight: 700;
     margin-bottom: 20px;
+    margin-top: 0;
 }
 
 .form-group {
@@ -3147,6 +3147,7 @@ select option {
     color: var(--white);
     font-family: inherit;
     font-size: 14px;
+    box-sizing: border-box;
     transition: all 0.2s ease;
 }
 
@@ -3186,6 +3187,7 @@ select option {
     margin-top: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .btn:hover {
@@ -3220,11 +3222,53 @@ select option {
     display: none !important;
 }
 
-/* RESPONSIVIDADE */
-@media (min-width: 768px) {
+/* MOBILE */
+@media (max-width: 640px) {
+    #authScreen {
+        padding: 15px;
+        min-height: 100vh;
+    }
+
+    .auth-card {
+        padding: 25px;
+    }
+
+    .logo {
+        font-size: 26px;
+        margin-bottom: 8px;
+    }
+
+    .subtitle {
+        font-size: 13px;
+        margin-bottom: 25px;
+    }
+
+    #loginForm h2,
+    #signupForm h2 {
+        font-size: 18px;
+        margin-bottom: 18px;
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    .form-group input {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .btn {
+        padding: 10px 12px;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+}
+
+/* TABLET+ */
+@media (min-width: 641px) {
     .auth-card {
         padding: 40px;
-        margin-top: 80px;
     }
 
     .logo {
@@ -3255,6 +3299,7 @@ select option {
     .btn {
         padding: 13px 18px;
         font-size: 15px;
+        margin-top: 10px;
     }
 }
 <!-- =====================================================
@@ -3337,51 +3382,25 @@ select option {
 
 </aside>
 <!-- =====================================================
-     INÍCIO
+     INÍCIO (HOME)
 ===================================================== -->
 
-<section id="page-home"
-         class="page active">
+<section id="page-home" class="page active">
 
     <div class="home-header">
-
-        <h1 class="page-title">
-            ש SHALOM
-        </h1>
-
-        <p class="page-description">
-            Conteúdo selecionado para você.
-        </p>
-
+        <h1 class="page-title">ש SHALOM</h1>
+        <p class="page-description">Conteúdo selecionado para você.</p>
     </div>
 
-
-    <!-- ================================
-         DESTAQUES
-    ================================= -->
-
+<!-- DESTAQUES -->
     <section class="home-section">
-
         <div class="home-section-header">
-
-            <h2>
-                ⭐ Destaques
-            </h2>
-
+            <h2>⭐ Destaques</h2>
         </div>
-
-        <div
-            id="homeFeatured"
-            class="home-carousel">
-
-            <div class="home-loading">
-                Carregando...
-            </div>
-
+        <div id="homeFeatured" class="home-carousel">
+            <div class="home-loading">Carregando...</div>
         </div>
-
     </section>
-
 
     <!-- ================================
          FILMES
