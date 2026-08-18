@@ -1865,160 +1865,283 @@ select option {
     }
     }
 
-/* =====================================================
-   AVISO DE ESTUDO ADICIONADO PELO ADMINISTRADOR
-===================================================== */
+/* ==============================================
+   NOTIFICAÇÃO DE TOAST
+   Feedback visual ao adicionar/deletar vídeo
+============================================== */
 
-.community-study-notice {
-    background: var(--panel2);
-    border: 1px solid #5E5125;
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 15px;
-}
-
-.community-study-notice-title {
-    color: var(--gold);
-    font-size: 13px;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.community-study-notice-text {
-    color: white;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.community-study-video {
-    margin-top: 10px;
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    max-width: 350px;
+    padding: 14px 18px;
     border-radius: 8px;
-    overflow: hidden;
-    background: #000;
-}
-
-.community-study-video video {
-    width: 100%;
-    display: block;
-    max-height: 420px;
-}
-
-.community-study-video iframe {
-    width: 100%;
-    min-height: 300px;
-    border: 0;
-    display: block;
-}
-
-
-/* =====================================================
-   CAMPO DE NOVA MENSAGEM
-===================================================== */
-
-.community-composer {
+    font-size: 14px;
+    font-weight: 500;
     display: flex;
-    gap: 8px;
-    padding: 12px;
-    background: var(--panel);
-    border-top: 1px solid #303654;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    animation: slideInToast 0.3s ease-out;
+    z-index: 1000;
 }
 
-.community-composer textarea {
-    min-height: 45px;
-    max-height: 120px;
-    resize: vertical;
-    margin: 0;
+@keyframes slideInToast {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-.community-composer .btn {
-    margin-top: 0;
-    align-self: flex-end;
+@keyframes slideOutToast {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100px);
+    }
 }
 
+.toast-notification.hide {
+    animation: slideOutToast 0.3s ease-out forwards;
+}
 
-/* =====================================================
-   FERRAMENTAS DO ADMINISTRADOR DA COMUNIDADE
-===================================================== */
+/* SUCESSO */
+.toast-notification.success {
+    background: rgba(49, 91, 58, 0.95);
+    color: #51CF66;
+    border: 1px solid rgba(81, 207, 102, 0.3);
+}
 
-.community-admin-tools {
-    padding: 12px;
-    border-top: 1px solid #303654;
+.toast-notification.success::before {
+    content: "✓";
+    font-size: 18px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* ERRO */
+.toast-notification.error {
+    background: rgba(139, 0, 0, 0.95);
+    color: #FF6B6B;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.toast-notification.error::before {
+    content: "✕";
+    font-size: 18px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* INFORMAÇÃO */
+.toast-notification.info {
+    background: rgba(212, 175, 55, 0.95);
+    color: var(--bg);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.toast-notification.info::before {
+    content: "ℹ";
+    font-size: 18px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+    .toast-notification {
+        bottom: 80px; /* Acima da navbar bottom */
+        right: 12px;
+        left: 12px;
+        max-width: none;
+    }
+}
+
+/* TABLET */
+@media (min-width: 768px) {
+    .toast-notification {
+        bottom: 30px;
+        right: 30px;
+        max-width: 400px;
+        padding: 16px 20px;
+        font-size: 15px;
+    }
+}
+
+/* DESKTOP */
+@media (min-width: 1024px) {
+    .toast-notification {
+        bottom: 40px;
+        right: 40px;
+        max-width: 450px;
+        padding: 18px 22px;
+    }
+}
+
+/* ==============================================
+   VÍDEOS ADICIONADOS (Carrossel)
+   Já coberto pelo CSS anterior de study-carousel
+   Apenas adicionamos refinamentos
+============================================== */
+
+.study-carousel-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
     background: var(--panel2);
+    border-radius: 8px;
 }
 
-.community-admin-tools .btn {
-    margin-right: 6px;
+.study-carousel-empty-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+    opacity: 0.6;
 }
 
+.study-carousel-empty-text {
+    color: var(--muted);
+}
 
-/* =====================================================
-   RESPONSIVIDADE
-===================================================== */
-
-@media (max-width: 700px) {
-
-    .community-message {
-        max-width: 90%;
+/* RESPONSIVIDADE ADICIONAL */
+@media (min-width: 768px) {
+    .study-carousel-empty {
+        padding: 25px;
+        font-size: 15px;
     }
 
-    .community-messages {
-        max-height: none;
+    .study-carousel-empty-icon {
+        font-size: 40px;
+        margin-bottom: 10px;
     }
-
-    .community-composer {
-        flex-direction: column;
-    }
-
-    .community-composer .btn {
-        width: 100%;
-    }
-
 }
 
 /* =========================
-   COMMUNITIES
+   COMMUNITIES — LISTA
 ========================= */
 
-.community-card {
+.community-list-card {
     background: var(--panel);
     border-left: 4px solid var(--gold);
     padding: 18px;
     border-radius: 8px;
     margin-bottom: 15px;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-.community-card h3 {
+.community-list-card:hover {
+    border-left-color: var(--gold-light);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
+    transform: translateX(4px);
+}
+
+.community-list-card:active {
+    transform: translateX(2px);
+}
+
+.community-list-card h3 {
     color: var(--gold);
-    margin-bottom: 8px;
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 700;
 }
 
-.community-card p {
-    color: #B8BDD0;
-    margin-bottom: 7px;
+.community-list-card p {
+    color: var(--muted);
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
+/* BADGES DE STATUS */
 .badge {
     display: inline-block;
-    padding: 4px 8px;
-    border-radius: 5px;
+    padding: 5px 10px;
+    border-radius: 6px;
     font-size: 12px;
+    font-weight: 600;
     background: var(--muted);
-    margin-right: 5px;
+    color: var(--white);
+    margin-right: 6px;
+    margin-bottom: 6px;
+    transition: all 0.2s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
 }
 
 .badge-success {
-    background: var(--success);
+    background: rgba(49, 91, 58, 0.25);
+    color: #51CF66;
+    border: 1px solid rgba(81, 207, 102, 0.3);
 }
 
 .badge-pending {
-    background: #806A28;
+    background: rgba(212, 175, 55, 0.15);
+    color: #E5C158;
+    border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .badge-admin {
-    background: #684F00;
-    color: white;
+    background: rgba(139, 69, 19, 0.25);
+    color: #D4A574;
+    border: 1px solid rgba(212, 175, 55, 0.2);
 }
 
+/* RESPONSIVIDADE */
+@media (min-width: 768px) {
+    .community-list-card {
+        padding: 20px;
+        margin-bottom: 18px;
+    }
+
+    .community-list-card:hover {
+        box-shadow: 0 6px 16px rgba(212, 175, 55, 0.15);
+    }
+
+    .community-list-card h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .community-list-card p {
+        font-size: 15px;
+        margin-bottom: 14px;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        font-size: 13px;
+        margin-right: 8px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .community-list-card {
+        padding: 22px;
+        margin-bottom: 20px;
+    }
+
+    .community-list-card h3 {
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+
+    .community-list-card p {
+        font-size: 16px;
+        margin-bottom: 16px;
+    }
+    }
 /* =========================
    POSTS
 ========================= */
