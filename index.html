@@ -3261,34 +3261,20 @@ select option {
      APLICAÇÃO
 ===================================================== -->
 
-<section id="appScreen"
-         class="hidden">
+<section id="appScreen" class="hidden">
 
-<header class="navbar">
+    <header class="navbar">
 
-    <div class="navbar-brand">
-        ש SHALOM
-    </div>
+        <div class="navbar-left">
+            <div class="navbar-brand">ש SHALOM</div>
+        </div>
 
-    <div class="navbar-user">
+        <div class="navbar-right">
+            <span id="userEmail" class="user-email"></span>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
 
-        <span
-            id="userEmail"
-            class="user-email">
-        </span>
-
-        <button
-            class="logout-btn"
-            onclick="logout()">
-
-            Sair
-
-        </button>
-
-    </div>
-
-</header>
-
+    </header>
 
 <!-- =====================================================
      COMUNIDADES DO USUÁRIO
