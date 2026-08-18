@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -2230,53 +2229,43 @@ const contentTypes = {
    LOGIN
 ===================================================== */
 
-window.handleLogin =
-async function() {
+window.handleLogin = async function() {
 
-    const email =
-        document
-        .getElementById("loginEmail")
-        .value
-        .trim();
-
-    const password =
-        document
-        .getElementById("loginPassword")
-        .value;
-
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
     if (!email || !password) {
-
-        showError(
-            "Preencha email e senha.",
-            "loginError"
-        );
-
+        showError("Preencha email e senha.", "loginError");
         return;
     }
 
+    const loginBtn = document.querySelector("#loginForm .btn");
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Carregando...";
 
     try {
+        await signInWithEmailAndPassword(auth, email, password);
 
-        await signInWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
+        // LOGIN SUCESSO
+        document.getElementById("authScreen").classList.add("hidden");
+        document.getElementById("appScreen").classList.remove("hidden");
+        document.getElementById("userEmail").textContent = email;
+
+        // Limpar campos
+        document.getElementById("loginEmail").value = "";
+        document.getElementById("loginPassword").value = "";
+        document.getElementById("loginError").classList.add("hidden");
 
     } catch (error) {
-
         console.error(error);
-
-        showError(
-            "Email ou senha incorretos.",
-            "loginError"
-        );
+        showError("Email ou senha incorretos.", "loginError");
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Entrar";
     }
 
 };
-
-
+    
 /* =====================================================
    CADASTRO
 ===================================================== */
