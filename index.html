@@ -1504,6 +1504,367 @@ select option {
     }
 }
 
+    /* ==============================================
+   ADMINISTRAÇÃO DE ESTUDOS DA COMUNIDADE
+   Seção para admin da comunidade adicionar vídeos
+============================================== */
+
+.community-admin-section {
+    background: var(--panel);
+    border: 1px solid #303654;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.admin-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.admin-section-title {
+    color: var(--gold);
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.admin-section-description {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.admin-add-video-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.admin-add-video-btn:hover {
+    background: var(--gold-light);
+    transform: translateY(-1px);
+}
+
+.admin-add-video-btn:active {
+    transform: translateY(0);
+}
+
+/* FORMULÁRIO DE VÍDEO DE ESTUDO */
+.study-video-form {
+    background: var(--panel2);
+    border: 1px solid #303654;
+    border-radius: 10px;
+    padding: 18px;
+    margin-top: 15px;
+    display: none;
+}
+
+.study-video-form.active {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.study-video-form-title {
+    color: var(--gold);
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+}
+
+.study-video-form-description {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.study-form-group {
+    margin-bottom: 15px;
+}
+
+.study-form-group label {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.study-form-group input,
+.study-form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #303654;
+    background: var(--bg);
+    color: var(--white);
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.study-form-group input:focus,
+.study-form-group textarea:focus {
+    border-color: var(--gold);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+.study-form-group input::placeholder,
+.study-form-group textarea::placeholder {
+    color: var(--muted);
+}
+
+.study-form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.study-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.study-form-submit {
+    flex: 1;
+    padding: 12px;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.study-form-submit:hover {
+    background: var(--gold-light);
+    transform: translateY(-1px);
+}
+
+.study-form-submit:active {
+    transform: translateY(0);
+}
+
+.study-form-cancel {
+    flex: 1;
+    padding: 12px;
+    background: var(--muted);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.study-form-cancel:hover {
+    background: #7A8BA8;
+}
+
+.study-form-cancel:active {
+    transform: translateY(0);
+}
+
+/* MENSAGEM DE SUCESSO/ERRO */
+.study-form-message {
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    border-left: 4px solid currentColor;
+    display: none;
+}
+
+.study-form-message.active {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+
+.study-form-message.success {
+    background: rgba(49, 91, 58, 0.15);
+    color: #51CF66;
+    border-left-color: #51CF66;
+}
+
+.study-form-message.error {
+    background: rgba(139, 0, 0, 0.15);
+    color: #FF6B6B;
+    border-left-color: #FF6B6B;
+}
+
+/* LISTA DE VÍDEOS ADICIONADOS */
+.study-videos-list {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #303654;
+}
+
+.study-videos-list-title {
+    color: var(--gold);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.study-video-item-admin {
+    background: var(--bg);
+    border: 1px solid #303654;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.study-video-item-info {
+    flex: 1;
+}
+
+.study-video-item-title {
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.study-video-item-description {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.study-video-item-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.study-video-delete-btn {
+    width: 32px;
+    height: 32px;
+    background: var(--danger);
+    color: var(--white);
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.study-video-delete-btn:hover {
+    background: #A61818;
+    transform: scale(1.05);
+}
+
+/* RESPONSIVIDADE */
+@media (min-width: 768px) {
+    .community-admin-section {
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .admin-section-title {
+        font-size: 18px;
+    }
+
+    .admin-section-description {
+        font-size: 15px;
+        margin-bottom: 18px;
+    }
+
+    .study-video-form {
+        padding: 20px;
+        margin-top: 18px;
+    }
+
+    .study-video-form-title {
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+
+    .study-form-actions {
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .study-form-submit,
+    .study-form-cancel {
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    .study-videos-list {
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+
+    .study-video-item-admin {
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+
+    .study-video-item-title {
+        font-size: 15px;
+        margin-bottom: 6px;
+    }
+
+    .study-video-item-description {
+        font-size: 13px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .community-admin-section {
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .admin-add-video-btn {
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    .study-video-form {
+        padding: 25px;
+    }
+
+    .study-form-actions {
+        gap: 15px;
+        margin-top: 25px;
+    }
+    }
+
 /* =====================================================
    AVISO DE ESTUDO ADICIONADO PELO ADMINISTRADOR
 ===================================================== */
