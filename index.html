@@ -3073,113 +3073,129 @@ select option {
      AUTENTICAÇÃO
 ===================================================== -->
 
-<section id="authScreen" class="auth-screen">
+<section id="authScreen">
 
     <div class="auth-container">
 
         <div class="auth-card">
 
-            <div class="auth-card-header">
-                <div class="logo">ש SHALOM</div>
-                <p class="subtitle">Rede Social</p>
+            <div class="logo">
+                ש SHALOM
             </div>
 
-            <!-- MENSAGENS DE ERRO -->
-            <div id="loginError" class="error-message hidden" role="alert"></div>
-            <div id="signupError" class="error-message hidden" role="alert"></div>
+            <div class="subtitle">
+                Rede Social
+            </div>
 
-            <!-- FORMULÁRIO LOGIN -->
-            <form id="loginForm" class="auth-form" novalidate>
-                
-                <h2 class="auth-form-title">Entrar</h2>
+            <div id="loginError"
+                 class="error hidden">
+            </div>
+
+            <div id="signupError"
+                 class="error hidden">
+            </div>
+
+            <!-- LOGIN -->
+
+            <div id="loginForm">
+
+                <h2 style="margin-bottom:20px;">
+                    Entrar
+                </h2>
 
                 <div class="form-group">
-                    <label for="loginEmail">Email</label>
+
+                    <label>Email</label>
+
                     <input
                         type="email"
                         id="loginEmail"
-                        class="form-input"
-                        placeholder="seu@email.com"
-                        required
-                        autocomplete="email">
-                    <span class="form-error hidden"></span>
+                        placeholder="seu@email.com">
+
                 </div>
 
                 <div class="form-group">
-                    <label for="loginPassword">Senha</label>
+
+                    <label>Senha</label>
+
                     <input
                         type="password"
                         id="loginPassword"
-                        class="form-input"
-                        placeholder="Sua senha"
-                        required
-                        autocomplete="current-password">
-                    <span class="form-error hidden"></span>
+                        placeholder="Sua senha">
+
                 </div>
 
                 <button
-                    type="submit"
-                    class="btn btn-primary"
-                    data-action="login">
-                    <span class="btn-text">Entrar</span>
-                    <span class="btn-loader hidden">⏳</span>
+                    class="btn"
+                    style="width:100%;"
+                    onclick="handleLogin()">
+
+                    Entrar
+
                 </button>
 
                 <button
-                    type="button"
                     class="btn btn-secondary"
-                    data-action="show-signup">
+                    style="width:100%;"
+                    onclick="showSignup()">
+
                     Criar Conta
+
                 </button>
 
-            </form>
+            </div>
 
-            <!-- FORMULÁRIO CADASTRO -->
-            <form id="signupForm" class="auth-form hidden" novalidate>
-                
-                <h2 class="auth-form-title">Criar Conta</h2>
+
+            <!-- CADASTRO -->
+
+            <div id="signupForm"
+                 class="hidden">
+
+                <h2 style="margin-bottom:20px;">
+                    Criar Conta
+                </h2>
 
                 <div class="form-group">
-                    <label for="signupEmail">Email</label>
+
+                    <label>Email</label>
+
                     <input
                         type="email"
                         id="signupEmail"
-                        class="form-input"
-                        placeholder="seu@email.com"
-                        required
-                        autocomplete="email">
-                    <span class="form-error hidden"></span>
+                        placeholder="seu@email.com">
+
                 </div>
 
                 <div class="form-group">
-                    <label for="signupPassword">Senha</label>
+
+                    <label>Senha</label>
+
                     <input
                         type="password"
                         id="signupPassword"
-                        class="form-input"
-                        placeholder="Mínimo de 6 caracteres"
-                        required
-                        minlength="6"
-                        autocomplete="new-password">
-                    <span class="form-error hidden"></span>
+                        placeholder="Mínimo de 6 caracteres">
+
                 </div>
 
                 <button
-                    type="submit"
-                    class="btn btn-primary"
-                    data-action="signup">
-                    <span class="btn-text">Criar Conta</span>
-                    <span class="btn-loader hidden">⏳</span>
+                    class="btn"
+                    style="width:100%;"
+                    onclick="handleSignup()">
+
+                    Criar Conta
+
                 </button>
 
                 <button
-                    type="button"
                     class="btn btn-secondary"
-                    data-action="show-login">
+                    style="width:100%;"
+                    onclick="showLogin()">
+
                     Voltar
+
                 </button>
 
-            </form>
+            </div>
 
         </div>
 
@@ -8633,4 +8649,4 @@ function escapeAttribute(text) {
 </script>
 
 </body>
-            </html>
+    </html>
