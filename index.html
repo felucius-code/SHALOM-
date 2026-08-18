@@ -2809,28 +2809,38 @@ select option {
 
    
 /* =========================
-   MOBILE
+   MOBILE (max-width: 640px)
 ========================= */
 
-@media (max-width: 750px) {
-
+@media (max-width: 640px) {
+    
+    /* LAYOUT PRINCIPAL */
     .app-layout {
         display: block;
     }
 
+    /* SIDEBAR → NAVBAR BOTTOM */
     .sidebar {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        height: 64px;
+        width: 100%;
+        height: 70px;
         z-index: 100;
-        border-right: none;
-        border-top: 1px solid var(--gold);
-        padding: 5px;
+        border: none;
+        border-top: 1px solid #303654;
+        padding: 8px 12px;
         display: flex;
+        gap: 4px;
         overflow-x: auto;
+        overflow-y: hidden;
         background: var(--panel);
+        scrollbar-width: none;
+    }
+
+    .sidebar::-webkit-scrollbar {
+        display: none;
     }
 
     .sidebar-title {
@@ -2838,32 +2848,227 @@ select option {
     }
 
     .nav-item {
-        min-width: 75px;
+        flex: 0 0 auto;
+        min-width: 70px;
         text-align: center;
         font-size: 11px;
-        padding: 7px 3px;
+        font-weight: 500;
+        padding: 6px 4px;
         margin: 0;
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        transition: all 0.2s ease;
     }
 
+    .nav-item:hover,
+    .nav-item.active {
+        color: var(--gold);
+    }
+
+    /* NAVBAR TOP */
+    .navbar {
+        padding: 0 12px;
+        height: 60px;
+    }
+
+    .navbar-brand {
+        font-size: 18px;
+    }
+
+    .logout-btn {
+        padding: 7px 10px;
+        font-size: 12px;
+    }
+
+    /* COMUNIDADES BAR */
+    .communities-bar {
+        padding: 10px 12px;
+    }
+
+    .communities-list {
+        gap: 8px;
+    }
+
+    .community-item {
+        min-width: 70px;
+    }
+
+    .community-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
+
+    .community-name {
+        font-size: 11px;
+        max-width: 70px;
+    }
+
+    /* MAIN CONTENT */
     .main {
-        padding: 18px;
-        padding-bottom: 85px;
+        padding: 15px 12px 90px 12px;
+        min-width: 0;
     }
 
+    /* PÁGINAS */
+    .page {
+        padding: 15px 0;
+    }
+
+    .page-title {
+        font-size: 22px;
+        margin-bottom: 8px;
+    }
+
+    .page-description {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    /* SEÇÕES */
+    .section-title {
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+
+    /* GRIDS */
+    .content-grid {
+        gap: 10px;
+    }
+
+    /* CARDS */
+    .card {
+        padding: 14px;
+    }
+
+    .card-title {
+        font-size: 15px;
+    }
+
+    /* COMMUNITY CARDS */
+    .community-list-card {
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+
+    .community-list-card h3 {
+        font-size: 14px;
+    }
+
+    /* COMMUNITY VIEW (Chat) */
+    .community-view {
+        height: calc(100vh - 60px - 70px);
+    }
+
+    .community-header {
+        padding: 10px 12px;
+    }
+
+    .community-header-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
+
+    .community-header-name {
+        font-size: 15px;
+    }
+
+    .community-messages {
+        padding: 12px;
+    }
+
+    .community-message {
+        max-width: 85%;
+    }
+
+    .message-bubble {
+        padding: 8px 12px;
+    }
+
+    .message-text {
+        font-size: 13px;
+    }
+
+    .message-input-container {
+        padding: 10px 12px;
+    }
+
+    .message-input-field {
+        padding: 9px 10px;
+        font-size: 13px;
+    }
+
+    .message-send-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+    /* STUDY CAROUSEL */
+    .study-carousel-container {
+        padding: 10px 12px;
+    }
+
+    .study-carousel-title {
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .study-video-item {
+        flex: 0 0 100px;
+    }
+
+    .study-video-thumbnail {
+        width: 100px;
+        height: 60px;
+    }
+
+    /* ADMIN SECTION */
+    .community-admin-section {
+        padding: 14px;
+    }
+
+    .admin-section-title {
+        font-size: 15px;
+    }
+
+    .study-video-form {
+        padding: 14px;
+    }
+
+    /* BOTÕES */
+    .btn {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .btn-small {
+        padding: 7px 10px;
+        font-size: 12px;
+    }
+
+    /* FORMULÁRIOS */
+    input,
+    textarea,
+    select {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    /* USER INFO */
     .user-email {
         display: none;
     }
 
-    .page-title {
-        font-size: 23px;
+    /* TOAST */
+    .toast-notification {
+        bottom: 90px;
+        right: 12px;
+        left: 12px;
+        max-width: none;
     }
 }
-
-</style>
-</head>
-
-<body>
-
 <!-- =====================================================
      AUTENTICAÇÃO
 ===================================================== -->
