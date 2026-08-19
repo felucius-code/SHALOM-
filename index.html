@@ -3220,12 +3220,14 @@ async function loadCommunities() {
     try {
 
         const snapshot = await getDocs(collection(db, "communities"));
+
         list.innerHTML = "";
 
         const email = auth.currentUser.email;
         let userCommunities = [];
 
         snapshot.forEach(communityDoc => {
+
             const data = communityDoc.data();
             const members = data.members || [];
 
@@ -3235,6 +3237,7 @@ async function loadCommunities() {
                     data: data
                 });
             }
+
         });
 
         if (userCommunities.length === 0) {
@@ -3243,34 +3246,37 @@ async function loadCommunities() {
         }
 
         userCommunities.forEach(community => {
-            const data = community.data;
-            const communityId = community.id;
-            const communityName = data.name || "Comunidade";
 
-            const button = document.createElement("button");
-            button.className = "community-circle";
-            button.title = communityName;
-            button.innerHTML = `
+            const data = community.data;
+            const id = community.id;
+
+            list.innerHTML += `
+            <button
+                class="community-circle"
+                onclick="openCommunity('${id}')"
+                title="${escapeAttribute(data.name || 'Comunidade')}">
+
                 <div class="community-circle-image">
                     <span>👥</span>
                 </div>
-                <span class="community-circle-name">
-                    ${communityName}
-                </span>
-            `;
-            button.onclick = function() {
-                openCommunity(communityId);
-            };
 
-            list.appendChild(button);
+                <span class="community-circle-name">
+                    ${escapeHtml(data.name || "Comunidade")}
+                </span>
+
+            </button>
+            `;
+
         });
 
     } catch (error) {
         console.error("Erro ao carregar comunidades:", error);
-        list.innerHTML = `<div class="error">Erro ao carregar comunidades: ${error.message}</div>`;
+        list.innerHTML = `<div class="error">Erro ao carregar comunidades: ${escapeHtml(error.message)}</div>`;
     }
 
 }
+
+
 /* =====================================================
    ADICIONAR COMUNIDADE
 ===================================================== */
@@ -3713,163 +3719,143 @@ async function isCommunityAdmin(
 }
 
 
+
+        
 /* =====================================================
-   CARREGAR COMUNIDADES DO USUÁRIO
+   ABRIR COMUNIDADE
 ===================================================== */
 
-async function loadCommunities() {
-
-    const list =
-        document.getElementById(
-            "communitiesList"
-        );
-
-
-    if (!list) {
-
-        return;
-
-    }
-
-
-    list.innerHTML =
-        "<p style='color:#6B7A99;'>Carregando...</p>";
-
+window.openCommunity =
+async function(id) {
 
     try {
 
-        const snapshot =
-            await getDocs(
-                collection(
+        const snap =
+            await getDoc(
+                doc(
                     db,
-                    "communities"
+                    "communities",
+                    id
                 )
             );
 
 
-        list.innerHTML = "";
+        if (!snap.exists()) {
+
+            alert(
+                "Comunidade não encontrada."
+            );
+
+            return;
+        }
+
+
+        const data =
+            snap.data();
 
 
         const email =
             auth.currentUser.email;
 
 
-        let userCommunities = [];
+        if (
+            !(
+                data.members ||
+                []
+            ).includes(email)
+        ) {
+
+            alert(
+                "Você ainda não é membro desta comunidade."
+            );
+
+            return;
+        }
 
 
-        snapshot.forEach(
-            communityDoc => {
-
-                const data =
-                    communityDoc.data();
+        currentCommunityId = id;
 
 
-                const members =
-                    data.members || [];
+        currentCommunityIsAdmin =
+            await isCommunityAdmin(id);
 
 
-                if (
-                    members.includes(email)
-                ) {
+        document
+            .getElementById(
+                "communityArea"
+            )
+            .classList
+            .remove("hidden");
 
-                    userCommunities.push({
 
-                        id:
-                            communityDoc.id,
+        document
+            .getElementById(
+                "communityAreaTitle"
+            )
+            .textContent =
+                "🏘️ " +
+                data.name;
 
-                        data:
-                            data
 
-                    });
-
-                }
-
-            }
-        );
+        document
+            .getElementById(
+                "communityAreaDescription"
+            )
+            .textContent =
+                data.description ||
+                "";
 
 
         if (
-            userCommunities.length === 0
+            currentCommunityIsAdmin
         ) {
 
-            list.innerHTML =
-            `
-            <div class="community-empty">
+            document
+                .getElementById(
+                    "communityStudyAdminTools"
+                )
+                .classList
+                .remove("hidden");
 
-                Nenhuma comunidade ainda.
+        } else {
 
-            </div>
-            `;
-
-            return;
+            document
+                .getElementById(
+                    "communityStudyAdminTools"
+                )
+                .classList
+                .add("hidden");
 
         }
 
-        userCommunities.forEach(
-            community => {
 
-                const data =
-                    community.data;
-
-                const id =
-                    community.id;
-
-                const name =
-                    data.name ||
-                    "Comunidade";
+        loadCommunityStudyVideos(id);
 
 
-                list.innerHTML +=
-                `
-                <button
-                    class="community-circle"
-                    onclick="openCommunity('${id}')"
-                    title="${name}">
-
-                    <div
-                        class="community-circle-image">
-
-                        <span>
-                            👥
-                        </span>
-
-                    </div>
-
-
-                    <span
-                        class="community-circle-name">
-
-                        ${name}
-
-                    </span>
-
-                </button>
-                `;
-
-            }
-        );
+        document
+            .getElementById(
+                "communityArea"
+            )
+            .scrollIntoView({
+                behavior: "smooth"
+            });
 
 
     } catch (error) {
 
-        console.error(
-            "Erro ao carregar comunidades:",
-            error
+        console.error(error);
+
+        alert(
+            "Erro ao abrir comunidade: " +
+            error.message
         );
 
-
-        list.innerHTML =
-        `
-        <div class="error">
-
-            Erro ao carregar comunidades
-
-        </div>
-        `;
-
     }
 
-    }
+};
+
+
+    
 
         /* =================================================
            VÍDEOS DE ESTUDOS
@@ -6755,4 +6741,4 @@ function escapeAttribute(text) {
 </script>
 
 </body>
-    </html>
+        </html>
