@@ -3877,36 +3877,18 @@ window.openPage = async function(page, button) {
 window.showCreateCommunity =
 function() {
 
-    const box =
-        document.getElementById(
+    document
+        .getElementById(
             "createCommunityBox"
-        );
-
-    if (box) {
-
-        box.classList.toggle("hidden");
-
-    }
+        )
+        .classList
+        .toggle("hidden");
 
 };
 
 
 window.addCommunity =
 async function() {
-
-    const user =
-        auth.currentUser;
-
-
-    if (!user) {
-
-        alert(
-            "Você precisa estar conectado para criar uma comunidade."
-        );
-
-        return;
-    }
-
 
     if (!isAdmin) {
 
@@ -3947,6 +3929,114 @@ async function() {
 
 
     try {
+
+        await addDoc(
+            collection(
+                db,
+                "communities"
+            ),
+            {
+
+                name,
+
+                description,
+
+                createdBy:
+                    auth.currentUser.email,
+
+                createdAt:
+                    serverTimestamp(),
+
+                members:
+                    [
+                        auth.currentUser.email
+                    ],
+
+                pendingMembers:
+                    []
+
+            }
+        );
+/* =====================================================
+   CRIAR COMUNIDADE
+===================================================== */
+
+window.showCreateCommunity =
+function() {
+
+    const box =
+        document.getElementById(
+            "createCommunityBox"
+        );
+
+    if (box) {
+
+        box.classList.toggle("hidden");
+
+    }
+
+};
+
+
+window.addCommunity =
+async function() {
+
+    const user =
+        auth.currentUser;
+
+
+    if (!user) {
+
+        alert(
+            "Você precisa estar conectado para criar uma comunidade."
+        );
+
+        return;
+    }
+
+
+    const name =
+        document
+        .getElementById(
+            "communityName"
+        )
+        .value
+        .trim();
+
+
+    const description =
+        document
+        .getElementById(
+            "communityDescription"
+        )
+        .value
+        .trim();
+
+
+    if (!name) {
+
+        alert(
+            "Digite o nome da comunidade."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        /*
+         * A comunidade é criada inicialmente
+         * como uma solicitação.
+         *
+         * O criador entra automaticamente
+         * como primeiro membro e administrador
+         * da comunidade.
+         *
+         * A aprovação geral da comunidade
+         * continuará sendo responsabilidade
+         * do administrador da plataforma.
+         */
 
         await addDoc(
             collection(
@@ -4038,6 +4128,7 @@ async function() {
     }
 
 };
+
 
  /* =====================================================
     CARREGAR COMUNIDADES DO USUÁRIO
