@@ -2030,7 +2030,66 @@ select option {
     </button>
 
 </div>
+<!-- PROCURE NESSE LUGAR NO SEU ARQUIVO: -->
 
+<!-- APÓS ESTE BLOCO (studyVideoForm): -->
+
+    <button
+        class="btn btn-secondary"
+        onclick="hideStudyVideoForm()">
+
+        Cancelar
+
+    </button>
+
+</div>
+
+    <!-- =====================================================
+         VÍDEOS DE ESTUDO (Carrossel)
+    ===================================================== -->
+
+    <div id="communityStudyVideos"
+         class="card">
+        <h3 class="card-title">📚 Vídeos de Estudo</h3>
+        <div id="studyVideosList"
+             style="display: flex; gap: 10px; overflow-x: auto;">
+            <!-- Vídeos carregados pelo JavaScript -->
+        </div>
+    </div>
+
+    <!-- =====================================================
+         CHAT DA COMUNIDADE
+    ===================================================== -->
+
+    <div id="communityMessages"
+         class="card"
+         style="max-height: 400px; overflow-y: auto; min-height: 200px;">
+        <!-- Mensagens carregadas pelo JavaScript -->
+    </div>
+
+    <!-- =====================================================
+         INPUT DE MENSAGEM
+    ===================================================== -->
+
+    <div class="card"
+         style="display: flex; gap: 10px;">
+
+        <input
+            type="text"
+            id="messageInput"
+            placeholder="Digite uma mensagem..."
+            style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--gold); background: var(--bg); color: white;">
+
+        <button
+            class="btn"
+            onclick="sendMessage()"
+            style="width: auto;">
+            Enviar
+        </button>
+
+    </div>
+
+</div>
 
 <!-- =====================================================
      VÍDEOS DE ESTUDO DA COMUNIDADE
