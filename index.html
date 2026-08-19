@@ -4885,237 +4885,102 @@ async function(type) {
 
 };
 
-
 /* =====================================================
    CARREGAR CONTEÚDO
 ===================================================== */
 
 async function loadContent(type) {
 
-    const info =
-        contentTypes[type];
+    const info = contentTypes[type];
 
+    const gridId = type === "products" ? "productsGrid" : type + "Grid";
 
-    const gridId =
-        type === "products"
-        ? "productsGrid"
-        : type + "Grid";
-
-
-    const grid =
-        document.getElementById(
-            gridId
-        );
-
+    const grid = document.getElementById(gridId);
 
     if (!grid) {
-
         return;
-
     }
 
-
-    grid.innerHTML =
-        "<p style='color:#6B7A99;'>Carregando...</p>";
-
+    grid.innerHTML = "<p style='color:#6B7A99;'>Carregando...</p>";
 
     try {
 
-        const snapshot =
-            await getDocs(
-                collection(
-                    db,
-                    info.collection
-                )
-            );
-
+        const snapshot = await getDocs(collection(db, info.collection));
 
         grid.innerHTML = "";
 
-
         if (snapshot.empty) {
-
-            grid.innerHTML =
-            `
+            grid.innerHTML = `
             <div class="card">
-
                 <p style="color:#6B7A99;">
-
-                    Nenhum
-                    ${info.title.toLowerCase()}
-                    adicionado ainda.
-
+                    Nenhum ${info.title.toLowerCase()} adicionado ainda.
                 </p>
-
             </div>
             `;
-
             return;
-
         }
 
+        snapshot.forEach(contentDoc => {
 
-        snapshot.forEach(
-            contentDoc => {
+            const data = contentDoc.data();
+            const id = contentDoc.id;
 
-                const data =
-                    contentDoc.data();
+            let cover = info.icon;
 
-
-                const id =
-                    contentDoc.id;
-
-
-                let cover =
-                    info.icon;
-
-
-                if (data.image) {
-
-                    cover =
-                    `
-                    <img
-                        src="${escapeAttribute(
-                            data.image
-                        )}"
-                        alt="">
-                    `;
-
-                }
-
-
-                let accessBadge = "";
-
-                if (data.access === "free") {
-
-                    accessBadge =
-                    `
-                    <span class="access-badge access-free">
-                        🔓 Gratuito
-                    </span>
-                    `;
-
-                } else if (data.access === "subscription") {
-
-                    accessBadge =
-                    `
-                    <span class="access-badge access-subscription">
-                        🔐 Assinatura
-                    </span>
-                    `;
-
-                }
-
-
-                grid.innerHTML +=
-                `
-                <article class="content-card">
-
-                    <div class="content-cover">
-
-                        ${cover}
-
-                    </div>
-
-
-                    <div class="content-body">
-
-                        ${accessBadge}
-
-                        <h3>
-
-                            ${escapeHtml(
-                                data.title
-                            )}
-
-                        </h3>
-
-
-                        <p>
-
-                            ${escapeHtml(
-                                data.description ||
-                                "Sem descrição."
-                            )}
-
-                        </p>
-
-
-                        ${
-                            data.url
-                            ?
-                            `
-                            <button
-                                class="btn btn-small"
-                                onclick="openVideo(
-                                    '${escapeAttribute(
-                                        data.url
-                                    )}'
-                                )">
-
-                                Abrir
-
-                            </button>
-                            `
-                            :
-                            ""
-                        }
-
-
-                        ${
-                            isAdmin
-                            ?
-                            `
-                            <div
-                                class="admin-tools">
-
-                                <button
-                                    class="btn btn-small btn-danger"
-                                    onclick="deleteContent(
-                                        '${type}',
-                                        '${id}'
-                                    )">
-
-                                    Excluir
-
-                                </button>
-
-                            </div>
-                            `
-                            :
-                            ""
-                        }
-
-                    </div>
-
-                </article>
-                `;
-
+            if (data.image) {
+                cover = `<img src="${data.image}" alt="">`;
             }
-        );
 
+            let accessBadge = "";
+
+            if (data.access === "free") {
+                accessBadge = `<span class="access-badge access-free">🔓 Gratuito</span>`;
+            } else if (data.access === "subscription") {
+                accessBadge = `<span class="access-badge access-subscription">🔐 Assinatura</span>`;
+            }
+
+            grid.innerHTML += `
+            <article class="content-card">
+                <div class="content-cover">
+                    ${cover}
+                </div>
+
+                <div class="content-body">
+                    ${accessBadge}
+
+                    <h3>${data.title}</h3>
+
+                    <p>${data.description || "Sem descrição."}</p>
+
+                    ${data.url ? `
+                    <button class="btn btn-small" onclick="openVideo('${data.url}')">
+                        Abrir
+                    </button>
+                    ` : ""}
+
+                    ${isAdmin ? `
+                    <div class="admin-tools">
+                        <button class="btn btn-small btn-danger" onclick="deleteContent('${type}', '${id}')">
+                            Excluir
+                        </button>
+                    </div>
+                    ` : ""}
+                </div>
+            </article>
+            `;
+
+        });
 
     } catch (error) {
-
         console.error(error);
-
-        grid.innerHTML =
-        `
+        grid.innerHTML = `
         <div class="error">
-
-            Erro ao carregar conteúdo:
-            ${escapeHtml(
-                error.message
-            )}
-
+            Erro ao carregar conteúdo: ${error.message}
         </div>
         `;
-
     }
 
 }
-
-
 /* =====================================================
    EXCLUIR
 ===================================================== */
