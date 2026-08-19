@@ -3220,14 +3220,12 @@ async function loadCommunities() {
     try {
 
         const snapshot = await getDocs(collection(db, "communities"));
-
         list.innerHTML = "";
 
         const email = auth.currentUser.email;
         let userCommunities = [];
 
         snapshot.forEach(communityDoc => {
-
             const data = communityDoc.data();
             const members = data.members || [];
 
@@ -3237,7 +3235,6 @@ async function loadCommunities() {
                     data: data
                 });
             }
-
         });
 
         if (userCommunities.length === 0) {
@@ -3246,37 +3243,34 @@ async function loadCommunities() {
         }
 
         userCommunities.forEach(community => {
-
             const data = community.data;
-            const id = community.id;
+            const communityId = community.id;
+            const communityName = data.name || "Comunidade";
 
-            list.innerHTML += `
-            <button
-                class="community-circle"
-                onclick="openCommunity('${id}')"
-                title="${escapeAttribute(data.name || 'Comunidade')}">
-
+            const button = document.createElement("button");
+            button.className = "community-circle";
+            button.title = communityName;
+            button.innerHTML = `
                 <div class="community-circle-image">
                     <span>👥</span>
                 </div>
-
                 <span class="community-circle-name">
-                    ${escapeHtml(data.name || "Comunidade")}
+                    ${communityName}
                 </span>
-
-            </button>
             `;
+            button.onclick = function() {
+                openCommunity(communityId);
+            };
 
+            list.appendChild(button);
         });
 
     } catch (error) {
         console.error("Erro ao carregar comunidades:", error);
-        list.innerHTML = `<div class="error">Erro ao carregar comunidades: ${escapeHtml(error.message)}</div>`;
+        list.innerHTML = `<div class="error">Erro ao carregar comunidades: ${error.message}</div>`;
     }
 
 }
-
-
 /* =====================================================
    ADICIONAR COMUNIDADE
 ===================================================== */
