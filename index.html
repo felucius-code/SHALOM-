@@ -200,7 +200,6 @@ select option {
 }
 
 /* =========================
-/* =========================
    LAYOUT
 ========================= */
 
@@ -262,13 +261,52 @@ select option {
     font-weight: bold;
 }
 
-.community-name {
+ .community-name {
     color: white;
     font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 85px;
+}
+
+.community-circle {
+    flex: 0 0 78px;
+    width: 78px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-align: center;
+}
+
+.community-circle-image {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--panel2);
+    border: 2px solid var(--gold);
+    font-size: 24px;
+}
+
+.community-circle-name {
+    display: block;
+    width: 78px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: #B8BDD0;
+}
+
+.community-empty {
+    padding: 12px 4px;
+    color: #6B7A99;
 }
 
 .community-item.active .community-avatar {
@@ -335,7 +373,7 @@ select option {
 .page-description {
     color: var(--muted);
     margin-bottom: 25px;
-    }
+}
 
 /* =========================
    CARDS
@@ -806,7 +844,8 @@ select option {
     font-weight: bold;
     margin-right: 5px;
 }
-    /* =========================
+
+/* =========================
    HOME — CARROSSÉIS
 ========================= */
 
@@ -1145,6 +1184,7 @@ select option {
     }
 
 }
+
 /* =========================
    MOBILE
 ========================= */
@@ -1393,7 +1433,7 @@ select option {
     </div>
 
     <div
-        id="communitiesList"
+        id="homeCommunitiesList"
         class="communities-list">
 
         <!-- Comunidades carregadas pelo JavaScript -->
@@ -2727,10 +2767,6 @@ async function() {
         // Preenche email
         document.getElementById("userEmail").textContent = email;
 
-        // Carrega dados
-        loadHome();
-        loadCommunities();
-
         // Limpa campos
         document.getElementById("loginEmail").value = "";
         document.getElementById("loginPassword").value = "";
@@ -2909,93 +2945,6 @@ window.openPage = function(page, button) {
 window.showCreateCommunity =
 function() {
 
-    document
-        .getElementById(
-            "createCommunityBox"
-        )
-        .classList
-        .toggle("hidden");
-
-};
-
-
-window.addCommunity =
-async function() {
-
-    if (!isAdmin) {
-
-        alert(
-            "Somente o administrador geral pode criar comunidades."
-        );
-
-        return;
-    }
-
-
-    const name =
-        document
-        .getElementById(
-            "communityName"
-        )
-        .value
-        .trim();
-
-
-    const description =
-        document
-        .getElementById(
-            "communityDescription"
-        )
-        .value
-        .trim();
-
-
-    if (!name) {
-
-        alert(
-            "Digite o nome da comunidade."
-        );
-
-        return;
-    }
-
-
-    try {
-
-        await addDoc(
-            collection(
-                db,
-                "communities"
-            ),
-            {
-
-                name,
-
-                description,
-
-                createdBy:
-                    auth.currentUser.email,
-
-                createdAt:
-                    serverTimestamp(),
-
-                members:
-                    [
-                        auth.currentUser.email
-                    ],
-
-                pendingMembers:
-                    []
-
-            }
-        );
-/* =====================================================
-   CRIAR COMUNIDADE
-===================================================== */
-
-window.showCreateCommunity =
-function() {
-
     const box =
         document.getElementById(
             "createCommunityBox"
@@ -3163,133 +3112,97 @@ async function() {
 
 
 /* =====================================================
-   CARREGAR COMUNIDADES DO USUÁRIO
+   CARREGAR COMUNIDADES
 ===================================================== */
 
 async function loadCommunities() {
 
-    const list = document.getElementById("communitiesList");
+    const homeList = document.getElementById("homeCommunitiesList");
+    const pageList = document.getElementById("communitiesList");
+    const user = auth.currentUser;
 
-    if (!list) {
-        return;
-    }
+    if (!user) return;
 
-    list.innerHTML = "<p style='color:#6B7A99;'>Carregando...</p>";
+    if (homeList) homeList.innerHTML = "<p style='color:#6B7A99;'>Carregando...</p>";
+    if (pageList) pageList.innerHTML = "<p style='color:#6B7A99;'>Carregando...</p>";
 
     try {
-
         const snapshot = await getDocs(collection(db, "communities"));
-
-        list.innerHTML = "";
-
-        const email = auth.currentUser.email;
-        let userCommunities = [];
+        const email = user.email;
+        const all = [];
+        const mine = [];
 
         snapshot.forEach(communityDoc => {
-
             const data = communityDoc.data();
-            const members = data.members || [];
+            const item = { id: communityDoc.id, data };
+            all.push(item);
+            if ((data.members || []).includes(email)) mine.push(item);
+        });
 
-            if (members.includes(email)) {
-                userCommunities.push({
-                    id: communityDoc.id,
-                    data: data
+        if (homeList) {
+            homeList.innerHTML = "";
+            if (!mine.length) {
+                homeList.innerHTML = `<div class="community-empty">Você ainda não participa de nenhuma comunidade.</div>`;
+            } else {
+                mine.forEach(({id, data}) => {
+                    homeList.innerHTML += `
+                        <button type="button" class="community-circle"
+                            onclick="openCommunity('${escapeAttribute(id)}')"
+                            title="${escapeAttribute(data.name || "Comunidade")}">
+                            <div class="community-circle-image"><span>👥</span></div>
+                            <span class="community-circle-name">${escapeHtml(data.name || "Comunidade")}</span>
+                        </button>`;
                 });
             }
-
-        });
-
-        if (userCommunities.length === 0) {
-            list.innerHTML = `<div class="community-empty">Nenhuma comunidade ainda.</div>`;
-            return;
         }
 
-        userCommunities.forEach(community => {
+        if (pageList) {
+            pageList.innerHTML = "";
+            if (!all.length) {
+                pageList.innerHTML = `<div class="card"><p style="color:#6B7A99;">Nenhuma comunidade disponível.</p></div>`;
+            } else {
+                for (const {id, data} of all) {
+                    const members = data.members || [];
+                    const pending = data.pendingMembers || [];
+                    const member = members.includes(email);
+                    const pendingRequest = pending.includes(email);
+                    let action = "";
 
-            const data = community.data;
-            const id = community.id;
+                    if (member) {
+                        action += `<span class="badge badge-success">✓ Membro</span>
+                                   <button type="button" class="btn btn-small" onclick="openCommunity('${escapeAttribute(id)}')">Abrir</button>`;
+                    } else if (pendingRequest) {
+                        action += `<span class="badge badge-pending">⏳ Solicitação pendente</span>`;
+                    } else {
+                        action += `<button type="button" class="btn btn-small" onclick="requestJoin('${escapeAttribute(id)}')">Solicitar entrada</button>`;
+                    }
 
-            list.innerHTML += `
-            <button
-                class="community-circle"
-                onclick="openCommunity('${id}')"
-                title="${escapeAttribute(data.name || 'Comunidade')}">
+                    const communityAdmin = await isCommunityAdmin(id);
+                    if (communityAdmin) action += `<span class="badge badge-admin">🛡️ Administrador</span>`;
+                    if (data.createdBy === email || isAdmin) {
+                        action += `<button type="button" class="btn btn-small btn-secondary" onclick="viewRequests('${escapeAttribute(id)}')">🔔 Solicitações</button>`;
+                    }
 
-                <div class="community-circle-image">
-                    <span>👥</span>
-                </div>
-
-                <span class="community-circle-name">
-                    ${escapeHtml(data.name || "Comunidade")}
-                </span>
-
-            </button>
-            `;
-
-        });
+                    pageList.innerHTML += `
+                        <div class="community-card">
+                            <h3>${escapeHtml(data.name || "Comunidade")}</h3>
+                            <p>${escapeHtml(data.description || "Sem descrição.")}</p>
+                            <p>👥 ${members.length} membros</p>
+                            <div>${action}</div>
+                        </div>`;
+                }
+            }
+        }
 
     } catch (error) {
         console.error("Erro ao carregar comunidades:", error);
-        list.innerHTML = `<div class="error">Erro ao carregar comunidades: ${escapeHtml(error.message)}</div>`;
+        const message = `Erro ao carregar comunidades: ${escapeHtml(error.message)}`;
+        if (homeList) homeList.innerHTML = `<div class="error">${message}</div>`;
+        if (pageList) pageList.innerHTML = `<div class="error">${message}</div>`;
     }
-
 }
 
 
-/* =====================================================
-   ADICIONAR COMUNIDADE
-===================================================== */
-
-async function addCommunity() {
-
-    const user = auth.currentUser;
-
-    if (!user) {
-        alert("Você precisa estar conectado para criar uma comunidade.");
-        return;
-    }
-
-    if (!isAdmin) {
-        alert("Somente o administrador geral pode criar comunidades.");
-        return;
-    }
-
-    const name = document.getElementById("communityName")?.value.trim();
-    const description = document.getElementById("communityDescription")?.value.trim();
-
-    if (!name) {
-        alert("Digite o nome da comunidade.");
-        return;
-    }
-
-    try {
-
-        await addDoc(collection(db, "communities"), {
-            name,
-            description,
-            createdBy: user.email,
-            createdByUid: user.uid,
-            createdAt: serverTimestamp(),
-            status: "pending",
-            members: [user.email],
-            memberUids: [user.uid],
-            pendingMembers: [],
-            communityAdmins: [user.email],
-            studyVideos: []
-        });
-
-        document.getElementById("communityName").value = "";
-        document.getElementById("communityDescription").value = "";
-        document.getElementById("createCommunityBox").classList.add("hidden");
-        alert("Comunidade criada com sucesso!");
-        loadCommunities();
-
-    } catch (error) {
-        console.error(error);
-        alert("Erro ao criar comunidade: " + error.message);
-    }
-
-}
 /* =====================================================
    SOLICITAR ENTRADA
 ===================================================== */
@@ -3788,40 +3701,6 @@ async function(id) {
 
         loadCommunityStudyVideos(id);
 
-
-        document
-            .getElementById(
-                "communityArea"
-            )
-            .scrollIntoView({
-                behavior: "smooth"
-            });
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Erro ao abrir comunidade: " +
-            error.message
-        );
-
-    }
-
-};
-
-
-        /* =================================================
-           VÍDEOS DE ESTUDOS
-        ================================================= */
-
-        loadCommunityStudyVideos(id);
-
-
-        /* =================================================
-           ROLAR ATÉ A COMUNIDADE
-        ================================================= */
 
         document
             .getElementById(
@@ -6561,4 +6440,4 @@ function escapeAttribute(text) {
 </script>
 
 </body>
-        </html>
+</html>
