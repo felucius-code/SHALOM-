@@ -2857,91 +2857,50 @@ async function() {
    NAVEGAÇÃO
 ===================================================== */
 
-window.openPage =
-function(page, button) {
+window.openPage = function(page, button) {
 
-    document
-        .querySelectorAll(".page")
-        .forEach(
-            pageElement =>
-                pageElement
-                .classList
-                .remove("active")
-        );
+    // Esconde todas as páginas
+    document.querySelectorAll(".page").forEach(pageElement => {
+        pageElement.classList.add("hidden");
+    });
 
-
-    const target =
-        document.getElementById(
-            "page-" + page
-        );
-
+    // Mostra página selecionada
+    const target = document.getElementById("page-" + page);
 
     if (target) {
-
-        target
-            .classList
-            .add("active");
-
+        target.classList.remove("hidden");
     }
 
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(
-            item =>
-                item
-                .classList
-                .remove("active")
-        );
-
+    // Remove active de nav items
+    document.querySelectorAll(".nav-item").forEach(item => {
+        item.classList.remove("active");
+    });
 
     if (button) {
-
-        button
-            .classList
-            .add("active");
-
+        button.classList.add("active");
     }
 
-
+    // Carrega conteúdo específico
     if (page === "home") {
-
         loadHome();
-
     }
-
 
     if (page === "communities") {
-
         loadCommunities();
-
     }
 
-
-    if (
-        Object.keys(contentTypes)
-        .includes(page)
-    ) {
-
+    if (Object.keys(contentTypes).includes(page)) {
         loadContent(page);
-
     }
-
 
     if (page === "admin") {
-
         if (isAdmin) {
-
             loadAdminCommunities();
-
             loadCommunityAdmins();
-
         }
-
     }
 
 };
-
 
 /* =====================================================
    CRIAR COMUNIDADE
