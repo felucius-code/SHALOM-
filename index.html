@@ -3782,155 +3782,75 @@ async function(id) {
 
 
         if (!snap.exists()) {
-
-            alert(
-                "Comunidade não encontrada."
-            );
-
+            alert("Comunidade não encontrada.");
             return;
         }
 
 
-        const data =
-            snap.data();
+        const data = snap.data();
+        const email = auth.currentUser.email;
 
 
-        const email =
-            auth.currentUser.email;
-
-
-        if (
-            !(
-                data.members ||
-                []
-            ).includes(email)
-        ) {
-
-            alert(
-                "Você ainda não é membro desta comunidade."
-            );
-
+        if (!(data.members || []).includes(email)) {
+            alert("Você ainda não é membro desta comunidade.");
             return;
         }
 
 
         currentCommunityId = id;
+        currentCommunityIsAdmin = await isCommunityAdmin(id);
 
 
-        currentCommunityIsAdmin =
-            await isCommunityAdmin(id);
+        // ESCONDE TODAS AS PÁGINAS
+        document.querySelectorAll(".page").forEach(page => {
+            page.classList.add("hidden");
+        });
 
 
-        document
-            .getElementById(
-                "communityArea"
-            )
-            .classList
-            .remove("hidden");
-
-
-        document
-            .getElementById(
-                "communityAreaTitle"
-            )
-            .textContent =
-                "🏘️ " +
-                data.name;
-
-
-        document
-            .getElementById(
-                "communityAreaDescription"
-            )
-            .textContent =
-                data.description ||
-                "";
-
-
-        if (
-            currentCommunityIsAdmin
-        ) {
-
-            document
-                .getElementById(
-                    "communityStudyAdminTools"
-                )
-                .classList
-                .remove("hidden");
-
-        } else {
-
-            document
-                .getElementById(
-                    "communityStudyAdminTools"
-                )
-                .classList
-                .add("hidden");
-
+        // MOSTRA INTERFACE DA COMUNIDADE
+        const communityView = document.getElementById("community-view");
+        if (communityView) {
+            communityView.classList.remove("hidden");
         }
 
 
+        // PREENCHE CABEÇALHO
+        const headerName = document.querySelector(".community-header-name");
+        if (headerName) {
+            headerName.textContent = data.name;
+        }
+
+        const headerMembers = document.querySelector(".community-header-members");
+        if (headerMembers) {
+            headerMembers.textContent = (data.members || []).length + " membros";
+        }
+
+
+        // MOSTRA/ESCONDE ADMIN TOOLS
+        const adminSection = document.getElementById("community-admin-section");
+        if (adminSection) {
+            if (currentCommunityIsAdmin) {
+                adminSection.classList.remove("hidden");
+            } else {
+                adminSection.classList.add("hidden");
+            }
+        }
+
+
+        // CARREGA VÍDEOS DE ESTUDO
         loadCommunityStudyVideos(id);
 
 
-        document
-            .getElementById(
-                "communityArea"
-            )
-            .scrollIntoView({
-                behavior: "smooth"
-            });
+        // CARREGA MENSAGENS DO CHAT
+        loadCommunityMessages(id);
 
 
     } catch (error) {
-
         console.error(error);
-
-        alert(
-            "Erro ao abrir comunidade: " +
-            error.message
-        );
-
+        alert("Erro ao abrir comunidade: " + error.message);
     }
 
 };
-
-
-    
-
-        /* =================================================
-           VÍDEOS DE ESTUDOS
-        ================================================= */
-
-        loadCommunityStudyVideos(id);
-
-
-        /* =================================================
-           ROLAR ATÉ A COMUNIDADE
-        ================================================= */
-
-        document
-            .getElementById(
-                "communityArea"
-            )
-            .scrollIntoView({
-                behavior: "smooth"
-            });
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Erro ao abrir comunidade: " +
-            error.message
-        );
-
-    }
-
-};
-
 
 /* =====================================================
    VÍDEOS DE ESTUDO
