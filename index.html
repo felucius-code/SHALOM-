@@ -3714,61 +3714,166 @@ async function isCommunityAdmin(
 
 
 /* =====================================================
-   ABRIR COMUNIDADE
+   CARREGAR COMUNIDADES DO USUÁRIO
 ===================================================== */
 
-window.openCommunity = async function(id) {
+async function loadCommunities() {
+
+    const list =
+        document.getElementById(
+            "communitiesList"
+        );
+
+
+    if (!list) {
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+        "<p style='color:#6B7A99;'>Carregando...</p>";
+
 
     try {
 
-        const snap = await getDoc(doc(db, "communities", id));
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "communities"
+                )
+            );
 
-        if (!snap.exists()) {
-            alert("Comunidade não encontrada.");
+
+        list.innerHTML = "";
+
+
+        const email =
+            auth.currentUser.email;
+
+
+        let userCommunities = [];
+
+
+        snapshot.forEach(
+            communityDoc => {
+
+                const data =
+                    communityDoc.data();
+
+
+                const members =
+                    data.members || [];
+
+
+                if (
+                    members.includes(email)
+                ) {
+
+                    userCommunities.push({
+
+                        id:
+                            communityDoc.id,
+
+                        data:
+                            data
+
+                    });
+
+                }
+
+            }
+        );
+
+
+        if (
+            userCommunities.length === 0
+        ) {
+
+            list.innerHTML =
+            `
+            <div class="community-empty">
+
+                Nenhuma comunidade ainda.
+
+            </div>
+            `;
+
             return;
+
         }
 
-        const data = snap.data();
-        const email = auth.currentUser.email;
+        userCommunities.forEach(
+            community => {
 
-        if (!(data.members || []).includes(email)) {
-            alert("Você ainda não é membro desta comunidade.");
-            return;
-        }
+                const data =
+                    community.data;
 
-        currentCommunityId = id;
-        currentCommunityIsAdmin = await isCommunityAdmin(id);
+                const id =
+                    community.id;
 
-        // ESCONDE PÁGINA DE COMUNIDADES
-        document.getElementById("page-communities").classList.add("hidden");
 
-        // MOSTRA ÁREA DA COMUNIDADE
-        document.getElementById("communityArea").classList.remove("hidden");
+                list.innerHTML +=
+                `
+                <button
+                    class="community-circle"
+                    onclick="openCommunity('${id}')"
+                    title="${escapeAttribute(
+                        data.name || "Comunidade"
+                    )}">
 
-        // PREENCHE CABEÇALHO
-        document.getElementById("communityAreaTitle").textContent = "🏘️ " + data.name;
-        document.getElementById("communityAreaDescription").textContent = data.description || "";
+                    <div
+                        class="community-circle-image">
 
-        // MOSTRA/ESCONDE ADMIN TOOLS
-        if (currentCommunityIsAdmin) {
-            document.getElementById("communityStudyAdminTools").classList.remove("hidden");
-        } else {
-            document.getElementById("communityStudyAdminTools").classList.add("hidden");
-        }
+                        <span>
+                            👥
+                        </span>
 
-        // CARREGA DADOS
-        loadCommunityStudyVideos(id);
-        loadCommunityMessages(id);
+                    </div>
 
-        // RESETA FORMULÁRIO
-        document.getElementById("studyVideoForm").classList.add("hidden");
+
+                    <span
+                        class="community-circle-name">
+
+                        ${escapeHtml(
+                            data.name ||
+                            "Comunidade"
+                        )}
+
+                    </span>
+
+                </button>
+                `;
+
+            }
+        );
+
 
     } catch (error) {
-        console.error(error);
-        alert("Erro ao abrir comunidade: " + error.message);
+
+        console.error(
+            "Erro ao carregar comunidades:",
+            error
+        );
+
+
+        list.innerHTML =
+        `
+        <div class="error">
+
+            Erro ao carregar comunidades:
+            ${escapeHtml(
+                error.message
+            )}
+
+        </div>
+        `;
+
     }
 
-}; 
+}
 
         /* =================================================
            VÍDEOS DE ESTUDOS
