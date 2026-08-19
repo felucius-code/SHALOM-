@@ -1381,10 +1381,12 @@ select option {
         <h2>Comunidades</h2>
 
         <button
-            class="communities-create-btn"
-            onclick="openCreateCommunity()">
+            id="createCommunityBtn"
+            class="btn"
+            onclick="openCreateCommunity()"
+            style="display:none;">
 
-            + Criar
+            ➕ Adicionar comunidade
 
         </button>
 
@@ -1394,8 +1396,7 @@ select option {
         id="communitiesList"
         class="communities-list">
 
-        <!-- As comunidades do usuário serão carregadas
-             automaticamente pelo JavaScript -->
+        <!-- Comunidades carregadas pelo JavaScript -->
 
     </div>
 
@@ -1927,163 +1928,118 @@ select option {
 
     <!-- ÁREA DA COMUNIDADE -->
 
-    <div id="communityArea"
-         class="hidden">
+<div id="communityArea"
+     class="hidden">
 
-        <div class="card">
+    <!-- CABEÇALHO DA COMUNIDADE -->
+    <div class="card">
+        <h2 id="communityAreaTitle"
+            class="card-title">
+        </h2>
+        <p id="communityAreaDescription"
+           style="color:#6B7A99;">
+        </p>
+    </div>
 
-            <h2
-                id="communityAreaTitle"
-                class="card-title">
-            </h2>
 
-            <p
-                id="communityAreaDescription"
-                style="color:#6B7A99;">
-            </p>
+    <!-- ADMINISTRADOR DA COMUNIDADE -->
+    <div id="communityStudyAdminTools"
+         class="card hidden">
 
+        <h2 class="card-title">
+            🎥 Administração de Estudos
+        </h2>
+
+        <p style="color:#6B7A99;">
+            Como administrador desta comunidade,
+            você pode adicionar vídeos de estudos.
+        </p>
+
+        <button class="btn"
+                onclick="showStudyVideoForm()">
+            ＋ Adicionar vídeo de estudo
+        </button>
+
+    </div>
+
+
+    <!-- FORMULÁRIO DE VÍDEO DE ESTUDO -->
+    <div id="studyVideoForm"
+         class="card hidden">
+
+        <h2 class="card-title">
+            🎥 Novo vídeo de estudo
+        </h2>
+
+        <p style="color:#6B7A99;">
+            Adicione um vídeo de estudo para os membros desta comunidade.
+        </p>
+
+        <div class="form-group">
+            <label>Título</label>
+            <input type="text"
+                   id="studyVideoTitle"
+                   placeholder="Título do vídeo">
         </div>
 
+        <div class="form-group">
+            <label>Descrição</label>
+            <textarea id="studyVideoDescription"
+                      placeholder="Descrição do estudo">
+            </textarea>
+        </div>
 
-        <!-- ADMINISTRADOR DA COMUNIDADE -->
+        <div class="form-group">
+            <label>Link do vídeo</label>
+            <input type="url"
+                   id="studyVideoUrl"
+                   placeholder="https://...">
+        </div>
 
-        <div id="communityStudyAdminTools"
-             class="card hidden">
+        <button class="btn"
+                onclick="saveStudyVideo()">
+            🎥 Acrescentar vídeo à comunidade
+        </button>
 
-            <h2 class="card-title">
-                🎥 Administração de Estudos
-            </h2>
-
-            <p style="color:#6B7A99;">
-                Como administrador desta comunidade,
-                você pode adicionar vídeos de estudos.
-            </p>
-
-            <button
-                class="btn"
-                onclick="showStudyVideoForm()">
-
-                ＋ Adicionar vídeo de estudo
-<!-- =====================================================
-     VÍDEOS DE ESTUDO DA COMUNIDADE
-===================================================== -->
-
-<!-- FORMULÁRIO DE VÍDEO DE ESTUDO -->
-
-<div id="studyVideoForm"
-     class="card hidden">
-
-    <h2 class="card-title">
-        🎥 Novo vídeo de estudo
-    </h2>
-
-    <p class="page-description">
-        Adicione um vídeo de estudo para os membros desta comunidade.
-    </p>
-
-    <div class="form-group">
-
-        <label>Título</label>
-
-        <input
-            type="text"
-            id="studyVideoTitle"
-            placeholder="Título do vídeo">
+        <button class="btn btn-secondary"
+                onclick="hideStudyVideoForm()">
+            Cancelar
+        </button>
 
     </div>
 
-    <div class="form-group">
 
-        <label>Descrição</label>
-
-        <textarea
-            id="studyVideoDescription"
-            placeholder="Descrição do estudo"></textarea>
-
-    </div>
-
-    <div class="form-group">
-
-        <label>Link do vídeo</label>
-
-        <input
-            type="url"
-            id="studyVideoUrl"
-            placeholder="https://...">
-
-    </div>
-
-    <button
-        class="btn"
-        onclick="saveStudyVideo()">
-
-        🎥 Acrescentar vídeo à comunidade
-
-    </button>
-
-    <button
-        class="btn btn-secondary"
-        onclick="hideStudyVideoForm()">
-
-        Cancelar
-
-    </button>
-
-</div>
-<!-- PROCURE NESSE LUGAR NO SEU ARQUIVO: -->
-
-<!-- APÓS ESTE BLOCO (studyVideoForm): -->
-
-    <button
-        class="btn btn-secondary"
-        onclick="hideStudyVideoForm()">
-
-        Cancelar
-
-    </button>
-
-</div>
-
-    <!-- =====================================================
-         VÍDEOS DE ESTUDO (Carrossel)
-    ===================================================== -->
-
+    <!-- CARROSSEL DE VÍDEOS DE ESTUDO -->
     <div id="communityStudyVideos"
          class="card">
         <h3 class="card-title">📚 Vídeos de Estudo</h3>
         <div id="studyVideosList"
-             style="display: flex; gap: 10px; overflow-x: auto;">
+             style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0;">
             <!-- Vídeos carregados pelo JavaScript -->
         </div>
     </div>
 
-    <!-- =====================================================
-         CHAT DA COMUNIDADE
-    ===================================================== -->
 
+    <!-- CHAT DA COMUNIDADE -->
     <div id="communityMessages"
          class="card"
-         style="max-height: 400px; overflow-y: auto; min-height: 200px;">
+         style="max-height: 400px; overflow-y: auto; min-height: 200px; padding: 15px;">
         <!-- Mensagens carregadas pelo JavaScript -->
     </div>
 
-    <!-- =====================================================
-         INPUT DE MENSAGEM
-    ===================================================== -->
 
+    <!-- INPUT DE MENSAGEM -->
     <div class="card"
          style="display: flex; gap: 10px;">
 
-        <input
-            type="text"
-            id="messageInput"
-            placeholder="Digite uma mensagem..."
-            style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--gold); background: var(--bg); color: white;">
+        <input type="text"
+               id="messageInput"
+               placeholder="Digite uma mensagem..."
+               style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--gold); background: var(--bg); color: white;">
 
-        <button
-            class="btn"
-            onclick="sendMessage()"
-            style="width: auto;">
+        <button class="btn"
+                onclick="sendMessage()"
+                style="width: auto;">
             Enviar
         </button>
 
