@@ -3713,143 +3713,62 @@ async function isCommunityAdmin(
 }
 
 
-
-        
 /* =====================================================
    ABRIR COMUNIDADE
 ===================================================== */
 
-window.openCommunity =
-async function(id) {
+window.openCommunity = async function(id) {
 
     try {
 
-        const snap =
-            await getDoc(
-                doc(
-                    db,
-                    "communities",
-                    id
-                )
-            );
-
+        const snap = await getDoc(doc(db, "communities", id));
 
         if (!snap.exists()) {
-
-            alert(
-                "Comunidade não encontrada."
-            );
-
+            alert("Comunidade não encontrada.");
             return;
         }
 
+        const data = snap.data();
+        const email = auth.currentUser.email;
 
-        const data =
-            snap.data();
-
-
-        const email =
-            auth.currentUser.email;
-
-
-        if (
-            !(
-                data.members ||
-                []
-            ).includes(email)
-        ) {
-
-            alert(
-                "Você ainda não é membro desta comunidade."
-            );
-
+        if (!(data.members || []).includes(email)) {
+            alert("Você ainda não é membro desta comunidade.");
             return;
         }
-
 
         currentCommunityId = id;
+        currentCommunityIsAdmin = await isCommunityAdmin(id);
 
+        // ESCONDE PÁGINA DE COMUNIDADES
+        document.getElementById("page-communities").classList.add("hidden");
 
-        currentCommunityIsAdmin =
-            await isCommunityAdmin(id);
+        // MOSTRA ÁREA DA COMUNIDADE
+        document.getElementById("communityArea").classList.remove("hidden");
 
+        // PREENCHE CABEÇALHO
+        document.getElementById("communityAreaTitle").textContent = "🏘️ " + data.name;
+        document.getElementById("communityAreaDescription").textContent = data.description || "";
 
-        document
-            .getElementById(
-                "communityArea"
-            )
-            .classList
-            .remove("hidden");
-
-
-        document
-            .getElementById(
-                "communityAreaTitle"
-            )
-            .textContent =
-                "🏘️ " +
-                data.name;
-
-
-        document
-            .getElementById(
-                "communityAreaDescription"
-            )
-            .textContent =
-                data.description ||
-                "";
-
-
-        if (
-            currentCommunityIsAdmin
-        ) {
-
-            document
-                .getElementById(
-                    "communityStudyAdminTools"
-                )
-                .classList
-                .remove("hidden");
-
+        // MOSTRA/ESCONDE ADMIN TOOLS
+        if (currentCommunityIsAdmin) {
+            document.getElementById("communityStudyAdminTools").classList.remove("hidden");
         } else {
-
-            document
-                .getElementById(
-                    "communityStudyAdminTools"
-                )
-                .classList
-                .add("hidden");
-
+            document.getElementById("communityStudyAdminTools").classList.add("hidden");
         }
 
-
+        // CARREGA DADOS
         loadCommunityStudyVideos(id);
+        loadCommunityMessages(id);
 
-
-        document
-            .getElementById(
-                "communityArea"
-            )
-            .scrollIntoView({
-                behavior: "smooth"
-            });
-
+        // RESETA FORMULÁRIO
+        document.getElementById("studyVideoForm").classList.add("hidden");
 
     } catch (error) {
-
         console.error(error);
-
-        alert(
-            "Erro ao abrir comunidade: " +
-            error.message
-        );
-
+        alert("Erro ao abrir comunidade: " + error.message);
     }
 
-};
-
-
-    
+}; 
 
         /* =================================================
            VÍDEOS DE ESTUDOS
