@@ -2711,6 +2711,41 @@ async function() {
             password
         );
 
+        // DEPOIS DO LOGIN SUCESSO
+        if (email === ADMIN_EMAIL) {
+            isAdmin = true;
+        }
+
+        // Esconde login
+        document
+            .getElementById("authScreen")
+            .classList
+            .add("hidden");
+
+        // Mostra app
+        document
+            .getElementById("appScreen")
+            .classList
+            .remove("hidden");
+
+        // Preenche email
+        document
+            .getElementById("userEmail")
+            .textContent = email;
+
+        // Carrega dados
+        loadHome();
+        loadCommunities();
+
+        // Limpa campos
+        document
+            .getElementById("loginEmail")
+            .value = "";
+
+        document
+            .getElementById("loginPassword")
+            .value = "";
+
     } catch (error) {
 
         console.error(error);
@@ -2719,6 +2754,7 @@ async function() {
             "Email ou senha incorretos.",
             "loginError"
         );
+
     }
 
 };
