@@ -3814,15 +3814,17 @@ async function loadCommunities() {
                 const id =
                     community.id;
 
+                const name =
+                    data.name ||
+                    "Comunidade";
+
 
                 list.innerHTML +=
                 `
                 <button
                     class="community-circle"
                     onclick="openCommunity('${id}')"
-                    title="${escapeAttribute(
-                        data.name || "Comunidade"
-                    )}">
+                    title="${name}">
 
                     <div
                         class="community-circle-image">
@@ -3837,10 +3839,7 @@ async function loadCommunities() {
                     <span
                         class="community-circle-name">
 
-                        ${escapeHtml(
-                            data.name ||
-                            "Comunidade"
-                        )}
+                        ${name}
 
                     </span>
 
@@ -3863,17 +3862,14 @@ async function loadCommunities() {
         `
         <div class="error">
 
-            Erro ao carregar comunidades:
-            ${escapeHtml(
-                error.message
-            )}
+            Erro ao carregar comunidades
 
         </div>
         `;
 
     }
 
-}
+    }
 
         /* =================================================
            VÍDEOS DE ESTUDOS
