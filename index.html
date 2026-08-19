@@ -2672,7 +2672,6 @@ const contentTypes = {
 
 };
 
-
 /* =====================================================
    LOGIN
 ===================================================== */
@@ -2691,39 +2690,70 @@ async function() {
         .getElementById("loginPassword")
         .value;
 
+
     if (!email || !password) {
-        alert("Preencha email e senha.");
+
+        showError(
+            "Preencha email e senha.",
+            "loginError"
+        );
+
         return;
     }
 
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
 
-        // SETANDO ADMIN
+    try {
+
+        await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        // DEPOIS DO LOGIN SUCESSO
         if (email === ADMIN_EMAIL) {
             isAdmin = true;
         }
 
         // Esconde login
-        document.getElementById("authScreen").classList.add("hidden");
+        document
+            .getElementById("authScreen")
+            .classList
+            .add("hidden");
 
         // Mostra app
-        document.getElementById("appScreen").classList.remove("hidden");
+        document
+            .getElementById("appScreen")
+            .classList
+            .remove("hidden");
 
         // Preenche email
-        document.getElementById("userEmail").textContent = email;
+        document
+            .getElementById("userEmail")
+            .textContent = email;
 
         // Carrega dados
         loadHome();
         loadCommunities();
 
         // Limpa campos
-        document.getElementById("loginEmail").value = "";
-        document.getElementById("loginPassword").value = "";
+        document
+            .getElementById("loginEmail")
+            .value = "";
+
+        document
+            .getElementById("loginPassword")
+            .value = "";
 
     } catch (error) {
+
         console.error(error);
-        alert("Email ou senha incorretos.");
+
+        showError(
+            "Email ou senha incorretos.",
+            "loginError"
+        );
+
     }
 
 };
