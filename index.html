@@ -6006,64 +6006,51 @@ async function(id) {
    HOME DINÂMICA
 ===================================================== */
 
+/* =====================================================
+   CARREGAR HOME
+===================================================== */
+
 async function loadHome() {
 
-    /*
-     * Cada seção da Home corresponde
-     * a uma coleção do Firebase.
-     */
+    try {
 
-    const homeSections = {
+        // MOSTRA/ESCONDE BOTÕES DE ADMIN
+        if (isAdmin) {
 
-        films: {
-            collection: "films",
-            element: "homeFilms",
-            icon: "🎬"
-        },
+            document.getElementById("admin-films")?.classList.remove("hidden");
+            document.getElementById("admin-series")?.classList.remove("hidden");
+            document.getElementById("admin-books")?.classList.remove("hidden");
+            document.getElementById("admin-articles")?.classList.remove("hidden");
+            document.getElementById("admin-documentaries")?.classList.remove("hidden");
+            document.getElementById("admin-studies")?.classList.remove("hidden");
+            document.getElementById("admin-videos")?.classList.remove("hidden");
+            document.getElementById("admin-store")?.classList.remove("hidden");
 
-        series: {
-            collection: "series",
-            element: "homeSeries",
-            icon: "📺"
-        },
+        } else {
 
-        documentaries: {
-            collection: "documentaries",
-            element: "homeDocumentaries",
-            icon: "🎞️"
-        },
+            document.getElementById("admin-films")?.classList.add("hidden");
+            document.getElementById("admin-series")?.classList.add("hidden");
+            document.getElementById("admin-books")?.classList.add("hidden");
+            document.getElementById("admin-articles")?.classList.add("hidden");
+            document.getElementById("admin-documentaries")?.classList.add("hidden");
+            document.getElementById("admin-studies")?.classList.add("hidden");
+            document.getElementById("admin-videos")?.classList.add("hidden");
+            document.getElementById("admin-store")?.classList.add("hidden");
 
-        books: {
-            collection: "books",
-            element: "homeBooks",
-            icon: "📚"
-        },
-
-        articles: {
-            collection: "articles",
-            element: "homeArticles",
-            icon: "📰"
-        },
-
-        studies: {
-            collection: "studies",
-            element: "homeStudies",
-            icon: "📖"
-        },
-
-        videos: {
-            collection: "videos",
-            element: "homeVideos",
-            icon: "🎥"
-        },
-
-        products: {
-            collection: "products",
-            element: "homeProducts",
-            icon: "🛒"
         }
 
-    };
+        // MOSTRA PÁGINA HOME
+        const homePage = document.getElementById("page-home");
+        if (homePage) {
+            homePage.classList.remove("hidden");
+            homePage.classList.add("active");
+        }
+
+    } catch (error) {
+        console.error("Erro ao carregar home:", error);
+    }
+
+}
 
 
     /*
