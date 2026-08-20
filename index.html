@@ -1599,16 +1599,37 @@ select option {
 
 
     <!-- ================================
-         FILMES
-    ================================= -->
+     FILMES
+================================= -->
 
-    <section class="home-section">
+<section class="home-section">
 
-        <div class="home-section-header">
+    <div class="home-section-header">
 
-            <h2>
-                🎬 Filmes
-            </h2>
+        <h2>
+            🎬 Filmes
+        </h2>
+
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+            "
+        >
+
+            <!-- SOMENTE ADMINISTRADOR GERAL -->
+
+            <button
+                id="addFilmHomeBtn"
+                class="home-see-all hidden"
+                onclick="showContentForm('films')"
+                title="Adicionar filme">
+
+                ＋
+
+            </button>
+
 
             <button
                 class="home-see-all"
@@ -1620,17 +1641,20 @@ select option {
 
         </div>
 
-        <div
-            id="homeFilms"
-            class="home-carousel">
+    </div>
 
-            <div class="home-loading">
-                Carregando...
-            </div>
 
+    <div
+        id="homeFilms"
+        class="home-carousel">
+
+        <div class="home-loading">
+            Carregando...
         </div>
 
-    </section>
+    </div>
+
+</section>
 
 
     <!-- ================================
