@@ -4242,10 +4242,14 @@ window.openCommunity = async function(id) {
         }
 
 
-        communityPage
-            .classList
-            .remove("hidden");
+        communityPage.classList.remove("hidden");
+communityPage.style.display = "block";
+communityPage.style.visibility = "visible";
 
+console.log(
+    "PÁGINA DA COMUNIDADE ABERTA:",
+    communityPage
+);
 
         /* =============================================
            NOME DA COMUNIDADE
