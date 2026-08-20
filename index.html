@@ -4520,22 +4520,24 @@ window.currentCommunityId = id;
 
         const communityPage =
     document.getElementById(
-        "page-communities"
+        "communityArea"
     );
 
 
-        if (!communityPage) {
+if (!communityPage) {
 
-            alert(
-                "Página da comunidade não encontrada."
-            );
+    alert(
+        "Área da comunidade não encontrada."
+    );
 
-            return;
-        }
+    return;
+}
 
 
-        communityPage.classList.remove("hidden");
+communityPage.classList.remove("hidden");
+
 communityPage.style.display = "block";
+
 communityPage.style.visibility = "visible";
 
 console.log(
