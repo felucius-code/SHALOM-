@@ -8099,6 +8099,7 @@ async function(
         const data =
             contentDoc.data();
 
+
         /*
          * Por enquanto, antes de criarmos
          * o player interno, usamos a mesma
@@ -8135,9 +8136,7 @@ async function(
     }
 
 };
-/* =====================================================
-   ABRIR PÁGINA PELO MENU
-===================================================== */
+
 
 window.openPageByName =
 function(page) {
@@ -8183,6 +8182,62 @@ function(page) {
     );
 
 };
+
+
+/* =====================================================
+   AUTENTICAÇÃO
+===================================================== */
+
+onAuthStateChanged(
+    auth,
+    async user => {
+
+        try {
+
+            if (user) {
+
+                isAdmin =
+                    user.email
+                    .toLowerCase() ===
+                    ADMIN_EMAIL
+                    .toLowerCase();
+
+
+                const authScreen =
+                    document.getElementById(
+                        "authScreen"
+                    );
+
+
+                const appScreen =
+                    document.getElementById(
+                        "appScreen"
+                    );
+
+
+                const userEmail =
+                    document.getElementById(
+                        "userEmail"
+                    );
+
+
+                const profileEmail =
+                    document.getElementById(
+                        "profileEmail"
+                    );
+
+
+                const adminMenu =
+                    document.getElementById(
+                        "adminMenu"
+                    );
+
+
+                const adminCommunityButton =
+                    document.getElementById(
+                        "adminCommunityButton"
+                    );
+
                 /* =====================================================
    BOTÕES DE CONTEÚDO — ADMINISTRADOR GERAL
 ===================================================== */
@@ -8583,4 +8638,4 @@ function escapeAttribute(text) {
 </script>
 
 </body>
-                </html>
+    </html>
