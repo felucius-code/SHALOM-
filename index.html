@@ -4144,7 +4144,11 @@ window.openCommunity = async function(id) {
         const user = auth.currentUser;
 
         if (!user) {
-            alert("Você precisa estar conectado.");
+
+            alert(
+                "Você precisa estar conectado."
+            );
+
             return;
         }
 
@@ -4153,13 +4157,14 @@ window.openCommunity = async function(id) {
            BUSCAR COMUNIDADE
         ============================================= */
 
-        const snap = await getDoc(
-            doc(
-                db,
-                "communities",
-                id
-            )
-        );
+        const snap =
+            await getDoc(
+                doc(
+                    db,
+                    "communities",
+                    id
+                )
+            );
 
 
         if (!snap.exists()) {
@@ -4172,7 +4177,8 @@ window.openCommunity = async function(id) {
         }
 
 
-        const data = snap.data();
+        const data =
+            snap.data();
 
 
         /* =============================================
@@ -4197,7 +4203,8 @@ window.openCommunity = async function(id) {
            GUARDAR COMUNIDADE ATUAL
         ============================================= */
 
-        window.currentCommunityId = id;
+        window.currentCommunityId =
+            id;
 
 
         /* =============================================
@@ -4206,61 +4213,42 @@ window.openCommunity = async function(id) {
 
         document
             .querySelectorAll(".page")
-            .forEach(function(page) {
+            .forEach(
+                function(page) {
 
-                page.classList.add("hidden");
+                    page.classList.add("hidden");
 
-            });
-
-
-        /* =============================================
-           MOSTRAR PÁGINA DE COMUNIDADES
-        ============================================= */
-
-        const page =
-            document.getElementById(
-                "page-communities"
+                }
             );
 
 
-        if (!page) {
+        /* =============================================
+           ABRIR A PÁGINA DA COMUNIDADE
+        ============================================= */
+
+        const communityPage =
+            document.getElementById(
+                "page-community"
+            );
+
+
+        if (!communityPage) {
 
             alert(
-                "Página de comunidades não encontrada."
+                "Página da comunidade não encontrada."
             );
 
             return;
         }
 
 
-        page.classList.remove("hidden");
+        communityPage
+            .classList
+            .remove("hidden");
 
 
         /* =============================================
-           MOSTRAR ÁREA DA COMUNIDADE
-        ============================================= */
-
-        const area =
-            document.getElementById(
-                "communityArea"
-            );
-
-
-        if (!area) {
-
-            alert(
-                "Área da comunidade não encontrada."
-            );
-
-            return;
-        }
-
-
-        area.classList.remove("hidden");
-
-
-        /* =============================================
-           NOME
+           NOME DA COMUNIDADE
         ============================================= */
 
         const title =
@@ -4297,7 +4285,7 @@ window.openCommunity = async function(id) {
 
 
         /* =============================================
-           VERIFICAR ADMINISTRADOR
+           ADMINISTRADOR DA COMUNIDADE
         ============================================= */
 
         let communityAdmin = false;
@@ -4317,10 +4305,6 @@ window.openCommunity = async function(id) {
         window.currentCommunityIsAdmin =
             communityAdmin;
 
-
-        /* =============================================
-           FERRAMENTAS DO ADMINISTRADOR
-        ============================================= */
 
         const adminTools =
             document.getElementById(
@@ -4356,23 +4340,19 @@ window.openCommunity = async function(id) {
             "function"
         ) {
 
-            loadCommunityStudyVideos(id);
+            await loadCommunityStudyVideos(id);
 
         }
 
 
         /* =============================================
-           IR PARA A COMUNIDADE
+           IR PARA O TOPO DA PÁGINA
         ============================================= */
 
-        setTimeout(function() {
-
-            area.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-
-        }, 100);
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
 
 
     } catch (error) {
@@ -4390,7 +4370,6 @@ window.openCommunity = async function(id) {
     }
 
 };
-
 /* =====================================================
    VÍDEOS DE ESTUDO
 ===================================================== */
