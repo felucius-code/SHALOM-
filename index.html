@@ -4203,8 +4203,8 @@ window.openCommunity = async function(id) {
            GUARDAR COMUNIDADE ATUAL
         ============================================= */
 
-        window.currentCommunityId =
-            id;
+        currentCommunityId = id;
+window.currentCommunityId = id;
 
 
         /* =============================================
@@ -4306,8 +4306,11 @@ console.log(
         }
 
 
-        window.currentCommunityIsAdmin =
-            communityAdmin;
+        currentCommunityIsAdmin =
+    communityAdmin;
+
+window.currentCommunityIsAdmin =
+    communityAdmin;
 
 
         const adminTools =
