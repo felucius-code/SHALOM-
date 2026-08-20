@@ -2931,19 +2931,73 @@ window.openPage = function(page, button) {
    CRIAR COMUNIDADE
 ===================================================== */
 
-window.showCreateCommunity =
-function() {
+/* =====================================================
+   MOSTRAR FORMULÁRIO DE CRIAÇÃO DE COMUNIDADE
+===================================================== */
+
+window.showCreateCommunity = function() {
 
     const box =
         document.getElementById(
             "createCommunityBox"
         );
 
-    if (box) {
+    if (!box) {
 
-        box.classList.toggle("hidden");
+        console.error(
+            "createCommunityBox não encontrado."
+        );
+
+        alert(
+            "Erro: formulário de criação de comunidade não encontrado."
+        );
+
+        return;
+    }
+
+
+    /*
+     * Garante que a página de comunidades
+     * esteja visível.
+     */
+
+    const communitiesPage =
+        document.getElementById(
+            "page-communities"
+        );
+
+    if (communitiesPage) {
+
+        document
+            .querySelectorAll(".page")
+            .forEach(
+                page => {
+                    page.classList.add("hidden");
+                }
+            );
+
+        communitiesPage
+            .classList
+            .remove("hidden");
 
     }
+
+
+    /*
+     * Mostra o formulário.
+     */
+
+    box.classList.remove("hidden");
+
+
+    /*
+     * Leva o usuário até o formulário.
+     */
+
+    box.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
 
 };
 
