@@ -4778,19 +4778,31 @@ window.openCommunity = async function(id) {
 
 
         /* =============================================
-           CARREGAR VÍDEOS DE ESTUDO
-        ============================================= */
+   CARREGAR VÍDEOS
+============================================= */
 
-        if (
-            typeof loadCommunityStudyVideos ===
-            "function"
-        ) {
+if (
+    typeof loadCommunityStudyVideos ===
+    "function"
+) {
 
-            await loadCommunityStudyVideos(
-                id
-            );
+    await loadCommunityStudyVideos(id);
 
-        }
+}
+
+
+/* =============================================
+   CARREGAR MENSAGENS
+============================================= */
+
+if (
+    typeof loadCommunityMessages ===
+    "function"
+) {
+
+    await loadCommunityMessages(id);
+
+}
 
 
         /* =============================================
