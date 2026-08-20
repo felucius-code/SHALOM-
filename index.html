@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SHALOM - Rede Social</title>
+<title>SHALOM!</title>
 
 <style>
 
@@ -7624,6 +7624,43 @@ if (isAdmin) {
 
 }
 
+
+                if (authScreen) {
+
+                    authScreen
+                        .classList
+                        .add("hidden");
+
+                }
+
+
+                if (appScreen) {
+
+                    appScreen
+                        .classList
+                        .remove("hidden");
+
+                }
+
+
+                if (userEmail) {
+
+                    userEmail
+                        .textContent =
+                        user.email;
+
+                }
+
+
+                if (profileEmail) {
+
+                    profileEmail
+                        .textContent =
+                        user.email;
+
+                }
+
+
                 /* =====================================
                    ADMINISTRADOR GERAL
                 ===================================== */
@@ -7938,4 +7975,4 @@ function escapeAttribute(text) {
 </script>
 
 </body>
-    </html>
+                </html>
