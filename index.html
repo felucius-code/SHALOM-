@@ -1659,227 +1659,300 @@ select option {
 
 
     <!-- ================================
-         SÉRIES
-    ================================= -->
+     SÉRIES
+================================= -->
 
-    <section class="home-section">
+<section class="home-section">
 
-        <div class="home-section-header">
+    <div class="home-section-header">
 
-            <h2>
-                📺 Séries
-            </h2>
+        <h2>
+            📺 Séries
+        </h2>
 
-            <div
-    style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-    "
->
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+            "
+        >
 
-    <!-- SOMENTE ADMINISTRADOR GERAL -->
+            <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-    <button
-        id="addSeriesHomeBtn"
-        class="home-see-all hidden"
-        type="button"
-        onclick="showContentForm('series')"
-        title="Adicionar série">
+            <button
+                id="addSeriesHomeBtn"
+                class="home-see-all hidden"
+                type="button"
+                onclick="showContentForm('series')"
+                title="Adicionar série">
 
-        ＋
+                ＋
 
-    </button>
-
-
-    <button
-        class="home-see-all"
-        onclick="openPageByName('series')">
-
-        Ver todos →
-
-    </button>
-
-</div>
+            </button>
 
 
-    <!-- ================================
-         DOCUMENTÁRIOS
-    ================================= -->
+            <button
+                class="home-see-all"
+                onclick="openPageByName('series')">
 
-    <section class="home-section">
+                Ver todos →
 
-        <div class="home-section-header">
+            </button>
 
-            <h2>
-                🎞️ Documentários
-            </h2>
+        </div>
 
-            <div
-    style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-    "
->
-
-    <!-- SOMENTE ADMINISTRADOR GERAL -->
-
-    <button
-        id="addDocumentariesHomeBtn"
-        class="home-see-all hidden"
-        type="button"
-        onclick="showContentForm('documentaries')"
-        title="Adicionar documentário">
-
-        ＋
-
-    </button>
+    </div>
 
 
-    <button
-        class="home-see-all"
-        onclick="openPageByName('documentaries')">
+    <div
+        id="homeSeries"
+        class="home-carousel">
 
-        Ver todos →
+        <div class="home-loading">
+            Carregando...
+        </div>
 
-    </button>
+    </div>
 
-</div>
-
-
-    <!-- ================================
-         LIVROS
-    ================================= -->
-
-    <section class="home-section">
-
-        <div class="home-section-header">
-
-            <h2>
-                📚 Livros
-            </h2>
-
-            <div
-    style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-    "
->
-
-    <!-- SOMENTE ADMINISTRADOR GERAL -->
-
-    <button
-        id="addBooksHomeBtn"
-        class="home-see-all hidden"
-        type="button"
-        onclick="showContentForm('books')"
-        title="Adicionar livro">
-
-        ＋
-
-    </button>
+</section>
 
 
-    <button
-        class="home-see-all"
-        onclick="openPageByName('books')">
+<!-- ================================
+     DOCUMENTÁRIOS
+================================= -->
 
-        Ver todos →
+<section class="home-section">
 
-    </button>
+    <div class="home-section-header">
 
-</div>
+        <h2>
+            🎞️ Documentários
+        </h2>
+
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+            "
+        >
+
+            <!-- SOMENTE ADMINISTRADOR GERAL -->
+
+            <button
+                id="addDocumentariesHomeBtn"
+                class="home-see-all hidden"
+                type="button"
+                onclick="showContentForm('documentaries')"
+                title="Adicionar documentário">
+
+                ＋
+
+            </button>
+
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('documentaries')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="homeDocumentaries"
+        class="home-carousel">
+
+        <div class="home-loading">
+            Carregando...
+        </div>
+
+    </div>
+
+</section>
 
     <!-- ================================
-         ARTIGOS
-    ================================= -->
+     LIVROS
+================================= -->
 
-    <section class="home-section">
+<section class="home-section">
 
-        <div class="home-section-header">
+    <div class="home-section-header">
 
-            <h2>
-                📰 Artigos
-            </h2>
+        <h2>
+            📚 Livros
+        </h2>
 
-            <div
-    style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-    "
->
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+            "
+        >
 
-    <!-- SOMENTE ADMINISTRADOR GERAL -->
+            <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-    <button
-        id="addArticlesHomeBtn"
-        class="home-see-all hidden"
-        type="button"
-        onclick="showContentForm('articles')"
-        title="Adicionar artigo">
+            <button
+                id="addBooksHomeBtn"
+                class="home-see-all hidden"
+                type="button"
+                onclick="showContentForm('books')"
+                title="Adicionar livro">
 
-        ＋
+                ＋
 
-    </button>
+            </button>
 
 
-    <button
-        class="home-see-all"
-        onclick="openPageByName('articles')">
+            <button
+                class="home-see-all"
+                onclick="openPageByName('books')">
 
-        Ver todos →
+                Ver todos →
 
-    </button>
+            </button>
 
-</div>
+        </div>
 
+    </div>
+
+
+    <div
+        id="homeBooks"
+        class="home-carousel">
+
+        <div class="home-loading">
+            Carregando...
+        </div>
+
+    </div>
+
+</section>
 
     <!-- ================================
-         ESTUDOS
-    ================================= -->
+     ARTIGOS
+================================= -->
 
-    <section class="home-section">
+<section class="home-section">
 
-        <div class="home-section-header">
+    <div class="home-section-header">
 
-            <h2>
-                📖 Estudos
-            </h2>
+        <h2>
+            📰 Artigos
+        </h2>
 
-            <div
-    style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-    "
->
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+            "
+        >
 
-    <!-- SOMENTE ADMINISTRADOR GERAL -->
+            <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-    <button
-        id="addStudiesHomeBtn"
-        class="home-see-all hidden"
-        type="button"
-        onclick="showContentForm('studies')"
-        title="Adicionar estudo">
+            <button
+                id="addArticlesHomeBtn"
+                class="home-see-all hidden"
+                type="button"
+                onclick="showContentForm('articles')"
+                title="Adicionar artigo">
 
-        ＋
+                ＋
 
-    </button>
+            </button>
 
 
-    <button
-        class="home-see-all"
-        onclick="openPageByName('studies')">
+            <button
+                class="home-see-all"
+                onclick="openPageByName('articles')">
 
-        Ver todos →
+                Ver todos →
 
-    </button>
+            </button>
 
-</div>
+        </div>
+
+    </div>
+
+
+    <div
+        id="homeArticles"
+        class="home-carousel">
+
+        <div class="home-loading">
+            Carregando...
+        </div>
+
+    </div>
+
+</section>
+
+    <!-- ================================
+     ESTUDOS
+================================= -->
+
+<section class="home-section">
+
+    <div class="home-section-header">
+
+        <h2>
+            📖 Estudos
+        </h2>
+
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+            "
+        >
+
+            <!-- SOMENTE ADMINISTRADOR GERAL -->
+
+            <button
+                id="addStudiesHomeBtn"
+                class="home-see-all hidden"
+                type="button"
+                onclick="showContentForm('studies')"
+                title="Adicionar estudo">
+
+                ＋
+
+            </button>
+
+
+            <button
+                class="home-see-all"
+                onclick="openPageByName('studies')">
+
+                Ver todos →
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="homeStudies"
+        class="home-carousel">
+
+        <div class="home-loading">
+            Carregando...
+        </div>
+
+    </div>
+
+</section>
     
 <!-- ================================
      VÍDEOS
@@ -1894,80 +1967,110 @@ select option {
         </h2>
 
         <div
-    style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-    "
->
+            style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+            "
+        >
 
-    <!-- SOMENTE ADMINISTRADOR GERAL -->
+            <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-    <button
-        id="addVideosHomeBtn"
-        class="home-see-all hidden"
-        type="button"
-        onclick="showContentForm('videos')"
-        title="Adicionar vídeo">
+            <button
+                id="addVideosHomeBtn"
+                class="home-see-all hidden"
+                type="button"
+                onclick="showContentForm('videos')"
+                title="Adicionar vídeo">
 
-        ＋
+                ＋
 
-    </button>
+            </button>
 
 
-    <button
-        class="home-see-all"
-        onclick="openPageByName('videos')">
+            <button
+                class="home-see-all"
+                onclick="openPageByName('videos')">
 
-        Ver todos →
+                Ver todos →
 
-    </button>
+            </button>
 
-</div>
+        </div>
+
+    </div>
+
+
+    <div
+        id="homeVideos"
+        class="home-carousel">
+
+        <div class="home-loading">
+            Carregando...
+        </div>
+
+    </div>
+
+</section>
 
     <!-- ================================
-         LOJA
-    ================================= -->
+     LOJA
+================================= -->
 
-    <section class="home-section">
+<section class="home-section">
 
-        <div class="home-section-header">
+    <div class="home-section-header">
 
-            <h2>
-                🛒 Loja
-            </h2>
+        <h2>
+            🛒 Loja
+        </h2>
 
-            <div
-    style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-    "
->
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+            "
+        >
 
-    <!-- SOMENTE ADMINISTRADOR GERAL -->
+            <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-    <button
-        id="addProductsHomeBtn"
-        class="home-see-all hidden"
-        type="button"
-        onclick="showContentForm('products')"
-        title="Adicionar produto">
+            <button
+                id="addProductsHomeBtn"
+                class="home-see-all hidden"
+                type="button"
+                onclick="showContentForm('products')"
+                title="Adicionar produto">
 
-        ＋
+                ＋
 
-    </button>
+            </button>
 
 
-    <button
-        class="home-see-all"
-        onclick="openPageByName('store')">
+            <button
+                class="home-see-all"
+                onclick="openPageByName('store')">
 
-        Ver todos →
+                Ver todos →
 
-    </button>
+            </button>
 
-</div>
+        </div>
+
+    </div>
+
+
+    <div
+        id="homeProducts"
+        class="home-carousel">
+
+        <div class="home-loading">
+            Carregando...
+        </div>
+
+    </div>
+
+</section>
 
 <!-- =====================================================
      COMUNIDADES
