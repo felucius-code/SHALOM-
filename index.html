@@ -1452,7 +1452,7 @@ select option {
 
     <button
         class="nav-item"
-        onclick="alert('O botão Comunidades está funcionando')"
+        onclick="openPage('communities',this)"
         👥 Comunidades
     </button>
 
@@ -3177,115 +3177,215 @@ async function() {
 
 window.openPage = function(page, button) {
 
-    /*
-     * Esconde todas as páginas.
-     */
+    try {
 
-    document
-        .querySelectorAll(".page")
-        .forEach(
-            pageElement => {
-                pageElement.classList.add("hidden");
-            }
-        );
+        /*
+         * ESCONDE TODAS AS PÁGINAS
+         */
 
+        document
+            .querySelectorAll(".page")
+            .forEach(
+                pageElement => {
 
-    /*
-     * Localiza a página solicitada.
-     */
+                    pageElement
+                        .classList
+                        .add("hidden");
 
-    const target =
-        document.getElementById(
-            "page-" + page
-        );
+                }
+            );
 
 
-    /*
-     * Mostra a página.
-     */
+        /*
+         * ABRE A PÁGINA SELECIONADA
+         */
 
-    if (target) {
-
-        target.classList.remove("hidden");
-
-    }
-
-
-    /*
-     * Atualiza o botão ativo
-     * da navegação.
-     */
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(
-            item => {
-                item.classList.remove("active");
-            }
-        );
+        const target =
+            document.getElementById(
+                "page-" + page
+            );
 
 
-    if (button) {
+        if (!target) {
 
-        button.classList.add("active");
+            console.error(
+                "Página não encontrada: page-" +
+                page
+            );
 
-    }
+            alert(
+                "Página não encontrada: " +
+                page
+            );
 
-
-    /*
-     * HOME
-     */
-
-    if (page === "home") {
-
-        loadHome();
-
-    }
+            return;
+        }
 
 
-    /*
-     * COMUNIDADES
-     */
-
-    if (page === "communities") {
-
-        loadCommunities();
-
-    }
+        target
+            .classList
+            .remove("hidden");
 
 
-    /*
-     * CONTEÚDOS
-     */
+        /*
+         * ATUALIZA O BOTÃO ATIVO
+         */
 
-    if (
-        typeof contentTypes !== "undefined" &&
-        Object.keys(contentTypes).includes(page)
-    ) {
+        document
+            .querySelectorAll(".nav-item")
+            .forEach(
+                item => {
 
-        loadContent(page);
+                    item
+                        .classList
+                        .remove("active");
 
-    }
+                }
+            );
 
 
-    /*
-     * ADMINISTRAÇÃO
-     */
+        if (button) {
 
-    if (page === "admin") {
-
-        if (isAdmin) {
-
-            loadAdminCommunities();
-
-            loadCommunityAdmins();
+            button
+                .classList
+                .add("active");
 
         }
+
+
+        /*
+         * HOME
+         */
+
+        if (page === "home") {
+
+            if (
+                typeof loadHome ===
+                "function"
+            ) {
+
+                loadHome();
+
+            }
+
+            return;
+        }
+
+
+        /*
+         * COMUNIDADES
+         */
+
+        if (page === "communities") {
+
+            if (
+                typeof loadCommunities ===
+                "function"
+            ) {
+
+                loadCommunities();
+
+            }
+
+            return;
+        }
+
+
+        /*
+         * CONTEÚDOS
+         */
+
+        if (
+            typeof contentTypes !==
+            "undefined" &&
+            contentTypes &&
+            Object.keys(
+                contentTypes
+            ).includes(page)
+        ) {
+
+            if (
+                typeof loadContent ===
+                "function"
+            ) {
+
+                loadContent(page);
+
+            }
+
+            return;
+        }
+
+
+        /*
+         * LOJA
+         */
+
+        if (page === "store") {
+
+            if (
+                typeof loadContent ===
+                "function" &&
+                typeof contentTypes !==
+                "undefined" &&
+                contentTypes.products
+            ) {
+
+                loadContent("products");
+
+            }
+
+            return;
+        }
+
+
+        /*
+         * ADMINISTRAÇÃO
+         */
+
+        if (page === "admin") {
+
+            if (isAdmin) {
+
+                if (
+                    typeof loadAdminCommunities ===
+                    "function"
+                ) {
+
+                    loadAdminCommunities();
+
+                }
+
+
+                if (
+                    typeof loadCommunityAdmins ===
+                    "function"
+                ) {
+
+                    loadCommunityAdmins();
+
+                }
+
+            }
+
+            return;
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erro na navegação:",
+            error
+        );
+
+        alert(
+            "Erro ao abrir a página: " +
+            error.message
+        );
 
     }
 
 };
-
 /* =====================================================
    CRIAR COMUNIDADE
 ===================================================== */
