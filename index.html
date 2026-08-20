@@ -7077,6 +7077,55 @@ onAuthStateChanged(
                         "adminCommunityButton"
                     );
 
+                /* =====================================================
+   BOTÕES DE CONTEÚDO — ADMINISTRADOR GERAL
+===================================================== */
+
+const adminContentButtons = [
+
+    "addFilmHomeBtn",
+
+    "addSeriesHomeBtn",
+
+    "addDocumentaryHomeBtn",
+
+    "addBookHomeBtn",
+
+    "addArticleHomeBtn",
+
+    "addStudyHomeBtn",
+
+    "addVideoHomeBtn",
+
+    "addProductHomeBtn"
+
+];
+
+
+if (isAdmin) {
+
+    adminContentButtons.forEach(
+        buttonId => {
+
+            const button =
+                document.getElementById(
+                    buttonId
+                );
+
+
+            if (button) {
+
+                button.classList.remove(
+                    "hidden"
+                );
+
+            }
+
+        }
+    );
+
+}
+
 
                 if (authScreen) {
 
