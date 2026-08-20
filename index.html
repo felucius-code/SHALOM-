@@ -4693,6 +4693,136 @@ function(url) {
 
 };
 
+    /* =====================================================
+   ENVIAR MENSAGEM NA COMUNIDADE
+===================================================== */
+
+window.sendMessage = async function() {
+
+    try {
+
+        const user = auth.currentUser;
+
+        /*
+         * Se não houver usuário conectado,
+         * simplesmente não envia.
+         */
+
+        if (!user) {
+            return;
+        }
+
+
+        /*
+         * ID da comunidade atualmente aberta.
+         */
+
+        const communityId =
+            window.currentCommunityId ||
+            currentCommunityId;
+
+
+        if (!communityId) {
+            return;
+        }
+
+
+        /*
+         * Campo da mensagem.
+         */
+
+        const input =
+            document.getElementById(
+                "messageInput"
+            );
+
+
+        if (!input) {
+            return;
+        }
+
+
+        const text =
+            input.value.trim();
+
+
+        /*
+         * Não envia mensagem vazia.
+         */
+
+        if (!text) {
+            return;
+        }
+
+
+        /*
+         * Salva a mensagem no Firebase.
+         */
+
+        await addDoc(
+
+            collection(
+                db,
+                "communities",
+                communityId,
+                "messages"
+            ),
+
+            {
+                text: text,
+
+                author:
+                    user.email,
+
+                authorUid:
+                    user.uid,
+
+                createdAt:
+                    serverTimestamp()
+            }
+
+        );
+
+
+        /*
+         * Limpa o campo.
+         */
+
+        input.value = "";
+
+
+        /*
+         * Atualiza o chat, caso a função
+         * de carregamento já exista.
+         */
+
+        if (
+            typeof loadCommunityMessages ===
+            "function"
+        ) {
+
+            await loadCommunityMessages(
+                communityId
+            );
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao enviar mensagem:",
+            error
+        );
+
+        alert(
+            "Erro ao enviar mensagem: " +
+            error.message
+        );
+
+    }
+
+};
 
 /* =====================================================
    CONTEÚDO GERAL
