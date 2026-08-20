@@ -3003,25 +3003,14 @@ window.openPage = function(page, button) {
 
 window.showCreateCommunity = function() {
 
-    /*
-     * Usa o sistema normal de navegação
-     * do SHALOM.
-     */
-
-    if (typeof openPage === "function") {
-
-        openPage("communities");
-
-    }
-
-
-    /*
-     * Localiza o formulário existente.
-     */
-
     const box =
         document.getElementById(
             "createCommunityBox"
+        );
+
+    const homeList =
+        document.getElementById(
+            "homeCommunitiesList"
         );
 
 
@@ -3031,7 +3020,27 @@ window.showCreateCommunity = function() {
             "createCommunityBox não encontrado."
         );
 
+        alert(
+            "Erro: formulário de criação de comunidade não encontrado."
+        );
+
         return;
+
+    }
+
+
+    /*
+     * Coloca o formulário diretamente
+     * abaixo do carrossel da Home.
+     */
+
+    if (homeList) {
+
+        homeList.parentNode.insertBefore(
+            box,
+            homeList.nextSibling
+        );
+
     }
 
 
@@ -3043,7 +3052,7 @@ window.showCreateCommunity = function() {
 
 
     /*
-     * Posiciona a tela no formulário.
+     * Rola suavemente até o formulário.
      */
 
     setTimeout(
@@ -3059,7 +3068,6 @@ window.showCreateCommunity = function() {
     );
 
 };
-
 
 window.addCommunity =
 async function() {
