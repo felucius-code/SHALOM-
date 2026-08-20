@@ -2844,9 +2844,12 @@ async function() {
         await signInWithEmailAndPassword(auth, email, password);
 
         // SETANDO ADMIN
-        if (email === ADMIN_EMAIL) {
-            isAdmin = true;
-        }
+if (email === ADMIN_EMAIL) {
+    isAdmin = true;
+    alert("✅ Admin setado como TRUE");
+} else {
+    alert("❌ Admin é FALSE - email: " + email);
+}
 
         // Esconde login
         document.getElementById("authScreen").classList.add("hidden");
