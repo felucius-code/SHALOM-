@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SHALOM!</title>
+<title>SHALOM - Rede Social</title>
 
 <style>
 
@@ -7585,17 +7585,17 @@ const adminContentButtons = [
 
     "addSeriesHomeBtn",
 
-    "addDocumentaryHomeBtn",
+    "addDocumentariesHomeBtn",
 
-    "addBookHomeBtn",
+    "addBooksHomeBtn",
 
-    "addArticleHomeBtn",
+    "addArticlesHomeBtn",
 
-    "addStudyHomeBtn",
+    "addStudiesHomeBtn",
 
-    "addVideoHomeBtn",
+    "addVideosHomeBtn",
 
-    "addProductHomeBtn"
+    "addProductsHomeBtn"
 
 ];
 
@@ -7622,43 +7622,7 @@ if (isAdmin) {
         }
     );
 
-}
-
-
-                if (authScreen) {
-
-                    authScreen
-                        .classList
-                        .add("hidden");
-
-                }
-
-
-                if (appScreen) {
-
-                    appScreen
-                        .classList
-                        .remove("hidden");
-
-                }
-
-
-                if (userEmail) {
-
-                    userEmail
-                        .textContent =
-                        user.email;
-
-                }
-
-
-                if (profileEmail) {
-
-                    profileEmail
-                        .textContent =
-                        user.email;
-
-                }
+    }
 
 
                 /* =====================================
