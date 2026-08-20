@@ -4435,6 +4435,7 @@ window.openCommunity = async function(id) {
 
         const user = auth.currentUser;
 
+
         if (!user) {
 
             alert(
@@ -4442,6 +4443,7 @@ window.openCommunity = async function(id) {
             );
 
             return;
+
         }
 
 
@@ -4466,6 +4468,7 @@ window.openCommunity = async function(id) {
             );
 
             return;
+
         }
 
 
@@ -4481,13 +4484,18 @@ window.openCommunity = async function(id) {
             data.members || [];
 
 
-        if (!members.includes(user.email)) {
+        if (
+            !members.includes(
+                user.email
+            )
+        ) {
 
             alert(
                 "Você ainda não é membro desta comunidade."
             );
 
             return;
+
         }
 
 
@@ -4495,55 +4503,120 @@ window.openCommunity = async function(id) {
            GUARDAR COMUNIDADE ATUAL
         ============================================= */
 
-        currentCommunityId = id;
-window.currentCommunityId = id;
+        currentCommunityId =
+            id;
+
+        window.currentCommunityId =
+            id;
 
 
         /* =============================================
-           ESCONDER TODAS AS PÁGINAS
+           ABRIR A PÁGINA PRINCIPAL
+           DE COMUNIDADES
         ============================================= */
 
-        document
-            .querySelectorAll(".page")
-            .forEach(
-                function(page) {
-
-                    page.classList.add("hidden");
-
-                }
+        const communitiesPage =
+            document.getElementById(
+                "page-communities"
             );
 
 
+        if (!communitiesPage) {
+
+            alert(
+                "Página de comunidades não encontrada."
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Primeiro mostramos o PAI.
+         * A área da comunidade está dentro dele.
+         */
+
+        communitiesPage
+            .classList
+            .remove("hidden");
+
+
+        communitiesPage.style.display =
+            "block";
+
+
+        communitiesPage.style.visibility =
+            "visible";
+
+
         /* =============================================
-           ABRIR A PÁGINA DA COMUNIDADE
+           ESCONDER A LISTA GERAL DE COMUNIDADES
+           ENQUANTO A COMUNIDADE ESTÁ ABERTA
         ============================================= */
 
-        const communityPage =
-    document.getElementById(
-        "communityArea"
-    );
+        const communitiesList =
+            document.getElementById(
+                "communitiesList"
+            );
 
 
-if (!communityPage) {
+        if (communitiesList) {
 
-    alert(
-        "Área da comunidade não encontrada."
-    );
+            communitiesList.style.display =
+                "none";
 
-    return;
-}
+        }
 
 
-communityPage.classList.remove("hidden");
+        const createBox =
+            document.getElementById(
+                "createCommunityBox"
+            );
 
-communityPage.style.display = "block";
 
-communityPage.style.visibility = "visible";
+        if (createBox) {
 
-console.log(
-    "PÁGINA DA COMUNIDADE ABERTA:",
-    communityPage
-);
+            createBox.classList.add(
+                "hidden"
+            );
+
+        }
+
+
+        /* =============================================
+           ABRIR ÁREA DA COMUNIDADE
+        ============================================= */
+
+        const communityArea =
+            document.getElementById(
+                "communityArea"
+            );
+
+
+        if (!communityArea) {
+
+            alert(
+                "Área da comunidade não encontrada."
+            );
+
+            return;
+
+        }
+
+
+        communityArea
+            .classList
+            .remove("hidden");
+
+
+        communityArea.style.display =
+            "block";
+
+
+        communityArea.style.visibility =
+            "visible";
+
 
         /* =============================================
            NOME DA COMUNIDADE
@@ -4559,7 +4632,10 @@ console.log(
 
             title.textContent =
                 "🏘️ " +
-                (data.name || "Comunidade");
+                (
+                    data.name ||
+                    "Comunidade"
+                );
 
         }
 
@@ -4577,16 +4653,18 @@ console.log(
         if (description) {
 
             description.textContent =
-                data.description || "";
+                data.description ||
+                "";
 
         }
 
 
         /* =============================================
-           ADMINISTRADOR DA COMUNIDADE
+           VERIFICAR ADMINISTRADOR
         ============================================= */
 
-        let communityAdmin = false;
+        let communityAdmin =
+            false;
 
 
         if (
@@ -4595,16 +4673,19 @@ console.log(
         ) {
 
             communityAdmin =
-                await isCommunityAdmin(id);
+                await isCommunityAdmin(
+                    id
+                );
 
         }
 
 
         currentCommunityIsAdmin =
-    communityAdmin;
+            communityAdmin;
 
-window.currentCommunityIsAdmin =
-    communityAdmin;
+
+        window.currentCommunityIsAdmin =
+            communityAdmin;
 
 
         const adminTools =
@@ -4633,7 +4714,7 @@ window.currentCommunityIsAdmin =
 
 
         /* =============================================
-           CARREGAR VÍDEOS
+           CARREGAR VÍDEOS DE ESTUDO
         ============================================= */
 
         if (
@@ -4641,18 +4722,20 @@ window.currentCommunityIsAdmin =
             "function"
         ) {
 
-            await loadCommunityStudyVideos(id);
+            await loadCommunityStudyVideos(
+                id
+            );
 
         }
 
 
         /* =============================================
-           IR PARA O TOPO DA PÁGINA
+           IR PARA A COMUNIDADE
         ============================================= */
 
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
+        communityArea.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
         });
 
 
@@ -4663,6 +4746,7 @@ window.currentCommunityIsAdmin =
             error
         );
 
+
         alert(
             "Erro ao abrir comunidade: " +
             error.message
@@ -4671,6 +4755,7 @@ window.currentCommunityIsAdmin =
     }
 
 };
+        
 /* =====================================================
    VÍDEOS DE ESTUDO
 ===================================================== */
