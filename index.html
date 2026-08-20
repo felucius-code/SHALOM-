@@ -4554,17 +4554,19 @@ async function() {
     }
 
 };
-
-
 async function loadCommunityStudyVideos(
     communityId
 ) {
 
     const container =
-        document
-        .getElementById(
-            "communityStudyVideos"
+        document.getElementById(
+            "studyVideosList"
         );
+
+
+    if (!container) {
+        return;
+    }
 
 
     container.innerHTML =
@@ -4598,19 +4600,20 @@ async function loadCommunityStudyVideos(
 
             container.innerHTML =
             `
-            <div class="card">
-
-                <p style="color:#6B7A99;">
-                    Ainda não existem vídeos
-                    de estudos nesta comunidade.
-                </p>
-
-            </div>
+            <p style="color:#6B7A99;">
+                Ainda não existem vídeos
+                de estudos nesta comunidade.
+            </p>
             `;
 
             return;
         }
 
+
+        /*
+         * Cada vídeo ocupa uma coluna própria
+         * dentro do carrossel horizontal.
+         */
 
         snapshot.forEach(
             videoDoc => {
@@ -4621,39 +4624,62 @@ async function loadCommunityStudyVideos(
 
                 container.innerHTML +=
                 `
-                <div class="card">
+                <div
+                    class="study-video-card"
+                    style="
+                        flex: 0 0 260px;
+                        min-width: 260px;
+                        max-width: 260px;
+                        box-sizing: border-box;
+                    "
+                >
 
-                    <h3 class="card-title">
+                    <div
+                        class="card"
+                        style="
+                            height:100%;
+                            box-sizing:border-box;
+                        "
+                    >
 
-                        🎥
-                        ${escapeHtml(
-                            data.title
-                        )}
+                        <h3 class="card-title">
 
-                    </h3>
+                            🎥
+                            ${escapeHtml(
+                                data.title
+                            )}
 
-                    <p style="
-                        color:#B8BDD0;
-                        margin-bottom:12px;
-                    ">
+                        </h3>
 
-                        ${escapeHtml(
-                            data.description || ""
-                        )}
 
-                    </p>
+                        <p
+                            style="
+                                color:#B8BDD0;
+                                margin-bottom:12px;
+                            "
+                        >
 
-                    <button
-                        class="btn"
-                        onclick="openVideo(
-                            '${escapeAttribute(
-                                data.url
-                            )}'
-                        )">
+                            ${escapeHtml(
+                                data.description || ""
+                            )}
 
-                        ▶ Assistir vídeo
+                        </p>
 
-                    </button>
+
+                        <button
+                            class="btn"
+                            onclick="openVideo(
+                                '${escapeAttribute(
+                                    data.url
+                                )}'
+                            )"
+                        >
+
+                            ▶ Assistir vídeo
+
+                        </button>
+
+                    </div>
 
                 </div>
                 `;
@@ -4665,6 +4691,7 @@ async function loadCommunityStudyVideos(
     } catch (error) {
 
         console.error(error);
+
 
         container.innerHTML =
         `
@@ -4681,8 +4708,6 @@ async function loadCommunityStudyVideos(
     }
 
 }
-
-
 window.openVideo =
 function(url) {
 
