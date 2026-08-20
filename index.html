@@ -4084,7 +4084,7 @@ async function(id) {
 
 
         /*
-         * Verifica se o usuário é membro.
+         * Verifica se é membro.
          */
 
         if (
@@ -4104,30 +4104,44 @@ async function(id) {
          * Guarda a comunidade atual.
          */
 
-        currentCommunityId =
-            id;
+        currentCommunityId = id;
 
 
         /*
-         * Abre a página de comunidades.
+         * Esconde todas as páginas.
          */
 
-        openPage(
-            "communities"
-        );
+        document
+            .querySelectorAll(".page")
+            .forEach(
+                page => {
+                    page.classList.add("hidden");
+                }
+            );
 
 
         /*
-         * Verifica se o usuário
-         * administra a comunidade.
+         * Mostra diretamente a página
+         * de comunidades.
          */
 
-        currentCommunityIsAdmin =
-            await isCommunityAdmin(id);
+        const communitiesPage =
+            document.getElementById(
+                "page-communities"
+            );
+
+
+        if (communitiesPage) {
+
+            communitiesPage
+                .classList
+                .remove("hidden");
+
+        }
 
 
         /*
-         * Localiza a área da comunidade.
+         * Mostra a área da comunidade.
          */
 
         const communityArea =
@@ -4146,17 +4160,13 @@ async function(id) {
         }
 
 
-        /*
-         * Mostra a comunidade.
-         */
-
         communityArea
             .classList
             .remove("hidden");
 
 
         /*
-         * Nome da comunidade.
+         * Nome.
          */
 
         const title =
@@ -4193,9 +4203,12 @@ async function(id) {
 
 
         /*
-         * Ferramentas do administrador
-         * da comunidade.
+         * Verifica administrador.
          */
+
+        currentCommunityIsAdmin =
+            await isCommunityAdmin(id);
+
 
         const adminTools =
             document.getElementById(
@@ -4223,7 +4236,7 @@ async function(id) {
 
 
         /*
-         * Carrega os vídeos de estudo.
+         * Carrega vídeos de estudo.
          */
 
         if (
@@ -4231,28 +4244,19 @@ async function(id) {
             "function"
         ) {
 
-            loadCommunityStudyVideos(id);
+            await loadCommunityStudyVideos(id);
 
         }
 
 
         /*
-         * Mostra a área da comunidade
-         * depois da página ser aberta.
+         * Posiciona na comunidade.
          */
 
-        setTimeout(
-            function() {
-
-                communityArea
-                    .scrollIntoView({
-                        behavior: "smooth",
-                        block: "start"
-                    });
-
-            },
-            150
-        );
+        communityArea.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
 
 
     } catch (error) {
