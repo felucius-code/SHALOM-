@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SHALOM - Rede Social</title>
+<title>SHALOM!</title>
 
 <style>
 
@@ -1691,6 +1691,38 @@ select option {
         </div>
 
     </section>
+
+    <div
+    style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+    "
+>
+
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
+
+    <button
+        id="addSeriesHomeBtn"
+        class="home-see-all hidden"
+        type="button"
+        onclick="showContentForm('series')"
+        title="Adicionar série">
+
+        ＋
+
+    </button>
+
+
+    <button
+        class="home-see-all"
+        onclick="openPageByName('series')">
+
+        Ver todos →
+
+    </button>
+
+    </div>
 
 
     <!-- ================================
