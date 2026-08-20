@@ -5420,18 +5420,333 @@ function() {
 };
 
 /* =====================================================
-   TESTE DO FORMULÁRIO DE CONTEÚDO
+   FORMULÁRIO DINÂMICO DE CONTEÚDO
 ===================================================== */
 
 window.showContentForm =
 function(type) {
 
-    alert(
-        "showContentForm foi chamada: " +
-        type
-    );
+    if (!isAdmin) {
 
-    return;
+        alert(
+            "Somente o administrador geral pode adicionar conteúdo."
+        );
+
+        return;
+    }
+
+
+    const info =
+        contentTypes[type];
+
+
+    if (!info) {
+
+        alert(
+            "Tipo de conteúdo não reconhecido: " +
+            type
+        );
+
+        return;
+    }
+
+
+    const oldForm =
+        document.getElementById(
+            "dynamicContentForm"
+        );
+
+
+    if (oldForm) {
+
+        oldForm.remove();
+
+        return;
+
+    }
+
+
+    const form =
+        document.createElement("div");
+
+
+    form.id =
+        "dynamicContentForm";
+
+
+    form.className =
+        "card";
+
+
+    form.style.margin =
+        "15px 0";
+
+
+    form.innerHTML = `
+
+        <h2 class="card-title">
+            ＋ Adicionar ${info.title}
+        </h2>
+
+
+        <div class="form-group">
+
+            <label>Título</label>
+
+            <input
+                id="newContentTitle"
+                type="text"
+                placeholder="Título">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Descrição</label>
+
+            <textarea
+                id="newContentDescription"
+                placeholder="Descrição">
+            </textarea>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Imagem / capa</label>
+
+            <input
+                id="newContentImage"
+                type="url"
+                placeholder="URL da imagem">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>URL do conteúdo</label>
+
+            <input
+                id="newContentUrl"
+                type="url"
+                placeholder="https://...">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Acesso</label>
+
+            <select id="newContentAccess">
+
+                <option value="free">
+                    Gratuito
+                </option>
+
+                <option value="subscription">
+                    Assinatura
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Preço</label>
+
+            <input
+                id="newContentPrice"
+                type="number"
+                min="0"
+                step="0.01"
+                value="0"
+                placeholder="0">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Categoria</label>
+
+            <input
+                id="newContentCategory"
+                type="text"
+                placeholder="Categoria">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Ano</label>
+
+            <input
+                id="newContentYear"
+                type="number"
+                placeholder="Ano">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Duração</label>
+
+            <input
+                id="newContentDuration"
+                type="text"
+                placeholder="Ex.: 1h 45min">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Player</label>
+
+            <select id="newContentPlayer">
+
+                <option value="external">
+                    Externo
+                </option>
+
+                <option value="youtube">
+                    YouTube
+                </option>
+
+                <option value="internal">
+                    Player interno
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div
+            style="
+                display:flex;
+                gap:10px;
+                flex-wrap:wrap;
+            "
+        >
+
+            <button
+                type="button"
+                class="btn"
+                onclick="saveContent('${type}')">
+
+                💾 Salvar ${info.title}
+
+            </button>
+
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="
+                    document
+                    .getElementById('dynamicContentForm')
+                    ?.remove()
+                "
+            >
+
+                Cancelar
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    /*
+     * No caso da Home, colocamos o formulário
+     * imediatamente antes do carrossel daquele conteúdo.
+     */
+
+    const homeContainerId = {
+
+        films:
+            "homeFilms",
+
+        series:
+            "homeSeries",
+
+        documentaries:
+            "homeDocumentaries",
+
+        books:
+            "homeBooks",
+
+        articles:
+            "homeArticles",
+
+        studies:
+            "homeStudies",
+
+        videos:
+            "homeVideos",
+
+        products:
+            "homeProducts"
+
+    }[type];
+
+
+    const target =
+        document.getElementById(
+            homeContainerId
+        );
+
+
+    if (target) {
+
+        target.parentNode.insertBefore(
+            form,
+            target
+        );
+
+        form.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+        return;
+    }
+
+
+    /*
+     * Segurança: se o carrossel não existir,
+     * coloca o formulário no início da Home.
+     */
+
+    const home =
+        document.getElementById(
+            "page-home"
+        );
+
+
+    if (home) {
+
+        home.insertBefore(
+            form,
+            home.firstChild
+        );
+
+        form.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    }
 
 };
     
