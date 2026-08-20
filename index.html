@@ -6874,158 +6874,379 @@ async function(type) {
 
 async function loadContent(type) {
 
-    const info = contentTypes[type];
+    const info =
+        contentTypes[type];
 
-    const gridId = type === "products" ? "productsGrid" : type + "Grid";
 
-    const grid = document.getElementById(gridId);
+    const gridId =
+        type === "products"
+            ? "productsGrid"
+            : type + "Grid";
+
+
+    const grid =
+        document.getElementById(
+            gridId
+        );
+
 
     if (!grid) {
+
         return;
+
     }
 
-    grid.innerHTML = "<p style='color:#6B7A99;'>Carregando...</p>";
+
+    grid.innerHTML =
+        "<p style='color:#6B7A99;'>Carregando...</p>";
+
 
     try {
 
-        const snapshot = await getDocs(collection(db, info.collection));
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    info.collection
+                )
+            );
+
 
         grid.innerHTML = "";
 
+
         if (snapshot.empty) {
-            grid.innerHTML = `
-            <div class="card">
-                <p style="color:#6B7A99;">
-                    Nenhum ${info.title.toLowerCase()} adicionado ainda.
-                </p>
-            </div>
-            `;
+
+            grid.innerHTML =
+                `
+                <div class="card">
+
+                    <p style="color:#6B7A99;">
+
+                        Nenhum
+                        ${info.title.toLowerCase()}
+                        adicionado ainda.
+
+                    </p>
+
+                </div>
+                `;
+
             return;
+
         }
 
-        snapshot.forEach(contentDoc => {
 
-            const data = contentDoc.data();
-            const id = contentDoc.id;
+        /*
+         * VERIFICAR SE O USUÁRIO É ADMINISTRADOR
+         *
+         * Primeiro usamos isAdmin.
+         *
+         * Como os botões + da Home já funcionam,
+         * também verificamos se o botão administrativo
+         * correspondente está visível.
+         */
 
-            let cover = info.icon;
+        let currentUserIsAdmin = false;
 
-            if (data.image) {
-                cover = `<img src="${data.image}" alt="">`;
+
+        if (
+            typeof isAdmin !== "undefined" &&
+            isAdmin === true
+        ) {
+
+            currentUserIsAdmin = true;
+
+        }
+
+
+        /*
+         * SEGUNDA VERIFICAÇÃO
+         *
+         * Se isAdmin ainda não estiver atualizado,
+         * verificamos o botão + da Home.
+         */
+
+        const adminButtonIds = [
+
+            "addFilmHomeBtn",
+
+            "addSeriesHomeBtn",
+
+            "addDocumentaryHomeBtn",
+
+            "addDocumentariesHomeBtn",
+
+            "addBookHomeBtn",
+
+            "addArticleHomeBtn",
+
+            "addStudyHomeBtn",
+
+            "addVideoHomeBtn",
+
+            "addProductHomeBtn"
+
+        ];
+
+
+        const visibleAdminButton =
+            adminButtonIds.some(
+                buttonId => {
+
+                    const button =
+                        document.getElementById(
+                            buttonId
+                        );
+
+
+                    if (!button) {
+
+                        return false;
+
+                    }
+
+
+                    return !button.classList.contains(
+                        "hidden"
+                    );
+
+                }
+            );
+
+
+        if (visibleAdminButton) {
+
+            currentUserIsAdmin = true;
+
+        }
+
+
+        /*
+         * CRIAR OS CARDS
+         */
+
+        snapshot.forEach(
+            contentDoc => {
+
+                const data =
+                    contentDoc.data();
+
+
+                const id =
+                    contentDoc.id;
+
+
+                /*
+                 * CAPA
+                 */
+
+                let cover =
+                    info.icon;
+
+
+                if (data.image) {
+
+                    cover =
+                        `
+                        <img
+                            src="${escapeAttribute(
+                                data.image
+                            )}"
+                            alt="${escapeAttribute(
+                                data.title || ""
+                            )}"
+                            loading="lazy"
+                        >
+                        `;
+
+                }
+
+
+                /*
+                 * ACESSO
+                 */
+
+                let accessBadge = "";
+
+
+                if (
+                    data.access === "free"
+                ) {
+
+                    accessBadge =
+                        `
+                        <span
+                            class="access-badge access-free">
+
+                            🔓 Gratuito
+
+                        </span>
+                        `;
+
+                }
+
+
+                if (
+                    data.access === "subscription"
+                ) {
+
+                    accessBadge =
+                        `
+                        <span
+                            class="access-badge access-subscription">
+
+                            🔐 Assinatura
+
+                        </span>
+                        `;
+
+                }
+
+
+                /*
+                 * FERRAMENTAS DO ADMINISTRADOR
+                 */
+
+                let adminTools = "";
+
+
+                if (currentUserIsAdmin) {
+
+                    adminTools =
+                        `
+                        <div
+                            class="admin-tools"
+                            style="
+                                margin-top:12px;
+                                padding-top:12px;
+                                border-top:1px solid #303654;
+                            "
+                        >
+
+                            <button
+                                type="button"
+                                class="btn btn-small btn-danger"
+                                onclick="
+                                    deleteContent(
+                                        '${escapeAttribute(type)}',
+                                        '${escapeAttribute(id)}'
+                                    )
+                                "
+                            >
+
+                                🗑️ Excluir
+
+                            </button>
+
+                        </div>
+                        `;
+
+                }
+
+
+                /*
+                 * CARD COMPLETO
+                 */
+
+                grid.innerHTML +=
+                    `
+                    <article
+                        class="content-card">
+
+                        <div
+                            class="content-cover">
+
+                            ${cover}
+
+                        </div>
+
+
+                        <div
+                            class="content-body">
+
+                            ${accessBadge}
+
+
+                            <h3>
+
+                                ${escapeHtml(
+                                    data.title ||
+                                    "Sem título"
+                                )}
+
+                            </h3>
+
+
+                            <p>
+
+                                ${escapeHtml(
+                                    data.description ||
+                                    "Sem descrição."
+                                )}
+
+                            </p>
+
+
+                            ${
+                                data.url
+                                ?
+                                `
+                                <button
+                                    type="button"
+                                    class="btn btn-small"
+                                    onclick="
+                                        openVideo(
+                                            '${escapeAttribute(
+                                                data.url
+                                            )}'
+                                        )
+                                    "
+                                >
+
+                                    ▶ Abrir conteúdo
+
+                                </button>
+                                `
+                                :
+                                ""
+                            }
+
+
+                            ${adminTools}
+
+                        </div>
+
+                    </article>
+                    `;
+
             }
+        );
 
-            let accessBadge = "";
 
-            if (data.access === "free") {
-                accessBadge = `<span class="access-badge access-free">🔓 Gratuito</span>`;
-            } else if (data.access === "subscription") {
-                accessBadge = `<span class="access-badge access-subscription">🔐 Assinatura</span>`;
-            }
+    } catch (error) {
 
-            grid.innerHTML += `
-            <article class="content-card">
-                <div class="content-cover">
-                    ${cover}
-                </div>
+        console.error(
+            "Erro ao carregar conteúdo:",
+            error
+        );
 
-                <div class="content-body">
-                    ${accessBadge}
 
-                    <h3>${data.title}</h3>
+        grid.innerHTML =
+            `
+            <div class="error">
 
-                    <p>${data.description || "Sem descrição."}</p>
+                Erro ao carregar conteúdo:
+                ${escapeHtml(
+                    error.message
+                )}
 
-                    ${data.url ? `
-                    <button class="btn btn-small" onclick="openVideo('${data.url}')">
-                        Abrir
-                    </button>
-                    ` : ""}
-
-                    ${isAdmin ? `
-                    <div class="admin-tools">
-                        <button class="btn btn-small btn-danger" onclick="deleteContent('${type}', '${id}')">
-                            Excluir
-                        </button>
-                    </div>
-                    ` : ""}
-                </div>
-            </article>
+            </div>
             `;
 
-        });
-
-    } catch (error) {
-        console.error(error);
-        grid.innerHTML = `
-        <div class="error">
-            Erro ao carregar conteúdo: ${error.message}
-        </div>
-        `;
     }
 
-}
-/* =====================================================
-   EXCLUIR
-===================================================== */
-
-window.deleteContent =
-async function(
-    type,
-    id
-) {
-
-    if (!isAdmin) {
-
-        alert(
-            "Somente o administrador geral pode excluir conteúdo."
-        );
-
-        return;
-    }
-
-
-    if (
-        !confirm(
-            "Deseja realmente excluir este conteúdo?"
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    try {
-
-        await deleteDoc(
-            doc(
-                db,
-                contentTypes[type].collection,
-                id
-            )
-        );
-
-
-        alert(
-            "Conteúdo excluído."
-        );
-
-
-        loadContent(type);
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Erro ao excluir: " +
-            error.message
-        );
-
-    }
-
-};
+                }
 
 
 /* =====================================================
