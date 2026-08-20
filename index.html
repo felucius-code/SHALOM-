@@ -1670,29 +1670,7 @@ select option {
                 📺 Séries
             </h2>
 
-            <button
-                class="home-see-all"
-                onclick="openPageByName('series')">
-
-                Ver todos →
-
-            </button>
-
-        </div>
-
-        <div
-            id="homeSeries"
-            class="home-carousel">
-
-            <div class="home-loading">
-                Carregando...
-            </div>
-
-        </div>
-
-    </section>
-
-    <div
+            <div
     style="
         display:flex;
         align-items:center;
@@ -1722,7 +1700,7 @@ select option {
 
     </button>
 
-    </div>
+</div>
 
 
     <!-- ================================
@@ -1737,27 +1715,37 @@ select option {
                 🎞️ Documentários
             </h2>
 
-            <button
-                class="home-see-all"
-                onclick="openPageByName('documentaries')">
+            <div
+    style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+    "
+>
 
-                Ver todos →
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-            </button>
+    <button
+        id="addDocumentariesHomeBtn"
+        class="home-see-all hidden"
+        type="button"
+        onclick="showContentForm('documentaries')"
+        title="Adicionar documentário">
 
-        </div>
+        ＋
 
-        <div
-            id="homeDocumentaries"
-            class="home-carousel">
+    </button>
 
-            <div class="home-loading">
-                Carregando...
-            </div>
 
-        </div>
+    <button
+        class="home-see-all"
+        onclick="openPageByName('documentaries')">
 
-    </section>
+        Ver todos →
+
+    </button>
+
+</div>
 
 
     <!-- ================================
@@ -1772,28 +1760,37 @@ select option {
                 📚 Livros
             </h2>
 
-            <button
-                class="home-see-all"
-                onclick="openPageByName('books')">
+            <div
+    style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+    "
+>
 
-                Ver todos →
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-            </button>
+    <button
+        id="addBooksHomeBtn"
+        class="home-see-all hidden"
+        type="button"
+        onclick="showContentForm('books')"
+        title="Adicionar livro">
 
-        </div>
+        ＋
 
-        <div
-            id="homeBooks"
-            class="home-carousel">
+    </button>
 
-            <div class="home-loading">
-                Carregando...
-            </div>
 
-        </div>
+    <button
+        class="home-see-all"
+        onclick="openPageByName('books')">
 
-    </section>
+        Ver todos →
 
+    </button>
+
+</div>
 
     <!-- ================================
          ARTIGOS
@@ -1807,27 +1804,37 @@ select option {
                 📰 Artigos
             </h2>
 
-            <button
-                class="home-see-all"
-                onclick="openPageByName('articles')">
+            <div
+    style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+    "
+>
 
-                Ver todos →
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-            </button>
+    <button
+        id="addArticlesHomeBtn"
+        class="home-see-all hidden"
+        type="button"
+        onclick="showContentForm('articles')"
+        title="Adicionar artigo">
 
-        </div>
+        ＋
 
-        <div
-            id="homeArticles"
-            class="home-carousel">
+    </button>
 
-            <div class="home-loading">
-                Carregando...
-            </div>
 
-        </div>
+    <button
+        class="home-see-all"
+        onclick="openPageByName('articles')">
 
-    </section>
+        Ver todos →
+
+    </button>
+
+</div>
 
 
     <!-- ================================
@@ -1842,29 +1849,37 @@ select option {
                 📖 Estudos
             </h2>
 
-            <button
-                class="home-see-all"
-                onclick="openPageByName('studies')">
+            <div
+    style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+    "
+>
 
-                Ver todos →
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-            </button>
+    <button
+        id="addStudiesHomeBtn"
+        class="home-see-all hidden"
+        type="button"
+        onclick="showContentForm('studies')"
+        title="Adicionar estudo">
 
-        </div>
+        ＋
 
-        <div
-            id="homeStudies"
-            class="home-carousel">
-
-            <div class="home-loading">
-                Carregando...
-            </div>
-
-        </div>
-
-    </section>
+    </button>
 
 
+    <button
+        class="home-see-all"
+        onclick="openPageByName('studies')">
+
+        Ver todos →
+
+    </button>
+
+</div>
     
 <!-- ================================
      VÍDEOS
@@ -1878,27 +1893,37 @@ select option {
             🎥 Vídeos
         </h2>
 
-        <button
-            class="home-see-all"
-            onclick="openPageByName('videos')">
+        <div
+    style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+    "
+>
 
-            Ver todos →
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-        </button>
+    <button
+        id="addVideosHomeBtn"
+        class="home-see-all hidden"
+        type="button"
+        onclick="showContentForm('videos')"
+        title="Adicionar vídeo">
 
-    </div>
+        ＋
 
-    <div
-        id="homeVideos"
-        class="home-carousel">
+    </button>
 
-        <div class="home-loading">
-            Carregando...
-        </div>
 
-    </div>
+    <button
+        class="home-see-all"
+        onclick="openPageByName('videos')">
 
-</section>
+        Ver todos →
+
+    </button>
+
+</div>
 
     <!-- ================================
          LOJA
@@ -1912,30 +1937,37 @@ select option {
                 🛒 Loja
             </h2>
 
-            <button
-                class="home-see-all"
-                onclick="openPageByName('store')">
+            <div
+    style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+    "
+>
 
-                Ver todos →
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-            </button>
+    <button
+        id="addProductsHomeBtn"
+        class="home-see-all hidden"
+        type="button"
+        onclick="showContentForm('products')"
+        title="Adicionar produto">
 
-        </div>
+        ＋
 
-        <div
-            id="homeProducts"
-            class="home-carousel">
+    </button>
 
-            <div class="home-loading">
-                Carregando...
-            </div>
 
-        </div>
+    <button
+        class="home-see-all"
+        onclick="openPageByName('store')">
 
-    </section>
+        Ver todos →
 
-</section>
+    </button>
 
+</div>
 
 <!-- =====================================================
      COMUNIDADES
