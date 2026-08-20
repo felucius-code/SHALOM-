@@ -2884,45 +2884,111 @@ async function() {
 
 window.openPage = function(page, button) {
 
-    // Esconde todas as páginas
-    document.querySelectorAll(".page").forEach(pageElement => {
-        pageElement.classList.add("hidden");
-    });
+    /*
+     * Esconde todas as páginas.
+     */
 
-    // Mostra página selecionada
-    const target = document.getElementById("page-" + page);
+    document
+        .querySelectorAll(".page")
+        .forEach(
+            pageElement => {
+                pageElement.classList.add("hidden");
+            }
+        );
+
+
+    /*
+     * Localiza a página solicitada.
+     */
+
+    const target =
+        document.getElementById(
+            "page-" + page
+        );
+
+
+    /*
+     * Mostra a página.
+     */
 
     if (target) {
+
         target.classList.remove("hidden");
+
     }
 
-    // Remove active de nav items
-    document.querySelectorAll(".nav-item").forEach(item => {
-        item.classList.remove("active");
-    });
+
+    /*
+     * Atualiza o botão ativo
+     * da navegação.
+     */
+
+    document
+        .querySelectorAll(".nav-item")
+        .forEach(
+            item => {
+                item.classList.remove("active");
+            }
+        );
+
 
     if (button) {
+
         button.classList.add("active");
+
     }
 
-    // Carrega conteúdo específico
+
+    /*
+     * HOME
+     */
+
     if (page === "home") {
+
         loadHome();
+
     }
+
+
+    /*
+     * COMUNIDADES
+     */
 
     if (page === "communities") {
+
         loadCommunities();
+
     }
 
-    if (Object.keys(contentTypes).includes(page)) {
+
+    /*
+     * CONTEÚDOS
+     */
+
+    if (
+        typeof contentTypes !== "undefined" &&
+        Object.keys(contentTypes).includes(page)
+    ) {
+
         loadContent(page);
+
     }
+
+
+    /*
+     * ADMINISTRAÇÃO
+     */
 
     if (page === "admin") {
+
         if (isAdmin) {
+
             loadAdminCommunities();
+
             loadCommunityAdmins();
+
         }
+
     }
 
 };
