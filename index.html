@@ -7103,27 +7103,21 @@ async function loadContent(type) {
                 }
 
 
-                /*
+           /*
  * FERRAMENTAS DO ADMINISTRADOR
  */
 
 let adminTools = "";
 
 
-/*
- * O administrador geral é identificado
- * pela variável isAdmin.
- */
-
-if (isAdmin === true) {
+if (currentUserIsAdmin) {
 
     adminTools =
         `
         <div
             class="admin-tools"
             style="
-                display:block;
-                margin-top:15px;
+                margin-top:12px;
                 padding-top:12px;
                 border-top:1px solid #303654;
             "
@@ -7132,11 +7126,6 @@ if (isAdmin === true) {
             <button
                 type="button"
                 class="btn btn-small btn-danger"
-                style="
-                    display:block;
-                    width:100%;
-                    cursor:pointer;
-                "
                 onclick="
                     deleteContent(
                         '${escapeAttribute(type)}',
@@ -7153,38 +7142,6 @@ if (isAdmin === true) {
         `;
 
 }
-
-                    adminTools =
-                        `
-                        <div
-                            class="admin-tools"
-                            style="
-                                margin-top:12px;
-                                padding-top:12px;
-                                border-top:1px solid #303654;
-                            "
-                        >
-
-                            <button
-                                type="button"
-                                class="btn btn-small btn-danger"
-                                onclick="
-                                    deleteContent(
-                                        '${escapeAttribute(type)}',
-                                        '${escapeAttribute(id)}'
-                                    )
-                                "
-                            >
-
-                                🗑️ Excluir
-
-                            </button>
-
-                        </div>
-                        `;
-
-                }
-
 
                 /*
                  * CARD COMPLETO
