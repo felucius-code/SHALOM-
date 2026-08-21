@@ -3355,18 +3355,12 @@ window.openPage = function(page, button) {
 
         document
             .querySelectorAll(".page")
-            pageElement
-    .classList
-    .remove("active");
             .forEach(
                 pageElement => {
 
                     pageElement
                         .classList
                         .add("hidden");
-                    target
-    .classList
-    .add("active");
 
                 }
             );
@@ -3399,12 +3393,8 @@ window.openPage = function(page, button) {
 
 
         target
-    .classList
-    .remove("hidden");
-
-target
-    .classList
-    .add("active");
+            .classList
+            .remove("hidden");
 
 
         /*
@@ -8867,4 +8857,4 @@ function escapeAttribute(text) {
 </script>
 
 </body>
-    </html>
+                                   </html>
