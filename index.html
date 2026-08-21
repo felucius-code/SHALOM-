@@ -3517,6 +3517,80 @@ window.openPage = function(page, button) {
     }
 
 };
+
+    /* =====================================================
+   NAVEGAÇÃO PRINCIPAL — LIMPAR ELEMENTOS DA HOME
+===================================================== */
+
+window.navigateMain =
+function(page, button) {
+
+    const communitiesBar =
+        document.getElementById(
+            "communitiesBar"
+        );
+
+    const createCommunityBox =
+        document.getElementById(
+            "createCommunityBox"
+        );
+
+
+    /*
+     * AO SAIR DA HOME
+     */
+
+    if (page !== "home") {
+
+        if (communitiesBar) {
+
+            communitiesBar.style.display =
+                "none";
+
+        }
+
+
+        if (createCommunityBox) {
+
+            createCommunityBox.style.display =
+                "none";
+
+            createCommunityBox
+                .classList
+                .add("hidden");
+
+        }
+
+    }
+
+
+    /*
+     * AO VOLTAR PARA A HOME
+     */
+
+    if (page === "home") {
+
+        if (communitiesBar) {
+
+            communitiesBar.style.display =
+                "";
+
+        }
+
+    }
+
+
+    /*
+     * USA A NAVEGAÇÃO ORIGINAL
+     */
+
+    openPage(
+        page,
+        button
+    );
+
+};
+    
 /* =====================================================
    CRIAR COMUNIDADE
 ===================================================== */
