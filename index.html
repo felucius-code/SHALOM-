@@ -3355,12 +3355,18 @@ window.openPage = function(page, button) {
 
         document
             .querySelectorAll(".page")
+            pageElement
+    .classList
+    .remove("active");
             .forEach(
                 pageElement => {
 
                     pageElement
                         .classList
                         .add("hidden");
+                    target
+    .classList
+    .add("active");
 
                 }
             );
@@ -3393,8 +3399,12 @@ window.openPage = function(page, button) {
 
 
         target
-            .classList
-            .remove("hidden");
+    .classList
+    .remove("hidden");
+
+target
+    .classList
+    .add("active");
 
 
         /*
