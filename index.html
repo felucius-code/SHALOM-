@@ -6874,14 +6874,9 @@ async function(type) {
 
 async function loadContent(type) {
 
-    alert(
-        "loadContent foi chamado.\n\nAdministrador: " +
-        isAdmin
-    );
-
     const info =
         contentTypes[type];
-
+    
     const gridId =
         type === "products"
             ? "productsGrid"
