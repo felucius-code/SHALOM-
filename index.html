@@ -2481,18 +2481,23 @@ select option {
                 gap:10px;
             ">
 
-            <input
-                type="text"
-                id="messageInput"
-                placeholder="Digite uma mensagem..."
-                style="
-                    flex:1;
-                    padding:10px;
-                    border-radius:6px;
-                    border:1px solid var(--gold);
-                    background:var(--bg);
-                    color:white;
-                ">
+            <textarea
+    id="messageInput"
+    placeholder="Digite uma mensagem..."
+    rows="3"
+    style="
+        flex:1;
+        min-height:70px;
+        max-height:180px;
+        resize:vertical;
+        padding:10px;
+        border-radius:6px;
+        border:1px solid var(--gold);
+        background:var(--bg);
+        color:white;
+        font-family:inherit;
+        line-height:1.4;
+    "></textarea>
 
 
             <button
