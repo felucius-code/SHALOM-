@@ -4072,6 +4072,274 @@ async function loadCommunities() {
         }
 
 
+        /*
+         * =================================================
+         * PÁGINA COMPLETA DE COMUNIDADES
+         * =================================================
+         */
+
+        if (pageList) {
+
+            pageList.innerHTML = "";
+
+
+            if (!all.length) {
+
+                pageList.innerHTML = `
+
+                    <div class="card">
+
+                        <p style="color:#6B7A99;">
+
+                            Nenhuma comunidade disponível.
+
+                        </p>
+
+                    </div>
+
+                `;
+
+            } else {
+
+                for (
+                    const { id, data }
+                    of all
+                ) {
+
+                    const members =
+                        data.members || [];
+
+
+                    const memberUids =
+                        data.memberUids || [];
+
+
+                    const pending =
+                        data.pendingMembers || [];
+
+
+                    /*
+                     * IDENTIFICAÇÃO DO MEMBRO
+                     *
+                     * Prioriza o UID.
+                     *
+                     * O e-mail permanece como
+                     * compatibilidade com comunidades
+                     * criadas antes da utilização de UID.
+                     */
+
+                    const member =
+                        memberUids.includes(user.uid) ||
+                        members.includes(email);
+
+
+                    /*
+                     * SOLICITAÇÃO PENDENTE
+                     *
+                     * Ainda utiliza e-mail aqui.
+                     *
+                     * A migração desta parte será feita
+                     * junto com requestJoin(), para não
+                     * quebrar as solicitações existentes.
+                     */
+
+                    const pendingRequest =
+                        pending.includes(email);
+
+
+                    let action = "";
+
+
+                    if (member) {
+
+                        action += `
+
+                            <span
+                                class="badge badge-success">
+
+                                ✓ Membro
+
+                            </span>
+
+                            <button
+                                type="button"
+                                class="btn btn-small"
+                                onclick="openCommunity('${escapeAttribute(id)}')">
+
+                                Abrir
+
+                            </button>
+
+                        `;
+
+                    } else if (
+                        pendingRequest
+                    ) {
+
+                        action += `
+
+                            <span
+                                class="badge badge-pending">
+
+                                ⏳ Solicitação pendente
+
+                            </span>
+
+                        `;
+
+                    } else {
+
+                        action += `
+
+                            <button
+                                type="button"
+                                class="btn btn-small"
+                                onclick="requestJoin('${escapeAttribute(id)}')">
+
+                                Solicitar entrada
+
+                            </button>
+
+                        `;
+
+                    }
+
+
+                    /*
+                     * VERIFICA ADMINISTRADOR
+                     */
+
+                    const communityAdmin =
+                        await isCommunityAdmin(id);
+
+
+                    if (communityAdmin) {
+
+                        action += `
+
+                            <span
+                                class="badge badge-admin">
+
+                                🛡️ Administrador
+
+                            </span>
+
+                        `;
+
+                    }
+
+
+                    /*
+                     * SOLICITAÇÕES
+                     *
+                     * O UID é priorizado.
+                     *
+                     * O e-mail permanece como
+                     * compatibilidade com comunidades antigas.
+                     */
+
+                    if (
+                        data.createdByUid === user.uid ||
+                        data.createdBy === email ||
+                        isAdmin
+                    ) {
+
+                        action += `
+
+                            <button
+                                type="button"
+                                class="btn btn-small btn-secondary"
+                                onclick="viewRequests('${escapeAttribute(id)}')">
+
+                                🔔 Solicitações
+
+                            </button>
+
+                        `;
+
+                    }
+
+
+                    pageList.innerHTML += `
+
+                        <div
+                            class="community-card">
+
+                            <h3>
+
+                                ${escapeHtml(
+                                    data.name ||
+                                    "Comunidade"
+                                )}
+
+                            </h3>
+
+                            <p>
+
+                                ${escapeHtml(
+                                    data.description ||
+                                    "Sem descrição."
+                                )}
+
+                            </p>
+
+                            <p>
+
+                                👥
+                                ${members.length}
+                                membros
+
+                            </p>
+
+                            <div>
+
+                                ${action}
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                }
+
+            }
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao carregar comunidades:",
+            error
+        );
+
+
+        const message =
+            `Erro ao carregar comunidades: ${escapeHtml(
+                error.message
+            )}`;
+
+
+        if (homeList) {
+
+            homeList.innerHTML =
+                `<div class="error">${message}</div>`;
+
+        }
+
+
+        if (pageList) {
+
+            pageList.innerHTML =
+                `<div class="error">${message}</div>`;
+
+        }
+
+    }
+
+}
+
         /* =================================================
            PÁGINA COMPLETA DE COMUNIDADES
         ================================================= */
