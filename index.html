@@ -3027,8 +3027,9 @@ import {
     getDocs,
     getDoc,
     doc,
-    updateDoc,
-    deleteDoc,
+setDoc,
+updateDoc,
+deleteDoc,
     query,
     where,
     orderBy,
@@ -3214,6 +3215,12 @@ async function() {
 window.handleSignup =
 async function() {
 
+    const name =
+        document
+        .getElementById("signupName")
+        .value
+        .trim();
+
     const email =
         document
         .getElementById("signupEmail")
@@ -3226,7 +3233,7 @@ async function() {
         .value;
 
 
-    if (!email || !password) {
+    if (!name || !email || !password) {
 
         showError(
             "Preencha todos os campos.",
@@ -3250,11 +3257,47 @@ async function() {
 
     try {
 
-        await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
+        /* ==========================================
+           CRIA A CONTA NO FIREBASE AUTH
+        ========================================== */
+
+        const userCredential =
+            await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+
+        const user =
+            userCredential.user;
+
+
+        /* ==========================================
+           SALVA O PERFIL DO USUÁRIO NO FIRESTORE
+        ========================================== */
+
+        await setDoc(
+            doc(db, "users", user.uid),
+            {
+                uid: user.uid,
+                name: name,
+                email: email,
+                photoURL: "",
+                interests: [],
+                createdAt: serverTimestamp()
+            }
         );
+
+
+        /* ==========================================
+           LIMPA O FORMULÁRIO
+        ========================================== */
+
+        document.getElementById("signupName").value = "";
+        document.getElementById("signupEmail").value = "";
+        document.getElementById("signupPassword").value = "";
+
 
     } catch (error) {
 
@@ -3268,7 +3311,6 @@ async function() {
     }
 
 };
-
 
 /* =====================================================
    TELAS LOGIN / CADASTRO
