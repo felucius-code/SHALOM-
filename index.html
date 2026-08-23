@@ -3128,14 +3128,100 @@ window.handleSignup=async function(){const name=$('signupName')?.value.trim(),em
 window.logout=()=>signOut(auth);
 
 function contentForm(type){
- const info=contentTypes[type],host=type==='products'?$('productsGrid'):$(info.grid);if(!host)return alert('Área do conteúdo não encontrada.');document.getElementById('dynamicContentForm')?.remove();const f=document.createElement('div');f.id='dynamicContentForm';f.className='card';
- f.innerHTML=`<h2 class="card-title">${info.icon} Adicionar ${info.singular}</h2><div class="form-group"><label>Título</label><input id="newContentTitle"></div><div class="form-group"><label>Descrição</label><textarea id="newContentDescription"></textarea></div><div class="form-group"><label>Imagem/capa</label><input type="file" id="newContentImageFile" accept="image/*"><input type="url" id="newContentImage" placeholder="ou cole a URL da imagem" style="margin-top:6px"></div><div class="form-group"><label>Link do conteúdo/compra</label><input type="url" id="newContentUrl"></div><div class="grid"><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div><div class="form-group"><label>Ano</label><input type="number" id="newContentYear"></div></div><div class="form-group"><label>Duração</label><input id="newContentDuration"></div><div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">🔓 Gratuito</option><option value="subscription">🔐 Por assinatura</option></select></div><div id="contentFormMessage" class="hidden"></div><button id="saveContentBtn" class="btn" type="button">💾 Salvar ${info.singular}</button><button id="cancelContentBtn" class="btn btn-secondary" type="button">Cancelar</button>`;
- host.parentElement.insertBefore(f,host);$('saveContentBtn').onclick=()=>window.saveContent(type);$('cancelContentBtn').onclick=()=>f.remove();
+ const info=contentTypes[type];
+ if(!info){ alert('Tipo de conteúdo inválido.'); return; }
+ const homeHost=$(info.home), gridHost=$(info.grid), host=(homeHost||gridHost);
+ if(!host){ alert(`Área de ${info.title} não encontrada.`); return; }
+ document.getElementById('dynamicContentForm')?.remove();
+ const f=document.createElement('div');
+ f.id='dynamicContentForm';
+ f.className='card';
+ f.style.margin='18px 0';
+ const isVideo=type==='videos';
+ const isProduct=type==='products';
+ f.innerHTML=`
+ <h2 class="card-title">${info.icon} Adicionar ${info.singular}</h2>
+ <div class="form-group"><label>Título</label><input id="newContentTitle" type="text" autocomplete="off"></div>
+ <div class="form-group"><label>Descrição</label><textarea id="newContentDescription"></textarea></div>
+ <div class="form-group"><label>Imagem/capa</label><input type="file" id="newContentImageFile" accept="image/*"><input type="url" id="newContentImage" placeholder="ou cole a URL da imagem" style="margin-top:6px"></div>
+ <div class="form-group"><label>${isProduct?'Link externo de compra':'Link / URL do conteúdo'}</label><input type="url" id="newContentUrl" placeholder="https://..."></div>
+ ${isVideo?'<div class="form-group"><small style="color:#8f9ab3">Para YouTube, cole a URL normal do vídeo, por exemplo https://www.youtube.com/watch?v=...</small></div>':''}
+ <div class="grid"><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div><div class="form-group"><label>Ano</label><input id="newContentYear" type="number"></div></div>
+ <div class="form-group"><label>Duração</label><input id="newContentDuration" placeholder="Ex.: 1h 42min"></div>
+ ${isProduct?'<div class="form-group"><label>Preço</label><input id="newContentPrice" type="text" placeholder="Ex.: R$ 49,90"></div>':''}
+ <div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">🔓 Gratuito</option><option value="subscription">🔐 Por assinatura</option></select></div>
+ <div id="contentFormMessage" class="hidden"></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="saveContentBtn" class="btn" type="button">💾 Salvar ${info.singular}</button><button id="cancelContentBtn" class="btn btn-secondary" type="button">Cancelar</button></div>`;
+ // Na Home, inserir o formulário no início da própria seção, acima do carrossel.
+ // Nas páginas de catálogo, inserir antes do grid.
+ const targetParent=host.parentElement;
+ targetParent.insertBefore(f,host);
+ f.scrollIntoView({behavior:'smooth',block:'center'});
+ $('saveContentBtn').addEventListener('click',()=>window.saveContent(type));
+ $('cancelContentBtn').addEventListener('click',()=>f.remove());
+ setTimeout(()=>$('newContentTitle')?.focus(),50);
 }
 window.showContentForm=contentForm;window.updateContentPriceField=()=>{};
-window.saveContent=async function(type){const info=contentTypes[type],btn=$('saveContentBtn');if(!user()||!isAdmin)return alert('Acesso restrito ao administrador.');const title=$('newContentTitle')?.value.trim();if(!title)return alert('Informe o título.');if(btn){btn.disabled=true;btn.textContent='Salvando...'}try{let image=$('newContentImage')?.value.trim()||'';const imageFile=$('newContentImageFile')?.files?.[0];if(imageFile){const safe=imageFile.name.replace(/[^a-zA-Z0-9._-]/g,'_');const imageRef=ref(storage,`content-images/${type}/${Date.now()}-${safe}`);const uploaded=await uploadBytes(imageRef,imageFile);image=await getDownloadURL(uploaded.ref)}const data={title,description:$('newContentDescription')?.value.trim()||'',image,url:$('newContentUrl')?.value.trim()||'',category:$('newContentCategory')?.value.trim()||'',year:$('newContentYear')?.value||'',duration:$('newContentDuration')?.value.trim()||'',access:$('newContentAccess')?.value||'free',createdAt:serverTimestamp(),createdByUid:user().uid,createdByName:publicName(profileCache)};await addDoc(collection(db,info.collection),data);document.getElementById('dynamicContentForm')?.remove();await loadContent(type);if(type!=='products')await loadHome();alert(`${info.singular} salvo com sucesso.`)}catch(e){console.error(e);alert('Erro ao salvar: '+e.message)}finally{if(btn){btn.disabled=false;btn.textContent=`💾 Salvar ${info.singular}`}}};
+window.saveContent=async function(type){
+ const info=contentTypes[type],btn=$('saveContentBtn');
+ if(!user()||!isAdmin)return alert('Acesso restrito ao administrador.');
+ const title=$('newContentTitle')?.value.trim();
+ if(!title)return alert('Informe o título.');
+ if(btn){btn.disabled=true;btn.textContent='Salvando...'}
+ try{
+  let image=$('newContentImage')?.value.trim()||'';
+  const imageFile=$('newContentImageFile')?.files?.[0];
+  if(imageFile){
+   const safe=imageFile.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+   const imageRef=ref(storage,`content-images/${type}/${Date.now()}-${safe}`);
+   const uploaded=await uploadBytes(imageRef,imageFile);
+   image=await getDownloadURL(uploaded.ref);
+  }
+  const data={
+   title,
+   description:$('newContentDescription')?.value.trim()||'',
+   image,
+   url:youtubeUrl($('newContentUrl')?.value.trim()||''),
+   category:$('newContentCategory')?.value.trim()||'',
+   year:$('newContentYear')?.value||'',
+   duration:$('newContentDuration')?.value.trim()||'',
+   access:$('newContentAccess')?.value||'free',
+   createdAt:serverTimestamp(),
+   createdByUid:user().uid,
+   createdByName:publicName(profileCache)
+  };
+  if(type==='products')data.price=$('newContentPrice')?.value.trim()||'';
+  await addDoc(collection(db,info.collection),data);
+  document.getElementById('dynamicContentForm')?.remove();
+  await loadContent(type);
+  await loadHome();
+  alert(`${info.singular} salvo com sucesso.`);
+ }catch(e){console.error(e);alert('Erro ao salvar: '+e.message)}
+ finally{if(btn){btn.disabled=false;btn.textContent=`💾 Salvar ${info.singular}`}}
+};
 
-function renderContentCard(type,id,d){const info=contentTypes[type],cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${d.url?`<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener">Abrir</a>`:''}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`}
+
+function youtubeUrl(url){
+ try{
+  const u=new URL(url);
+  if(u.hostname==='youtu.be') return `https://www.youtube.com/watch?v=${u.pathname.slice(1)}`;
+  if(u.hostname.endsWith('youtube.com')){
+   if(u.pathname==='/watch' && u.searchParams.get('v')) return `https://www.youtube.com/watch?v=${u.searchParams.get('v')}`;
+   if(u.pathname.startsWith('/shorts/')||u.pathname.startsWith('/embed/')){
+    const id=u.pathname.split('/').filter(Boolean).pop();
+    if(id) return `https://www.youtube.com/watch?v=${id}`;
+   }
+  }
+ }catch{}
+ return url;
+}
+function renderContentCard(type,id,d){
+ const info=contentTypes[type];
+ const cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;
+ const link=d.url?youtubeUrl(d.url):'';
+ const action=link?`<a class="btn btn-small" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${type==='videos'?'▶ Assistir':'Abrir'}</a>`:'';
+ return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`
+}
 async function fetchContent(type){const snap=await getDocs(collection(db,contentTypes[type].collection));return snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(b.createdAt)-ts(a.createdAt))}
 window.loadContent=async function(type){const info=contentTypes[type],grid=$(info.grid);if(!grid)return;const adminBox=$(info.admin);if(adminBox)adminBox.classList.toggle('hidden',!isAdmin);grid.innerHTML='<p style="color:#6B7A99">Carregando...</p>';try{const items=await fetchContent(type);grid.innerHTML=items.length?items.map(x=>renderContentCard(type,x.id,x)).join(''):'<p style="color:#6B7A99">Nenhum conteúdo cadastrado.</p>';}catch(e){console.error(e);grid.innerHTML=`<div class="error">Erro ao carregar ${esc(info.title)}: ${esc(e.message)}</div>`}};
 window.deleteContent=async function(type,id){if(!isAdmin)return;if(!confirm('Excluir este conteúdo?'))return;try{await deleteDoc(doc(db,contentTypes[type].collection,id));await loadContent(type);await loadAdminContentManager();await loadHome()}catch(e){alert('Erro ao excluir: '+e.message)}};
@@ -3199,7 +3285,16 @@ window.loadNotifications=async function(){const box=$('page-notifications')?.que
 async function loadAdmin(){await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager()}
 window.loadAdmin=loadAdmin;
 
-onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));profileCache=await getProfile(u.uid);authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
+function bindHomeAddButtons(){
+ document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>{
+  const m=btn.id.match(/^add(.+)HomeBtn$/); if(!m)return;
+  const map={Film:'films',Series:'series',Documentary:'documentaries',Book:'books',Article:'articles',Study:'studies',Video:'videos',Product:'products'};
+  const type=map[m[1]]; if(!type)return;
+  btn.onclick=(ev)=>{ev.preventDefault();window.showContentForm(type);};
+ });
+}
+
+onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
