@@ -4478,7 +4478,7 @@ async function(id) {
         /*
          * VERIFICA QUEM PODE ADMINISTRAR
          *
-         * O UID é priorizado quando existir.
+         * O UID é priorizado.
          * O e-mail permanece como compatibilidade
          * com comunidades antigas.
          */
@@ -4537,14 +4537,12 @@ async function(id) {
         ) {
 
             let pendingUid = "";
+            let pendingName = pendingEmail;
 
 
             /*
-             * TENTA LOCALIZAR O UID DO USUÁRIO
+             * LOCALIZA O PERFIL DO USUÁRIO
              * PELO E-MAIL.
-             *
-             * Isso mantém compatibilidade com
-             * solicitações criadas pelo sistema antigo.
              */
 
             try {
@@ -4573,17 +4571,30 @@ async function(id) {
                     !usersSnapshot.empty
                 ) {
 
-                    pendingUid =
+                    const userDoc =
                         usersSnapshot
-                            .docs[0]
-                            .id;
+                            .docs[0];
+
+
+                    const userData =
+                        userDoc.data();
+
+
+                    pendingUid =
+                        userData.uid ||
+                        userDoc.id;
+
+
+                    pendingName =
+                        userData.name ||
+                        pendingEmail;
 
                 }
 
             } catch (userError) {
 
                 console.warn(
-                    "Não foi possível localizar o UID de:",
+                    "Não foi possível localizar o perfil de:",
                     pendingEmail,
                     userError
                 );
@@ -4592,7 +4603,7 @@ async function(id) {
 
 
             /*
-             * DADOS CODIFICADOS PARA O BOTÃO
+             * DADOS CODIFICADOS PARA OS BOTÕES
              */
 
             const encodedEmail =
@@ -4619,9 +4630,21 @@ async function(id) {
 
                     <strong>
                         ${escapeHtml(
-                            pendingEmail
+                            pendingName
                         )}
                     </strong>
+
+                    <br>
+
+                    <span
+                        style="
+                        color:#6B7A99;
+                        font-size:12px;
+                        ">
+                        ${escapeHtml(
+                            pendingEmail
+                        )}
+                    </span>
 
                     <br>
 
@@ -4689,6 +4712,7 @@ async function(id) {
     }
 
 };
+    
 /* =====================================================
    APROVAR
 ===================================================== */
