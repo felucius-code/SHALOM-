@@ -3221,11 +3221,13 @@ async function() {
         .value
         .trim();
 
+
     const email =
         document
         .getElementById("signupEmail")
         .value
         .trim();
+
 
     const password =
         document
@@ -3278,14 +3280,31 @@ async function() {
         ========================================== */
 
         await setDoc(
-            doc(db, "users", user.uid),
+            doc(
+                db,
+                "users",
+                user.uid
+            ),
             {
-                uid: user.uid,
-                name: name,
-                email: email,
-                photoURL: "",
-                interests: [],
-                createdAt: serverTimestamp()
+
+                uid:
+                    user.uid,
+
+                name:
+                    name,
+
+                email:
+                    email,
+
+                photoURL:
+                    "",
+
+                interests:
+                    [],
+
+                createdAt:
+                    serverTimestamp()
+
             }
         );
 
@@ -3294,24 +3313,44 @@ async function() {
            LIMPA O FORMULÁRIO
         ========================================== */
 
-        document.getElementById("signupName").value = "";
-        document.getElementById("signupEmail").value = "";
-        document.getElementById("signupPassword").value = "";
+        document
+            .getElementById(
+                "signupName"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "signupEmail"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "signupPassword"
+            )
+            .value = "";
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erro ao criar conta:",
+            error
+        );
+
 
         showError(
             "Erro ao criar conta: " +
             error.message,
             "signupError"
         );
+
     }
 
 };
-
 /* =====================================================
    TELAS LOGIN / CADASTRO
 ===================================================== */
