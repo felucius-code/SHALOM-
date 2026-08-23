@@ -6859,13 +6859,14 @@ function(type) {
         >
 
             <button
-                type="button"
-                class="btn"
-                onclick="saveContent('${type}')">
+    type="button"
+    class="btn"
+    onclick="window.saveContent('${type}')"
+>
 
-                💾 Salvar ${info.title}
+    💾 Salvar ${info.title}
 
-            </button>
+</button>
 
 
             <button
@@ -7417,7 +7418,7 @@ async function(type) {
             0
 
     };
-console.log("SHALOM: saveContent carregada corretamente");
+
 
     /* =========================
        SALVAR NO FIRESTORE
