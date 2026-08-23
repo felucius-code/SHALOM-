@@ -4422,13 +4422,32 @@ async function(id) {
             snap.data();
 
 
-        const email =
-            auth.currentUser.email;
+        const currentUser =
+            auth.currentUser;
 
+
+        if (!currentUser) {
+
+            alert(
+                "Você precisa estar conectado."
+            );
+
+            return;
+        }
+
+
+        /*
+         * VERIFICA QUEM PODE ADMINISTRAR
+         *
+         * O UID é priorizado quando existir.
+         * O e-mail permanece como compatibilidade
+         * com comunidades antigas.
+         */
 
         const canManage =
             isAdmin ||
-            data.createdBy === email;
+            data.createdByUid === currentUser.uid ||
+            data.createdBy === currentUser.email;
 
 
         if (!canManage) {
@@ -4440,6 +4459,10 @@ async function(id) {
             return;
         }
 
+
+        /*
+         * SOLICITAÇÕES PENDENTES
+         */
 
         const pending =
             data.pendingMembers || [];
@@ -4465,11 +4488,88 @@ async function(id) {
         `;
 
 
-        pending.forEach(
-            pendingEmail => {
+        /*
+         * PROCESSA CADA SOLICITAÇÃO
+         */
 
-                html +=
-                `
+        for (
+            const pendingEmail
+            of pending
+        ) {
+
+            let pendingUid = "";
+
+
+            /*
+             * TENTA LOCALIZAR O UID DO USUÁRIO
+             * PELO E-MAIL.
+             *
+             * Isso mantém compatibilidade com
+             * solicitações criadas pelo sistema antigo.
+             */
+
+            try {
+
+                const usersQuery =
+                    query(
+                        collection(
+                            db,
+                            "users"
+                        ),
+                        where(
+                            "email",
+                            "==",
+                            pendingEmail
+                        )
+                    );
+
+
+                const usersSnapshot =
+                    await getDocs(
+                        usersQuery
+                    );
+
+
+                if (
+                    !usersSnapshot.empty
+                ) {
+
+                    pendingUid =
+                        usersSnapshot
+                            .docs[0]
+                            .id;
+
+                }
+
+            } catch (userError) {
+
+                console.warn(
+                    "Não foi possível localizar o UID de:",
+                    pendingEmail,
+                    userError
+                );
+
+            }
+
+
+            /*
+             * DADOS CODIFICADOS PARA O BOTÃO
+             */
+
+            const encodedEmail =
+                encodeURIComponent(
+                    pendingEmail
+                );
+
+
+            const encodedUid =
+                encodeURIComponent(
+                    pendingUid
+                );
+
+
+            html +=
+            `
                 <div
                     style="
                     background:#0A0E27;
@@ -4486,26 +4586,25 @@ async function(id) {
 
                     <br>
 
+
                     <button
                         class="btn btn-small"
                         onclick="approveMember(
-                            '${id}',
-                            '${encodeURIComponent(
-                                pendingEmail
-                            )}'
+                            '${escapeAttribute(id)}',
+                            '${encodedEmail}',
+                            '${encodedUid}'
                         )">
 
                         Aprovar
 
                     </button>
 
+
                     <button
                         class="btn btn-small btn-danger"
                         onclick="rejectMember(
-                            '${id}',
-                            '${encodeURIComponent(
-                                pendingEmail
-                            )}'
+                            '${escapeAttribute(id)}',
+                            '${encodedEmail}'
                         )">
 
                         Recusar
@@ -4513,25 +4612,35 @@ async function(id) {
                     </button>
 
                 </div>
-                `;
+            `;
 
-            }
-        );
+        }
 
 
         html += "</div>";
 
 
-        document
-            .getElementById(
+        const communitiesList =
+            document.getElementById(
                 "communitiesList"
-            )
-            .innerHTML = html;
+            );
+
+
+        if (communitiesList) {
+
+            communitiesList.innerHTML =
+                html;
+
+        }
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erro ao carregar solicitações:",
+            error
+        );
+
 
         alert(
             "Erro: " +
@@ -4541,8 +4650,6 @@ async function(id) {
     }
 
 };
-
-
 /* =====================================================
    APROVAR
 ===================================================== */
@@ -4550,7 +4657,8 @@ async function(id) {
 window.approveMember =
 async function(
     communityId,
-    encodedEmail
+    encodedEmail,
+    encodedUid = ""
 ) {
 
     const email =
@@ -4559,24 +4667,82 @@ async function(
         );
 
 
+    const uid =
+        encodedUid
+            ? decodeURIComponent(encodedUid)
+            : "";
+
+
+    if (!email) {
+
+        alert(
+            "Usuário da solicitação não identificado."
+        );
+
+        return;
+    }
+
+
     try {
 
-        await updateDoc(
+        const communityRef =
             doc(
                 db,
                 "communities",
                 communityId
-            ),
+            );
+
+
+        /*
+         * ADICIONA O USUÁRIO COMO MEMBRO
+         *
+         * O e-mail continua sendo mantido
+         * temporariamente para compatibilidade
+         * com os dados antigos.
+         */
+
+        await updateDoc(
+            communityRef,
             {
 
                 members:
-                    arrayUnion(email),
+                    arrayUnion(
+                        email
+                    ),
 
                 pendingMembers:
-                    arrayRemove(email)
+                    arrayRemove(
+                        email
+                    )
 
             }
         );
+
+
+        /*
+         * SE O UID JÁ ESTIVER DISPONÍVEL,
+         * REGISTRA TAMBÉM O UID.
+         *
+         * Isso prepara a estrutura para que
+         * o UID seja o identificador interno
+         * definitivo do usuário.
+         */
+
+        if (uid) {
+
+            await updateDoc(
+                communityRef,
+                {
+
+                    memberUids:
+                        arrayUnion(
+                            uid
+                        )
+
+                }
+            );
+
+        }
 
 
         alert(
@@ -4589,7 +4755,11 @@ async function(
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erro ao aprovar membro:",
+            error
+        );
+
 
         alert(
             "Erro ao aprovar: " +
@@ -4599,8 +4769,6 @@ async function(
     }
 
 };
-
-
 /* =====================================================
    RECUSAR
 ===================================================== */
