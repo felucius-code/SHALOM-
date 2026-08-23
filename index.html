@@ -3041,6 +3041,7 @@ deleteDoc,
 "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 /* =====================================================
+/* =====================================================
    CONFIGURAÇÃO FIREBASE
 ===================================================== */
 
@@ -3069,15 +3070,30 @@ const firebaseConfig = {
 };
 
 
+/* =====================================================
+   INICIALIZAÇÃO FIREBASE
+===================================================== */
+
 const app =
-    initializeApp(firebaseConfig);
+    initializeApp(
+        firebaseConfig
+    );
+
 
 const auth =
     getAuth(app);
 
+
 const db =
     getFirestore(app);
 
+
+/* =====================================================
+   FIREBASE STORAGE
+===================================================== */
+
+const storage =
+    getStorage(app);
 
 /* =====================================================
    PERMISSÕES
