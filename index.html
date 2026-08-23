@@ -1663,6 +1663,14 @@ select option {
 
     </button>
 
+    <button
+        class="nav-item"
+        onclick="openPage('communities',this)">
+
+        👥 Comunidades
+
+    </button>
+
 
     <!-- LOJA -->
 
@@ -9937,6 +9945,197 @@ onAuthStateChanged(auth, async user => {
 });
 
 
+
+/* =====================================================
+   SHALOM — CAMADA DE ESTABILIZAÇÃO FINAL
+   Esta camada substitui handlers duplicados que ficaram
+   em versões anteriores e mantém compatibilidade com
+   os dados antigos do Firestore.
+===================================================== */
+(function(){
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+    const currentUser = () => (typeof shalomUser === "function" ? shalomUser() : auth.currentUser);
+
+    function setPageVisibility(page){
+        document.querySelectorAll(".page").forEach(el => {
+            el.classList.toggle("hidden", el.id !== "page-" + page);
+            if (el.id === "page-" + page) el.style.display = "";
+        });
+        const bar = $("communitiesBar");
+        if (bar) bar.style.display = page === "home" ? "" : "none";
+    }
+
+    window.openPage = async function(page, button){
+        try {
+            const target = $("page-" + page);
+            if (!target) { console.error("Página não encontrada:", page); return; }
+            setPageVisibility(page);
+            document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+            if (button) button.classList.add("active");
+            else {
+                const b = [...document.querySelectorAll(".nav-item")].find(el => (el.getAttribute("onclick")||"").includes("'"+page+"'"));
+                if (b) b.classList.add("active");
+            }
+            const createBox = $("createCommunityBox");
+            if (createBox && page !== "communities") createBox.classList.add("hidden");
+            if (page === "home" && typeof window.loadHome === "function") await window.loadHome();
+            else if (page === "communities" && typeof window.loadCommunities === "function") await window.loadCommunities();
+            else if (page === "profile" && typeof window.loadProfilePage === "function") await window.loadProfilePage();
+            else if (page === "notifications" && typeof window.loadNotifications === "function") await window.loadNotifications();
+            else if (page === "admin") {
+                if (!isAdmin) { setPageVisibility("home"); return; }
+                if (typeof window.loadAdminCommunities === "function") await window.loadAdminCommunities();
+                if (typeof window.loadCommunityAdmins === "function") await window.loadCommunityAdmins();
+            } else if (window.contentTypes && window.contentTypes[page] && typeof window.loadContent === "function") await window.loadContent(page);
+            else if (page === "store" && typeof window.loadContent === "function") await window.loadContent("products");
+        } catch(e) { console.error("Erro na navegação:", e); alert("Erro ao abrir a página: " + e.message); }
+    };
+
+    window.navigateMain = window.openPage;
+    window.openPageByName = function(page){ window.openPage(page, null); };
+
+    window.showCreateCommunity = function(){
+        const box=$("createCommunityBox");
+        if(!box) return alert("Formulário de comunidade não encontrado.");
+        window.openPage("communities", null);
+        box.classList.remove("hidden");
+        box.style.display="block";
+        setTimeout(()=>box.scrollIntoView({behavior:"smooth",block:"start"}),50);
+    };
+
+    async function profile(uid){
+        if(typeof getUserProfile === "function") return await getUserProfile(uid);
+        return null;
+    }
+    function member(data,user){
+        return !!user && ((data.memberUids||[]).includes(user.uid) || (user.email && (data.members||[]).includes(user.email)));
+    }
+    function adminCommunity(data,user){
+        return !!user && (isAdmin || data.createdByUid===user.uid || (data.communityAdminUids||[]).includes(user.uid) || (user.email && ((data.communityAdmins||[]).includes(user.email) || data.createdBy===user.email)));
+    }
+
+    window.loadCommunities = async function(){
+        const user=currentUser(); if(!user) return;
+        const home=$("homeCommunitiesList"), list=$("communitiesList");
+        try{
+            const snap=await getDocs(collection(db,"communities"));
+            const all=snap.docs.map(d=>({id:d.id,data:d.data()}));
+            const mine=all.filter(x=>member(x.data,user));
+            if(home){
+                home.innerHTML='<button type="button" class="community-circle community-create-circle" onclick="showCreateCommunity()" title="Criar comunidade"><div class="community-circle-image"><span>＋</span></div><span class="community-circle-name">+</span></button>';
+                if(!mine.length) home.innerHTML+='<div class="community-empty">Você ainda não participa de nenhuma comunidade.</div>';
+                for(const x of mine){ const d=x.data; const img=d.imageURL||d.photoURL||""; home.innerHTML+=`<button type="button" class="community-circle" onclick="openCommunity('${escapeAttribute(x.id)}')" title="${escapeAttribute(d.name||"Comunidade")}"><div class="community-circle-image">${img?`<img src="${escapeAttribute(img)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:'<span>👥</span>'}</div><span class="community-circle-name">${escapeHtml(d.name||"Comunidade")}</span></button>`; }
+            }
+            if(list){
+                list.classList.remove("hidden"); list.innerHTML="";
+                if(!all.length) list.innerHTML='<div class="card"><p style="color:#6B7A99;">Nenhuma comunidade disponível.</p></div>';
+                for(const x of all){
+                    const d=x.data, isM=member(d,user), isA=adminCommunity(d,user), pending=Math.max((d.pendingMemberUids||[]).length,(d.pendingMembers||[]).length);
+                    list.innerHTML+=`<div class="community-card"><h3>${escapeHtml(d.name||"Comunidade")}</h3><p>${escapeHtml(d.description||"")}</p><span class="badge">${escapeHtml(d.status||"active")}</span>${isM?'<span class="badge badge-success">Membro</span>':''}${isA&&pending?`<span class="badge badge-pending">🔔 ${pending} solicitação(ões)</span>`:''}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">${isM?`<button class="btn btn-small" onclick="openCommunity('${escapeAttribute(x.id)}')">Abrir</button>`:`<button class="btn btn-small" onclick="requestJoin('${escapeAttribute(x.id)}')">Solicitar entrada</button>`}${isA?`<button class="btn btn-small" onclick="viewRequests('${escapeAttribute(x.id)}')">🔔 Solicitações</button>`:''}</div></div>`;
+                }
+            }
+            if(typeof window.loadNotifications === "function") await window.loadNotifications();
+        }catch(e){ console.error(e); if(list) list.innerHTML=`<div class="error">Erro ao carregar comunidades: ${escapeHtml(e.message)}</div>`; }
+    };
+
+    window.requestJoin = async function(id){
+        const user=currentUser(); if(!user) return alert("Você precisa estar conectado.");
+        try{
+            const refc=doc(db,"communities",id), snap=await getDoc(refc);
+            if(!snap.exists()) return alert("Comunidade não encontrada.");
+            const d=snap.data();
+            if(member(d,user)) return alert("Você já é membro desta comunidade.");
+            if((d.pendingMemberUids||[]).includes(user.uid)) return alert("Sua solicitação já está pendente.");
+            const updates={pendingMemberUids:arrayUnion(user.uid)};
+            if(user.email) updates.pendingMembers=arrayUnion(user.email);
+            await updateDoc(refc,updates);
+            alert("Solicitação enviada."); await window.loadCommunities();
+        }catch(e){console.error(e);alert("Erro ao solicitar entrada: "+e.message);}
+    };
+
+    window.openCommunity = async function(id){
+        const user=currentUser(); if(!user) return alert("Você precisa estar conectado.");
+        try{
+            const snap=await getDoc(doc(db,"communities",id)); if(!snap.exists()) return alert("Comunidade não encontrada.");
+            const d=snap.data(); if(!member(d,user)) return alert("Você ainda não é membro desta comunidade.");
+            currentCommunityId=id; window.currentCommunityId=id; currentCommunityIsAdmin=adminCommunity(d,user);
+            setPageVisibility("communities");
+            const list=$("communitiesList"), area=$("communityArea");
+            if(list) list.classList.add("hidden");
+            if(area) area.classList.remove("hidden");
+            if($("communityAreaTitle")) $("communityAreaTitle").textContent=d.name||"Comunidade";
+            if($("communityAreaDescription")) $("communityAreaDescription").textContent=d.description||"";
+            const tools=$("communityStudyAdminTools"); if(tools) tools.classList.toggle("hidden",!currentCommunityIsAdmin);
+            if(typeof loadCommunityStudyVideos === "function") await loadCommunityStudyVideos(id);
+            if(typeof loadCommunityMessages === "function") await loadCommunityMessages(id);
+            area?.scrollIntoView({behavior:"smooth",block:"start"});
+        }catch(e){console.error(e);alert("Erro ao abrir comunidade: "+e.message);}
+    };
+
+    window.showContentForm = function(type){
+        if(!isAdmin) return alert("Somente o administrador geral pode adicionar conteúdo.");
+        const info=contentTypes[type]; if(!info) return alert("Tipo de conteúdo não reconhecido: "+type);
+        $("dynamicContentForm")?.remove();
+        const form=document.createElement("div"); form.id="dynamicContentForm"; form.className="card"; form.style.margin="15px 0";
+        form.innerHTML=`<h2 class="card-title">＋ Adicionar ${escapeHtml(info.title)}</h2>
+        <div class="form-group"><label>Título</label><input id="newContentTitle" type="text" placeholder="Título"></div>
+        <div class="form-group"><label>Descrição</label><textarea id="newContentDescription" placeholder="Descrição"></textarea></div>
+        <div class="form-group"><label>Imagem / capa</label><input id="newContentImage" type="file" accept="image/*"><div id="newContentImagePreview" style="display:none;margin-top:10px"><img id="newContentImagePreviewImg" style="max-width:180px;max-height:240px;border-radius:8px;object-fit:cover"></div></div>
+        <div class="form-group"><label>URL do conteúdo / compra</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
+        <div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">Gratuito</option><option value="subscription">Assinatura</option></select></div>
+        <div class="form-group"><label>Preço</label><input id="newContentPrice" type="number" min="0" step="0.01" value="0"></div>
+        <div class="form-group"><label>Categoria</label><input id="newContentCategory" type="text" placeholder="Categoria"></div>
+        <div class="form-group"><label>Ano</label><input id="newContentYear" type="number" placeholder="Ano"></div>
+        <div class="form-group"><label>Duração</label><input id="newContentDuration" type="text" placeholder="Ex.: 1h 45min"></div>
+        <div class="form-group"><label>Player</label><select id="newContentPlayer"><option value="external">Externo</option><option value="youtube">YouTube</option><option value="internal">Player interno</option></select></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" id="saveContentButton" class="btn">💾 Salvar ${escapeHtml(info.title)}</button><button type="button" id="cancelContentButton" class="btn btn-secondary">Cancelar</button></div>`;
+        const target=$( {films:"homeFilms",series:"homeSeries",documentaries:"homeDocumentaries",books:"homeBooks",articles:"homeArticles",studies:"homeStudies",videos:"homeVideos",products:"homeProducts"}[type] );
+        const parent=target?.parentNode || $("page-admin") || $("page-home");
+        if(target) parent.insertBefore(form,target); else parent?.prepend(form);
+        $("saveContentButton").addEventListener("click",()=>window.saveContent(type));
+        $("cancelContentButton").addEventListener("click",()=>form.remove());
+        $("newContentImage").addEventListener("change",function(){const f=this.files?.[0],pr=$("newContentImagePreview"),im=$("newContentImagePreviewImg");if(!f){pr.style.display="none";return;}if(!f.type.startsWith("image/")){alert("Selecione uma imagem válida.");this.value="";return;}const r=new FileReader();r.onload=e=>{im.src=e.target.result;pr.style.display="block"};r.readAsDataURL(f);});
+        form.scrollIntoView({behavior:"smooth",block:"start"});
+    };
+
+    window.saveContent = async function(type){
+        if(!isAdmin) return alert("Somente o administrador geral pode adicionar conteúdo.");
+        const info=contentTypes[type]; if(!info) return alert("Tipo de conteúdo não reconhecido.");
+        const val=id=>$(id)?.value?.trim()||"";
+        const title=val("newContentTitle"), description=val("newContentDescription"), url=val("newContentUrl"), category=val("newContentCategory"), duration=val("newContentDuration");
+        const access=$("newContentAccess")?.value||"free", price=Number($("newContentPrice")?.value||0), year=Number($("newContentYear")?.value||0), player=$("newContentPlayer")?.value||"external", file=$("newContentImage")?.files?.[0];
+        if(!title)return alert("Digite o título."); if(!description)return alert("Digite uma descrição.");
+        if(["films","series","documentaries"].includes(type)&&!url)return alert("Informe a URL do vídeo.");
+        if(access==="subscription"&&price<=0)return alert("Informe um valor válido para a assinatura.");
+        const btn=$("saveContentButton"); if(btn){btn.disabled=true;btn.textContent="Salvando...";}
+        try{
+            let image="";
+            if(file){ if(!file.type.startsWith("image/")) throw new Error("Selecione um arquivo de imagem válido."); const ext=(file.name.split(".").pop()||"jpg").toLowerCase(); const r=ref(storage,`content-images/${type}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`); const up=await uploadBytes(r,file); image=await getDownloadURL(up.ref); }
+            const u=currentUser();
+            await addDoc(collection(db,info.collection),{title,description,image,url,access,price,category,year,duration,player,type,createdBy:u?.email||"",createdByUid:u?.uid||"",createdAt:serverTimestamp(),active:true,featured:false,views:0,rating:0,ratingCount:0});
+            $("dynamicContentForm")?.remove(); alert(info.title+" adicionado com sucesso!");
+            await window.loadContent(type); if(typeof window.loadHome === "function") await window.loadHome();
+        }catch(e){console.error("saveContent:",e);alert("Erro ao adicionar conteúdo: "+e.message);if(btn){btn.disabled=false;btn.textContent="💾 Salvar "+info.title;}}
+    };
+
+    window.loadContent = async function(type){
+        const info=contentTypes[type]; if(!info)return; const grid=$(type==="products"?"productsGrid":type+"Grid"); if(!grid)return;
+        grid.innerHTML="<p style='color:#6B7A99;'>Carregando...</p>";
+        try{ const snap=await getDocs(collection(db,info.collection)); const docs=[...snap.docs].sort((a,b)=>(b.data().createdAt?.toMillis?.()||0)-(a.data().createdAt?.toMillis?.()||0)); grid.innerHTML="";
+            if(!docs.length){grid.innerHTML=`<div class="card"><p style="color:#6B7A99;">Nenhum ${escapeHtml(info.title.toLowerCase())} adicionado ainda.</p></div>`;return;}
+            docs.forEach(d=>{const x=d.data(),cover=x.image?`<img src="${escapeAttribute(x.image)}" alt="${escapeAttribute(x.title||"")}" loading="lazy">`:info.icon,meta=[x.category,x.year||"",x.duration||""].filter(Boolean).join(" • ");grid.innerHTML+=`<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${escapeHtml(x.title||"Sem título")}</h3><p>${escapeHtml(x.description||"Sem descrição.")}</p>${meta?`<p style="margin-top:6px;color:#D4AF37;font-size:11px;">${escapeHtml(meta)}</p>`:""}${x.url?`<button type="button" class="btn btn-small" onclick="openVideo('${escapeAttribute(x.url)}')">▶ ${type==='products'||type==='books'?'Abrir link':'Abrir conteúdo'}</button>`:""}${isAdmin?`<button type="button" class="btn btn-small btn-danger" onclick="deleteContent('${escapeAttribute(type)}','${escapeAttribute(d.id)}')">🗑️ Excluir</button>`:""}</div></article>`;});
+        }catch(e){console.error(e);grid.innerHTML=`<div class="error">Erro ao carregar conteúdo: ${escapeHtml(e.message)}</div>`;}
+    };
+
+    // Reforça a identificação pública e o estado administrativo após o login.
+    onAuthStateChanged(auth, async user=>{
+        if(!user)return;
+        isAdmin=(user.email||"").toLowerCase()===ADMIN_EMAIL.toLowerCase();
+        try{ if(typeof getUserProfile === "function"){shalomProfile=await getUserProfile(user.uid);if(typeof applyPublicIdentity === "function")applyPublicIdentity(shalomProfile||{name:user.displayName||"Usuário",photoURL:user.photoURL||""});} }catch(e){console.error(e);}
+    });
+})();
 </script>
 
 </body>
