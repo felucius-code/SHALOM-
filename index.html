@@ -10147,476 +10147,345 @@ onAuthStateChanged(auth, async user => {
         try{ if(typeof getUserProfile === "function"){shalomProfile=await getUserProfile(user.uid);if(typeof applyPublicIdentity === "function")applyPublicIdentity(shalomProfile||{name:user.displayName||"Usuário",photoURL:user.photoURL||""});} }catch(e){console.error(e);}
     });
 })();
+
+
+/* =====================================================
+   API PÚBLICA DO MÓDULO FIREBASE
+   O código legado deste arquivo usa um <script type="module">.
+   Variáveis importadas/constantes do módulo não existem no escopo
+   dos <script> normais posteriores. Expondo somente o necessário.
+===================================================== */
+window.__shalom = {
+    get auth(){ return auth; },
+    get db(){ return db; },
+    get storage(){ return storage; },
+    get isAdmin(){ return isAdmin; },
+    set isAdmin(v){ isAdmin = !!v; },
+    get contentTypes(){ return contentTypes; },
+    get profile(){ return shalomProfile; },
+    set profile(v){ shalomProfile = v; },
+    loadCommunityStudyVideos,
+    firebase: {
+        collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc,
+        query, where, orderBy, onSnapshot, arrayUnion, arrayRemove, serverTimestamp,
+        ref, uploadBytes, getDownloadURL
+    }
+};
 </script>
+
+
+
 
 
 <script>
 /* =========================================================
-   SHALOM — CORREÇÕES ESTRUTURAIS V3
-   1. Corrige o fechamento da Home para que as demais páginas
-      não fiquem aninhadas dentro de #page-home.
-   2. Uma única navegação final.
-   3. Exclusão de conteúdo.
-   4. Administração com atalhos para catálogo.
-   5. Comunidade abre dentro da página correta.
-   6. Salvamento de conteúdo com feedback e timeout.
+   SHALOM — PATCH DE ESTABILIZAÇÃO V5
+   Regra importante: este script é NORMAL, portanto nunca acessa
+   diretamente imports/constantes do módulo Firebase. Tudo vem de
+   window.__shalom.
 ========================================================= */
 (function(){
+    'use strict';
+
+    const S = window.__shalom;
+    if (!S) {
+        console.error('SHALOM: API Firebase não foi exposta pelo módulo principal.');
+        return;
+    }
+    const { auth, db, storage, firebase } = S;
+    const { collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc,
+            query, where, orderBy, serverTimestamp, arrayUnion, arrayRemove, ref, uploadBytes, getDownloadURL } = firebase;
     const $ = id => document.getElementById(id);
     const userNow = () => auth.currentUser;
+    const isAdminNow = () => !!S.isAdmin;
+    const esc = v => typeof window.escapeHtml === 'function' ? window.escapeHtml(v) : String(v ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const attr = v => typeof window.escapeAttribute === 'function' ? window.escapeAttribute(v) : esc(v);
+    const profile = () => S.profile || {};
+    const loadStudyVideos = S.loadCommunityStudyVideos;
+
+    async function timeout(p, ms, msg){
+        let timer;
+        const t = new Promise((_,rej)=>timer=setTimeout(()=>rej(new Error(msg)),ms));
+        try { return await Promise.race([p,t]); } finally { clearTimeout(timer); }
+    }
 
     function showOnly(page){
         document.querySelectorAll('.page').forEach(el=>{
-            const active = el.id === 'page-'+page;
-            el.classList.toggle('hidden', !active);
-            el.style.display = active ? '' : 'none';
+            const active=el.id==='page-'+page;
+            el.classList.toggle('hidden',!active);
+            el.style.display=active?'':'none';
         });
-        document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-        const btn=[...document.querySelectorAll('.nav-item')].find(el=>{
-            const oc=el.getAttribute('onclick')||'';
-            return oc.includes("'"+page+"'");
-        });
-        if(btn) btn.classList.add('active');
         const bar=$('communitiesBar');
         if(bar) bar.style.display=page==='home'?'':'none';
-    }
-
-    window.openPage = async function(page, button){
-        const target=$('page-'+page);
-        if(!target){ console.error('Página não encontrada:', page); return; }
-        showOnly(page);
-        if(button){
-            document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-            button.classList.add('active');
-        }
-        try{
-            if(page==='home' && typeof window.loadHome==='function') await window.loadHome();
-            else if(page==='communities' && typeof window.loadCommunities==='function') await window.loadCommunities();
-            else if(page==='profile' && typeof window.loadProfilePage==='function') await window.loadProfilePage();
-            else if(page==='notifications' && typeof window.loadNotifications==='function') await window.loadNotifications();
-            else if(page==='admin'){
-                if(!isAdmin){ showOnly('home'); return; }
-                if(typeof window.loadAdminCommunities==='function') await window.loadAdminCommunities();
-                if(typeof window.loadCommunityAdmins==='function') await window.loadCommunityAdmins();
-                if(typeof window.loadAdminContentManager==='function') await window.loadAdminContentManager();
-            } else if(page==='store' && typeof window.loadContent==='function') await window.loadContent('products');
-            else if(window.contentTypes && window.contentTypes[page] && typeof window.loadContent==='function') await window.loadContent(page);
-        }catch(e){
-            console.error('openPage:',e);
-            target.insertAdjacentHTML('beforeend', `<div class="error">Erro ao carregar esta página: ${typeof escapeHtml==='function'?escapeHtml(e.message):e.message}</div>`);
-        }
-    };
-    window.navigateMain=window.openPage;
-    window.openPageByName=function(page){ window.openPage(page,null); };
-
-    window.openCommunity=async function(id){
-        const user=userNow();
-        if(!user) return alert('Você precisa estar conectado.');
-        try{
-            const snap=await getDoc(doc(db,'communities',id));
-            if(!snap.exists()) return alert('Comunidade não encontrada.');
-            const data=snap.data();
-            const member=(data.memberUids||[]).includes(user.uid) || (user.email && (data.members||[]).includes(user.email));
-            if(!member) return alert('Você ainda não é membro desta comunidade.');
-            currentCommunityId=id; window.currentCommunityId=id;
-            currentCommunityIsAdmin=!!(isAdmin || data.createdByUid===user.uid || (data.communityAdminUids||[]).includes(user.uid) || (user.email && ((data.communityAdmins||[]).includes(user.email)||data.createdBy===user.email)));
-            showOnly('communities');
-            const list=$('communitiesList'), area=$('communityArea');
-            if(list) list.classList.add('hidden');
-            if(area) area.classList.remove('hidden');
-            if($('communityAreaTitle')) $('communityAreaTitle').textContent=data.name||'Comunidade';
-            if($('communityAreaDescription')) $('communityAreaDescription').textContent=data.description||'';
-            const tools=$('communityStudyAdminTools'); if(tools) tools.classList.toggle('hidden',!currentCommunityIsAdmin);
-            if(typeof loadCommunityStudyVideos==='function') await loadCommunityStudyVideos(id);
-            if(typeof loadCommunityMessages==='function') await loadCommunityMessages(id);
-            area?.scrollIntoView({behavior:'smooth',block:'start'});
-        }catch(e){ console.error(e); alert('Erro ao abrir comunidade: '+e.message); }
-    };
-
-    window.showCreateCommunity=function(){
-        const box=$('createCommunityBox');
-        if(!box) return alert('Formulário de comunidade não encontrado.');
-        window.openPage('communities',null);
-        box.classList.remove('hidden'); box.style.display='block';
-        setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),50);
-    };
-
-    window.deleteContent=async function(type,id){
-        if(!isAdmin) return alert('Somente o administrador geral pode excluir conteúdos.');
-        const info=window.contentTypes?.[type];
-        if(!info) return alert('Tipo de conteúdo não reconhecido.');
-        const snap=await getDoc(doc(db,info.collection,id));
-        if(!snap.exists()) return alert('Conteúdo não encontrado.');
-        const data=snap.data();
-        if(!confirm(`Excluir definitivamente “${data.title||'este conteúdo'}”?`)) return;
-        try{
-            await deleteDoc(doc(db,info.collection,id));
-            alert('Conteúdo excluído com sucesso.');
-            if(typeof window.loadContent==='function') await window.loadContent(type);
-            if(typeof window.loadHome==='function') await window.loadHome();
-            if(typeof window.loadAdminContentManager==='function') await window.loadAdminContentManager();
-        }catch(e){ console.error(e); alert('Erro ao excluir conteúdo: '+e.message); }
-    };
-
-    window.loadAdminContentManager=async function(){
-        const box=$('adminContentManager'); if(!box) return;
-        const types=window.contentTypes||{};
-        let html='';
-        for(const type of Object.keys(types)){
-            const info=types[type];
-            try{
-                const snap=await getDocs(collection(db,info.collection));
-                const docs=snap.docs.sort((a,b)=>(b.data().createdAt?.toMillis?.()||0)-(a.data().createdAt?.toMillis?.()||0));
-                html+=`<div class="card" style="margin-bottom:14px"><h3 class="card-title">${escapeHtml(info.title||type)} <span style="color:#6B7A99;font-size:13px">(${docs.length})</span></h3>`;
-                if(!docs.length) html+='<p style="color:#6B7A99">Nenhum item.</p>';
-                for(const d of docs.slice(0,20)){
-                    const x=d.data();
-                    html+=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #303654"><div><strong>${escapeHtml(x.title||'Sem título')}</strong><div style="color:#6B7A99;font-size:12px">${escapeHtml(x.category||'')}</div></div><button class="btn btn-small btn-danger" type="button" onclick="deleteContent('${escapeAttribute(type)}','${escapeAttribute(d.id)}')">🗑️ Excluir</button></div>`;
-                }
-                html+='</div>';
-            }catch(e){ html+=`<div class="error">Erro em ${escapeHtml(info.title||type)}: ${escapeHtml(e.message)}</div>`; }
-        }
-        box.innerHTML=html||'<p style="color:#6B7A99">Nenhum catálogo disponível.</p>';
-    };
-
-    // Garante que o administrador veja a área administrativa.
-    window.addEventListener('load',()=>{
-        if(typeof isAdmin!=='undefined' && isAdmin) $('adminMenu')?.classList.remove('hidden');
-        showOnly('home');
-    });
-})();
-</script>
-
-
-<script>
-/* =========================================================
-   SHALOM — PATCH FINAL V4
-   Correções desta revisão:
-   1. Perfil: salvar nome/interesses/foto com feedback real.
-   2. Notificações: permanecem na página de notificações.
-   3. Solicitações: aprovação/recusa sem redirecionar para Comunidades.
-   4. Conteúdo: formulário é inserido na página atualmente aberta.
-   5. Storage: timeout para não ficar preso indefinidamente em "Salvando...".
-   6. Loja: Adicionar produto abre o formulário dentro da Loja.
-   7. Administração: funções são expostas em window e comunidades carregam no select.
-   8. Administração: gerenciamento de conteúdo permanece funcional.
-========================================================= */
-(function(){
-    const $ = id => document.getElementById(id);
-    const currentUser = () => auth.currentUser;
-
-    function safeText(v){ return String(v ?? '').trim(); }
-
-    async function withTimeout(promise, ms, message){
-        let timer;
-        const timeout = new Promise((_, reject)=>{
-            timer=setTimeout(()=>reject(new Error(message)), ms);
+        document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+        const btn=[...document.querySelectorAll('.nav-item')].find(b=>{
+            const o=b.getAttribute('onclick')||'';
+            return o.includes("'"+page+"'") || o.includes('"'+page+'"');
         });
-        try { return await Promise.race([promise, timeout]); }
-        finally { clearTimeout(timer); }
+        if(btn) btn.classList.add('active');
     }
 
-    /* ---------- Perfil ---------- */
+    /* ---------- PERFIL ---------- */
     window.saveProfile = async function(){
-        const user=currentUser();
-        if(!user) return alert('Você precisa estar conectado.');
-        const btn=[...document.querySelectorAll('#page-profile button')]
-            .find(b=>safeText(b.textContent).toLowerCase().includes('salvar perfil'));
-        const name=safeText($('profileName')?.value);
+        const u=userNow();
+        if(!u) return alert('Você precisa estar conectado.');
+        const btn=[...document.querySelectorAll('#page-profile button')].find(b=>/salvar perfil/i.test(b.textContent||''));
+        const name=($('profileName')?.value||'').trim();
         if(!name) return alert('Informe seu nome.');
-        const interests=[...document.querySelectorAll('#page-profile .interest-option input:checked')].map(i=>i.value);
+        const interests=[...document.querySelectorAll('#page-profile .interest-option input:checked')].map(x=>x.value);
         const file=$('profilePhoto')?.files?.[0];
-        const old=btn?.textContent;
+        const old=btn?.textContent||'Salvar perfil';
         if(btn){btn.disabled=true;btn.textContent='Salvando perfil...';}
         try{
-            let photoURL=shalomProfile?.photoURL||user.photoURL||'';
+            let photoURL=profile().photoURL||u.photoURL||'';
             if(file){
                 if(!file.type.startsWith('image/')) throw new Error('Selecione uma imagem válida.');
                 const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-                const r=ref(storage,`profile-images/${user.uid}/${Date.now()}.${ext}`);
-                const up=await withTimeout(uploadBytes(r,file),15000,'O upload da foto demorou demais. Verifique o Firebase Storage.');
-                photoURL=await withTimeout(getDownloadURL(up.ref),10000,'Não foi possível obter a URL da foto.');
+                const r=ref(storage,`profile-images/${u.uid}/${Date.now()}.${ext}`);
+                const up=await timeout(uploadBytes(r,file),15000,'O upload da foto demorou mais de 15 segundos.');
+                photoURL=await timeout(getDownloadURL(up.ref),10000,'O Firebase Storage não retornou a URL da foto.');
             }
-            await withTimeout(setDoc(doc(db,'users',user.uid),{
-                uid:user.uid,name,email:user.email||'',photoURL,interests,updatedAt:serverTimestamp()
-            },{merge:true}),15000,'O salvamento do perfil demorou demais. Verifique o Firestore.');
-            shalomProfile=await getUserProfile(user.uid);
-            if(typeof applyPublicIdentity==='function') applyPublicIdentity(shalomProfile);
+            await timeout(setDoc(doc(db,'users',u.uid),{
+                uid:u.uid,name,email:u.email||'',photoURL,interests,updatedAt:serverTimestamp()
+            },{merge:true}),15000,'O Firestore demorou mais de 15 segundos para salvar o perfil.');
+            if(typeof window.getUserProfile==='function') S.profile=await window.getUserProfile(u.uid);
+            else S.profile={uid:u.uid,name,email:u.email||'',photoURL,interests};
+            if(typeof window.applyPublicIdentity==='function') window.applyPublicIdentity(S.profile);
             if($('profilePhoto')) $('profilePhoto').value='';
             alert('Perfil atualizado com sucesso.');
         }catch(e){
-            console.error('saveProfile:',e);
-            alert('Erro ao salvar perfil: '+e.message);
-        }finally{
-            if(btn){btn.disabled=false;btn.textContent=old||'Salvar perfil';}
-        }
+            console.error(e); alert('Erro ao salvar perfil: '+e.message);
+        }finally{ if(btn){btn.disabled=false;btn.textContent=old;} }
     };
 
-    /* ---------- Administração: funções precisam ser globais ---------- */
-    window.loadAdminCommunities = async function(){
-        const select=$('adminCommunitySelect');
-        if(!select) return;
-        select.innerHTML='<option value="">Carregando comunidades...</option>';
-        try{
-            const snap=await getDocs(collection(db,'communities'));
-            const rows=snap.docs
-                .map(d=>({id:d.id,data:d.data()}))
-                .sort((a,b)=>String(a.data.name||'').localeCompare(String(b.data.name||''),'pt-BR'));
-            select.innerHTML='<option value="">Selecione uma comunidade</option>';
-            rows.forEach(({id,data})=>{
-                const opt=document.createElement('option');
-                opt.value=id;
-                opt.textContent=`${data.name||'Comunidade'}${data.status==='pending'?' (pendente)':''}`;
-                select.appendChild(opt);
-            });
-            if(!rows.length) select.innerHTML='<option value="">Nenhuma comunidade cadastrada</option>';
-        }catch(e){
-            console.error('loadAdminCommunities:',e);
-            select.innerHTML='<option value="">Erro ao carregar comunidades</option>';
-            const msg=$('adminCommunitySelect')?.parentElement;
-            if(msg) msg.insertAdjacentHTML('beforeend',`<p class="error" style="margin-top:8px">${typeof escapeHtml==='function'?escapeHtml(e.message):e.message}</p>`);
-        }
-    };
-
-    /* ---------- Notificações ---------- */
+    /* ---------- NOTIFICAÇÕES ---------- */
     window.loadNotifications = async function(){
-        const user=currentUser(); if(!user) return;
-        const page=$('page-notifications');
-        const badge=$('notificationBadge');
-        if(!page) return;
+        const u=userNow(), page=$('page-notifications');
+        if(!u||!page) return;
         const card=page.querySelector('.card');
         if(card) card.innerHTML='<p style="color:#6B7A99">Carregando notificações...</p>';
         try{
             const snap=await getDocs(collection(db,'communities'));
-            const notifications=[];
+            const rows=[];
             snap.forEach(d=>{
-                const data=d.data();
-                const admin=isAdmin || data.createdByUid===user.uid || (data.communityAdminUids||[]).includes(user.uid) || data.createdBy===user.email || (data.communityAdmins||[]).includes(user.email);
+                const c=d.data()||{};
+                const admin=isAdminNow() || c.createdByUid===u.uid || (c.communityAdminUids||[]).includes(u.uid) || c.createdBy===u.email || (c.communityAdmins||[]).includes(u.email);
                 if(!admin) return;
-                const uids=data.pendingMemberUids||[];
-                const emails=data.pendingMembers||[];
-                const count=Math.max(uids.length,emails.length);
-                if(count) notifications.push({id:d.id,name:data.name||'Comunidade',count});
+                const n=Math.max((c.pendingMemberUids||[]).length,(c.pendingMembers||[]).length);
+                if(n) rows.push({id:d.id,name:c.name||'Comunidade',count:n});
             });
-            const total=notifications.reduce((n,x)=>n+x.count,0);
+            const total=rows.reduce((a,b)=>a+b.count,0);
+            const badge=$('notificationBadge');
             if(badge){badge.textContent=String(total);badge.classList.toggle('hidden',total===0);}
-            if(card){
-                card.innerHTML=notifications.length
-                    ? `<h2 class="card-title">Solicitações de entrada</h2>`+notifications.map(n=>`
-                        <div class="notification-item" style="padding:14px 0;border-bottom:1px solid #303654">
-                            <strong style="color:var(--gold)">${escapeHtml(n.name)}</strong>
-                            <p style="margin:6px 0;color:#B8BDD0">${n.count} solicitação(ões) aguardando análise.</p>
-                            <button type="button" class="btn btn-small" onclick="viewRequests('${escapeAttribute(n.id)}')">🔔 Ver solicitações</button>
-                        </div>`).join('')
-                    : '<p style="color:#6B7A99">Nenhuma notificação no momento.</p>';
-            }
+            if(card) card.innerHTML=rows.length
+                ? '<h2 class="card-title">Solicitações de entrada</h2>'+rows.map(r=>`<div style="padding:14px 0;border-bottom:1px solid #303654"><strong style="color:var(--gold)">${esc(r.name)}</strong><p style="margin:6px 0;color:#B8BDD0">${r.count} solicitação(ões) aguardando análise.</p><button type="button" class="btn btn-small" onclick="viewRequests('${attr(r.id)}')">🔔 Ver solicitações</button></div>`).join('')
+                : '<p style="color:#6B7A99">Nenhuma notificação no momento.</p>';
         }catch(e){
-            console.error('loadNotifications:',e);
-            if(card) card.innerHTML=`<div class="error">Erro ao carregar notificações: ${escapeHtml(e.message)}</div>`;
+            console.error(e); if(card) card.innerHTML=`<div class="error">Erro ao carregar notificações: ${esc(e.message)}</div>`;
         }
     };
 
-    /* ---------- Solicitações: renderizar na página de notificações ---------- */
-    window.viewRequests = async function(id){
-        const user=currentUser(); if(!user) return alert('Você precisa estar conectado.');
+    window.viewRequests = async function(communityId){
+        const u=userNow(); if(!u) return alert('Você precisa estar conectado.');
         try{
-            const snap=await getDoc(doc(db,'communities',id));
+            const snap=await getDoc(doc(db,'communities',communityId));
             if(!snap.exists()) return alert('Comunidade não encontrada.');
-            const data=snap.data();
-            const admin=isAdmin || data.createdByUid===user.uid || (data.communityAdminUids||[]).includes(user.uid) || data.createdBy===user.email || (data.communityAdmins||[]).includes(user.email);
+            const c=snap.data()||{};
+            const admin=isAdminNow() || c.createdByUid===u.uid || (c.communityAdminUids||[]).includes(u.uid) || c.createdBy===u.email || (c.communityAdmins||[]).includes(u.email);
             if(!admin) return alert('Você não administra esta comunidade.');
-            const entries=[]; const seen=new Set();
-            for(const uid of (data.pendingMemberUids||[])){
-                const p=await getUserProfile(uid);
+            showOnly('notifications');
+            const page=$('page-notifications');
+            const card=page?.querySelector('.card'); if(!card)return;
+            card.innerHTML='<p style="color:#6B7A99">Carregando solicitações...</p>';
+            const entries=[], seen=new Set();
+            for(const uid of (c.pendingMemberUids||[])){
+                let p=null; if(typeof window.getUserProfile==='function') p=await window.getUserProfile(uid);
                 entries.push({uid,email:p?.email||'',name:p?.name||p?.email||uid}); seen.add(uid);
             }
-            for(const email of (data.pendingMembers||[])){
-                const p=typeof findProfileByEmail==='function'?await findProfileByEmail(email):null;
-                const uid=p?.uid||p?.id||'';
-                if(uid && seen.has(uid)) continue;
+            for(const email of (c.pendingMembers||[])){
+                let p=null; if(typeof window.findProfileByEmail==='function') p=await window.findProfileByEmail(email);
+                const uid=p?.uid||p?.id||''; if(uid&&seen.has(uid))continue;
                 entries.push({uid,email,name:p?.name||email});
             }
-            window.openPage('notifications',null);
-            const page=$('page-notifications');
-            const card=page?.querySelector('.card');
-            if(!card) return;
-            if(!entries.length){card.innerHTML='<p style="color:#6B7A99">Não há solicitações pendentes.</p>';return;}
-            card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="card-title">🔔 ${escapeHtml(data.name||'Comunidade')}</h2><button type="button" class="btn btn-secondary btn-small" onclick="loadNotifications()">← Voltar às notificações</button></div>`;
-            entries.forEach(e=>{
-                card.insertAdjacentHTML('beforeend',`<div style="padding:14px 0;border-bottom:1px solid #303654"><strong style="color:var(--gold)">${escapeHtml(e.name)}</strong><div style="color:#6B7A99;font-size:12px;margin:4px 0 8px">${escapeHtml(e.email||'')}</div><button type="button" class="btn btn-small" onclick="approveMember('${escapeAttribute(id)}','${encodeURIComponent(e.email||'')}','${encodeURIComponent(e.uid||'')}')">Aprovar</button><button type="button" class="btn btn-small btn-danger" onclick="rejectMember('${escapeAttribute(id)}','${encodeURIComponent(e.email||'')}','${encodeURIComponent(e.uid||'')}')">Recusar</button></div>`);
-            });
-        }catch(e){console.error('viewRequests:',e);alert('Erro ao carregar solicitações: '+e.message);}
+            card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 class="card-title" style="margin:0">Solicitações — ${esc(c.name||'Comunidade')}</h2><button class="btn btn-secondary btn-small" type="button" onclick="loadNotifications()">Voltar</button></div>`+
+                (entries.length?entries.map(x=>`<div style="padding:14px 0;border-bottom:1px solid #303654"><strong style="color:var(--gold)">${esc(x.name)}</strong><div style="font-size:12px;color:#6B7A99">${esc(x.email||'')}</div><div style="margin-top:8px"><button class="btn btn-small" onclick="approveMember('${attr(communityId)}','${attr(x.uid||'')}','${attr(x.email||'')}')">✓ Aprovar</button><button class="btn btn-danger btn-small" onclick="rejectMember('${attr(communityId)}','${attr(x.uid||'')}','${attr(x.email||'')}')">✕ Recusar</button></div></div>`).join(''):'<p style="color:#6B7A99;margin-top:15px">Nenhuma solicitação pendente.</p>');
+        }catch(e){console.error(e);alert('Erro ao carregar solicitações: '+e.message);}
     };
 
-    /* ---------- Aprovação/recusa: atualizar notificações sem trocar de página ---------- */
-    window.approveMember = async function(communityId, encodedEmail='', encodedUid=''){
-        const email=encodedEmail?decodeURIComponent(encodedEmail):'';
-        const uid=encodedUid?decodeURIComponent(encodedUid):'';
+    window.approveMember = async function(communityId,uid,email){
         try{
-            const updates={}; if(uid)updates.memberUids=arrayUnion(uid); if(email)updates.members=arrayUnion(email); if(uid)updates.pendingMemberUids=arrayRemove(uid); if(email)updates.pendingMembers=arrayRemove(email);
-            await updateDoc(doc(db,'communities',communityId),updates);
-            await loadNotifications();
-            alert('Membro aprovado.');
+            const r=doc(db,'communities',communityId), s=await getDoc(r); if(!s.exists())throw new Error('Comunidade não encontrada.');
+            const c=s.data()||{}; const data={};
+            if(uid){ data.memberUids=arrayUnion(uid); data.pendingMemberUids=arrayRemove(uid); }
+            if(email){ data.members=arrayUnion(email); data.pendingMembers=arrayRemove(email); }
+            await updateDoc(r,data); alert('Solicitação aprovada.'); await window.viewRequests(communityId); await window.loadNotifications();
         }catch(e){console.error(e);alert('Erro ao aprovar: '+e.message);}
     };
-    window.rejectMember = async function(communityId, encodedEmail='', encodedUid=''){
-        const email=encodedEmail?decodeURIComponent(encodedEmail):'';
-        const uid=encodedUid?decodeURIComponent(encodedUid):'';
+    window.rejectMember = async function(communityId,uid,email){
         try{
-            const updates={}; if(uid)updates.pendingMemberUids=arrayRemove(uid); if(email)updates.pendingMembers=arrayRemove(email);
-            await updateDoc(doc(db,'communities',communityId),updates);
-            await loadNotifications();
-            alert('Solicitação recusada.');
+            const r=doc(db,'communities',communityId), data={};
+            if(uid)data.pendingMemberUids=arrayRemove(uid);
+            if(email)data.pendingMembers=arrayRemove(email);
+            await updateDoc(r,data); alert('Solicitação recusada.'); await window.viewRequests(communityId); await window.loadNotifications();
         }catch(e){console.error(e);alert('Erro ao recusar: '+e.message);}
     };
 
-    /* ---------- Admin de comunidade ---------- */
-    window.assignCommunityAdmin = async function(){
-        if(!isAdmin) return alert('Somente o administrador geral pode fazer isso.');
-        const communityId=$( 'adminCommunitySelect')?.value;
-        const email=safeText($('communityAdminEmail')?.value).toLowerCase();
-        if(!communityId)return alert('Selecione uma comunidade.');
-        if(!email)return alert('Digite o email do usuário.');
+    /* ---------- ADMINISTRAÇÃO ---------- */
+    window.loadAdminCommunities = async function(){
+        const select=$('adminCommunitySelect'); if(!select)return;
+        select.innerHTML='<option value="">Carregando comunidades...</option>';
         try{
-            const profile=await findProfileByEmail(email);
-            if(!profile)return alert('Usuário não encontrado. Ele precisa possuir um perfil no SHALOM.');
-            const uid=profile.uid||profile.id;
-            const cs=await getDoc(doc(db,'communities',communityId));
-            if(!cs.exists())return alert('Comunidade não encontrada.');
-            const d=cs.data();
-            const member=(d.memberUids||[]).includes(uid)||(d.members||[]).includes(email);
-            if(!member)return alert('Esse usuário precisa ser membro da comunidade antes de ser nomeado administrador.');
-            await updateDoc(doc(db,'communities',communityId),{communityAdminUids:arrayUnion(uid),communityAdmins:arrayUnion(email)});
-            const q=await getDocs(query(collection(db,'communityAdmins'),where('communityId','==',communityId),where('userUid','==',uid)));
-            if(q.empty) await addDoc(collection(db,'communityAdmins'),{userUid:uid,userEmail:email,communityId,assignedByUid:currentUser().uid,assignedBy:currentUser().email||'',createdAt:serverTimestamp()});
-            $('communityAdminEmail').value='';
-            await loadCommunityAdmins();
-            alert('Administrador de comunidade definido com sucesso.');
+            const snap=await getDocs(collection(db,'communities'));
+            const rows=snap.docs.map(d=>({id:d.id,data:d.data()||{}})).sort((a,b)=>String(a.data.name||'').localeCompare(String(b.data.name||''),'pt-BR'));
+            select.innerHTML='<option value="">Selecione uma comunidade</option>';
+            rows.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=r.data.name||'Comunidade';select.appendChild(o);});
+            if(!rows.length)select.innerHTML='<option value="">Nenhuma comunidade cadastrada</option>';
+        }catch(e){console.error(e);select.innerHTML='<option value="">Erro ao carregar comunidades</option>';const p=select.parentElement;if(p)p.insertAdjacentHTML('beforeend',`<div class="error" style="margin-top:8px">${esc(e.message)}</div>`);}
+    };
+    window.assignCommunityAdmin = async function(){
+        if(!isAdminNow())return alert('Somente o administrador geral pode fazer isso.');
+        const id=$('adminCommunitySelect')?.value,email=($('communityAdminEmail')?.value||'').trim().toLowerCase();
+        if(!id)return alert('Selecione uma comunidade.'); if(!email)return alert('Digite o email do usuário.');
+        try{
+            const cs=await getDoc(doc(db,'communities',id));if(!cs.exists())throw new Error('Comunidade não encontrada.');
+            const c=cs.data()||{}; let uid=''; let p=null;
+            if(typeof window.findProfileByEmail==='function')p=await window.findProfileByEmail(email); uid=p?.uid||p?.id||'';
+            if(uid && !(c.memberUids||[]).includes(uid) && !(c.members||[]).includes(email))return alert('Esse usuário precisa ser membro da comunidade antes de ser nomeado administrador.');
+            const existing=await getDocs(query(collection(db,'communityAdmins'),where('communityId','==',id),where('userUid','==',uid)));
+            if(!existing.empty)return alert('Este usuário já é administrador desta comunidade.');
+            await addDoc(collection(db,'communityAdmins'),{communityId:id,userUid:uid,userEmail:email,assignedByUid:userNow()?.uid||'',assignedBy:userNow()?.email||'',createdAt:serverTimestamp()});
+            const update={}; if(uid)update.communityAdminUids=arrayUnion(uid); update.communityAdmins=arrayUnion(email); await updateDoc(doc(db,'communities',id),update);
+            $('communityAdminEmail').value='';alert('Administrador de comunidade definido com sucesso.');await window.loadCommunityAdmins();
         }catch(e){console.error(e);alert('Erro ao definir administrador: '+e.message);}
     };
-
     window.loadCommunityAdmins = async function(){
-        if(!isAdmin)return;
-        const box=$('communityAdminsList'); if(!box)return;
-        box.innerHTML='<p style="color:#6B7A99">Carregando...</p>';
+        const box=$('communityAdminsList');if(!box||!isAdminNow())return;box.innerHTML='<p style="color:#6B7A99">Carregando...</p>';
         try{
             const snap=await getDocs(collection(db,'communityAdmins'));
             if(snap.empty){box.innerHTML='<p style="color:#6B7A99">Nenhum administrador de comunidade definido.</p>';return;}
-            const rows=[];
-            for(const d of snap.docs){
-                const x=d.data(); let name='Usuário';
-                if(x.userUid){const p=await getUserProfile(x.userUid);name=p?.name||x.userEmail||name;}
-                rows.push(`<div style="padding:10px 0;border-bottom:1px solid #303654"><strong style="color:var(--gold)">${escapeHtml(name)}</strong><div style="font-size:12px;color:#6B7A99">${escapeHtml(x.userEmail||'')}</div></div>`);
-            }
-            box.innerHTML=rows.join('');
-        }catch(e){console.error(e);box.innerHTML=`<div class="error">Erro ao carregar administradores: ${escapeHtml(e.message)}</div>`;}
+            const rows=[];for(const d of snap.docs){const x=d.data()||{};let name=x.userEmail||'Usuário';if(x.userUid&&typeof window.getUserProfile==='function'){const p=await window.getUserProfile(x.userUid);name=p?.name||name;}rows.push(`<div style="padding:10px 0;border-bottom:1px solid #303654"><strong style="color:var(--gold)">${esc(name)}</strong><div style="font-size:12px;color:#6B7A99">${esc(x.userEmail||'')}</div></div>`);}box.innerHTML=rows.join('');
+        }catch(e){console.error(e);box.innerHTML=`<div class="error">Erro ao carregar administradores: ${esc(e.message)}</div>`;}
     };
 
-    /* ---------- Conteúdo / Loja ---------- */
+    /* ---------- CONTEÚDOS ---------- */
     window.showContentForm = function(type){
-        if(!isAdmin)return alert('Somente o administrador geral pode adicionar conteúdo.');
-        const info=contentTypes[type]; if(!info)return alert('Tipo de conteúdo não reconhecido: '+type);
+        if(!isAdminNow())return alert('Somente o administrador geral pode adicionar conteúdo.');
+        const types=S.contentTypes||{};const info=types[type];if(!info)return alert('Tipo de conteúdo não reconhecido.');
         $('dynamicContentForm')?.remove();
-        const form=document.createElement('div'); form.id='dynamicContentForm'; form.className='card'; form.style.margin='15px 0';
-        form.innerHTML=`<h2 class="card-title">＋ Adicionar ${escapeHtml(info.title)}</h2>
-        <div class="form-group"><label>Título</label><input id="newContentTitle" type="text" placeholder="Título"></div>
-        <div class="form-group"><label>Descrição</label><textarea id="newContentDescription" placeholder="Descrição"></textarea></div>
-        <div class="form-group"><label>Imagem / capa</label><input id="newContentImage" type="file" accept="image/*"><div id="newContentImagePreview" style="display:none;margin-top:10px"><img id="newContentImagePreviewImg" style="max-width:180px;max-height:240px;border-radius:8px;object-fit:cover"></div></div>
-        <div class="form-group"><label>URL do conteúdo / compra</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
-        <div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">Gratuito</option><option value="subscription">Assinatura</option></select></div>
-        <div class="form-group"><label>Preço</label><input id="newContentPrice" type="number" min="0" step="0.01" value="0"></div>
-        <div class="form-group"><label>Categoria</label><input id="newContentCategory" type="text" placeholder="Categoria"></div>
-        <div class="form-group"><label>Ano</label><input id="newContentYear" type="number" placeholder="Ano"></div>
-        <div class="form-group"><label>Duração</label><input id="newContentDuration" type="text" placeholder="Ex.: 1h 45min"></div>
-        <div class="form-group"><label>Player</label><select id="newContentPlayer"><option value="external">Externo</option><option value="youtube">YouTube</option><option value="internal">Player interno</option></select></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" id="saveContentButton" class="btn">💾 Salvar ${escapeHtml(info.title)}</button><button type="button" id="cancelContentButton" class="btn btn-secondary">Cancelar</button></div>`;
-
-        let parent,target;
-        if(type==='products'){
-            target=$('productsGrid'); parent=target?.parentNode || $('page-store');
-        }else{
-            target=$(type+'Grid'); parent=target?.parentNode || $('page-'+type);
-            if(!parent) { target=$( {films:'homeFilms',series:'homeSeries',documentaries:'homeDocumentaries',books:'homeBooks',articles:'homeArticles',studies:'homeStudies',videos:'homeVideos'}[type] ); parent=target?.parentNode || $('page-home'); }
-        }
-        if(!parent) return alert('Não foi possível localizar a página do conteúdo.');
-        if(target) parent.insertBefore(form,target); else parent.prepend(form);
-        $('saveContentButton').addEventListener('click',()=>window.saveContent(type));
-        $('cancelContentButton').addEventListener('click',()=>form.remove());
-        $('newContentImage').addEventListener('change',function(){const f=this.files?.[0],pr=$('newContentImagePreview'),im=$('newContentImagePreviewImg');if(!f){pr.style.display='none';return;}if(!f.type.startsWith('image/')){alert('Selecione uma imagem válida.');this.value='';return;}const r=new FileReader();r.onload=e=>{im.src=e.target.result;pr.style.display='block';};r.readAsDataURL(f);});
-        form.scrollIntoView({behavior:'smooth',block:'start'});
+        const form=document.createElement('div');form.id='dynamicContentForm';form.className='card';
+        form.innerHTML=`<h2 class="card-title">＋ Adicionar ${esc(info.title)}</h2><div class="form-group"><label>Título</label><input id="newContentTitle"></div><div class="form-group"><label>Descrição</label><textarea id="newContentDescription"></textarea></div><div class="form-group"><label>Imagem / capa</label><input id="newContentImage" type="file" accept="image/*"></div><div class="form-group"><label>URL do conteúdo / compra</label><input id="newContentUrl" type="url"></div><div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">Gratuito</option><option value="subscription">Assinatura</option></select></div><div class="form-group"><label>Preço</label><input id="newContentPrice" type="number" min="0" step="0.01" value="0"></div><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div><div class="form-group"><label>Ano</label><input id="newContentYear" type="number"></div><div class="form-group"><label>Duração</label><input id="newContentDuration"></div><div class="form-group"><label>Player</label><select id="newContentPlayer"><option value="external">Externo</option><option value="youtube">YouTube</option><option value="internal">Player interno</option></select></div><div><button type="button" id="saveContentButton" class="btn">💾 Salvar ${esc(info.title)}</button> <button type="button" id="cancelContentButton" class="btn btn-secondary">Cancelar</button></div>`;
+        let parent;
+        if(type==='products') parent=$('productsGrid')?.parentNode||$('page-store'); else parent=$(type+'Grid')?.parentNode||$('page-'+type)||$('page-home');
+        if(!parent)return alert('Página do conteúdo não encontrada.');
+        parent.insertBefore(form,parent.firstChild);
+        $('saveContentButton').onclick=()=>window.saveContent(type);$('cancelContentButton').onclick=()=>form.remove();form.scrollIntoView({behavior:'smooth',block:'start'});
     };
-
     window.saveContent = async function(type){
-        if(!isAdmin)return alert('Somente o administrador geral pode adicionar conteúdo.');
-        const info=contentTypes[type]; if(!info)return alert('Tipo de conteúdo não reconhecido.');
-        const val=id=>safeText($(id)?.value);
-        const title=val('newContentTitle'),description=val('newContentDescription'),url=val('newContentUrl'),category=val('newContentCategory'),duration=val('newContentDuration');
-        const access=$('newContentAccess')?.value||'free', price=Number($('newContentPrice')?.value||0), year=Number($('newContentYear')?.value||0), player=$('newContentPlayer')?.value||'external', file=$('newContentImage')?.files?.[0];
-        if(!title)return alert('Digite o título.'); if(!description)return alert('Digite uma descrição.');
+        if(!isAdminNow())return alert('Somente o administrador geral pode adicionar conteúdo.');
+        const info=(S.contentTypes||{})[type];if(!info)return alert('Tipo de conteúdo não reconhecido.');
+        const val=id=>($(`${id}`)?.value||'').trim();const title=val('newContentTitle'),description=val('newContentDescription'),url=val('newContentUrl');
+        if(!title)return alert('Digite o título.');if(!description)return alert('Digite uma descrição.');
         if(['films','series','documentaries'].includes(type)&&!url)return alert('Informe a URL do vídeo.');
-        if(access==='subscription'&&price<=0)return alert('Informe um valor válido para a assinatura.');
-        const btn=$('saveContentButton'); if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+        const btn=$('saveContentButton');if(btn){btn.disabled=true;btn.textContent='Salvando...';}
         try{
-            let image='';
-            if(file){
-                if(!file.type.startsWith('image/'))throw new Error('Selecione uma imagem válida.');
-                const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-                const r=ref(storage,`content-images/${type}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`);
-                try{
-                    const up=await withTimeout(uploadBytes(r,file),15000,'O upload da imagem demorou mais de 15 segundos. Verifique as regras do Firebase Storage.');
-                    image=await withTimeout(getDownloadURL(up.ref),10000,'O Firebase Storage não retornou a URL da imagem.');
-                }catch(storageError){
-                    console.warn('Imagem não enviada; conteúdo será salvo sem capa.',storageError);
-                    const proceed=confirm('A imagem não pôde ser enviada ao Firebase Storage. Deseja salvar o conteúdo mesmo assim, sem a capa?');
-                    if(!proceed) throw storageError;
+            const file=$('newContentImage')?.files?.[0];let image='';
+            if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const r=ref(storage,`content-images/${type}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`);const up=await timeout(uploadBytes(r,file),15000,'O upload da imagem demorou mais de 15 segundos.');image=await timeout(getDownloadURL(up.ref),10000,'Não foi possível obter a URL da imagem.');}
+            const u=userNow();await timeout(addDoc(collection(db,info.collection),{title,description,image,url,access:$('newContentAccess')?.value||'free',price:Number($('newContentPrice')?.value||0),category:val('newContentCategory'),year:Number($('newContentYear')?.value||0),duration:val('newContentDuration'),player:$('newContentPlayer')?.value||'external',type,createdBy:u?.email||'',createdByUid:u?.uid||'',createdAt:serverTimestamp(),active:true}),15000,'O Firestore demorou mais de 15 segundos para salvar.');
+            $('dynamicContentForm')?.remove();if(typeof window.loadContent==='function')await window.loadContent(type);if(typeof window.loadHome==='function')await window.loadHome();alert(info.title+' adicionado com sucesso.');
+        }catch(e){console.error(e);alert('Erro ao adicionar conteúdo: '+e.message);}finally{if(btn){btn.disabled=false;btn.textContent='💾 Salvar '+info.title;}}
+    };
+
+    /* ---------- LOJA ---------- */
+    window.showCreateProduct = function(){ return window.showContentForm('products'); };
+
+    /* ---------- GERENCIAMENTO DE CONTEÚDOS ---------- */
+    window.deleteContent = async function(type,id){
+        if(!isAdminNow()) return alert('Somente o administrador geral pode excluir conteúdos.');
+        const info=(S.contentTypes||{})[type];
+        if(!info) return alert('Tipo de conteúdo não reconhecido.');
+        if(!confirm(`Excluir definitivamente este ${info.title.toLowerCase()}?`)) return;
+        try{
+            await timeout(deleteDoc(doc(db,info.collection,id)),15000,'O Firestore demorou mais de 15 segundos para excluir.');
+            if(typeof window.loadContent==='function') await window.loadContent(type);
+            if(typeof window.loadHome==='function') await window.loadHome();
+            if(typeof window.loadAdminContentManager==='function') await window.loadAdminContentManager();
+            alert('Conteúdo excluído com sucesso.');
+        }catch(e){ console.error(e); alert('Erro ao excluir conteúdo: '+e.message); }
+    };
+
+    window.loadAdminContentManager = async function(){
+        const box=$('adminContentManager');
+        if(!box || !isAdminNow()) return;
+        const types=S.contentTypes||{};
+        box.innerHTML='<p style="color:#6B7A99">Carregando catálogo...</p>';
+        try{
+            let html='';
+            for(const type of Object.keys(types)){
+                const info=types[type];
+                const snap=await getDocs(collection(db,info.collection));
+                const docs=snap.docs.sort((a,b)=>(b.data().createdAt?.toMillis?.()||0)-(a.data().createdAt?.toMillis?.()||0));
+                html+=`<div class="card" style="margin-bottom:14px"><h3 class="card-title">${esc(info.title)} <span style="color:#6B7A99;font-size:12px">(${docs.length})</span></h3>`;
+                if(!docs.length){ html+='<p style="color:#6B7A99">Nenhum item cadastrado.</p>'; }
+                else {
+                    for(const d of docs){
+                        const x=d.data()||{};
+                        html+=`<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #303654"><div style="min-width:0"><strong style="color:var(--gold)">${esc(x.title||'Sem título')}</strong><div style="color:#6B7A99;font-size:12px">${esc([x.category,x.year||'',x.duration||''].filter(Boolean).join(' • '))}</div></div><button type="button" class="btn btn-small btn-danger" onclick="deleteContent('${attr(type)}','${attr(d.id)}')">🗑️ Excluir</button></div>`;
+                    }
                 }
+                html+='</div>';
             }
-            const u=currentUser();
-            await withTimeout(addDoc(collection(db,info.collection),{title,description,image,url,access,price,category,year,duration,player,type,createdBy:u?.email||'',createdByUid:u?.uid||'',createdAt:serverTimestamp(),active:true,featured:false,views:0,rating:0,ratingCount:0}),15000,'O salvamento no Firestore demorou demais. Verifique as regras do Firebase.');
-            $('dynamicContentForm')?.remove();
-            if(typeof window.loadContent==='function')await window.loadContent(type);
-            if(typeof window.loadHome==='function')await window.loadHome();
-            alert(info.title+' adicionado com sucesso.');
-        }catch(e){
-            console.error('saveContent:',e);
-            alert('Erro ao adicionar conteúdo: '+e.message);
-        }finally{
-            if(btn){btn.disabled=false;btn.textContent='💾 Salvar '+info.title;}
-        }
+            box.innerHTML=html||'<p style="color:#6B7A99">Nenhum catálogo disponível.</p>';
+        }catch(e){ console.error(e); box.innerHTML=`<div class="error">Erro ao carregar o catálogo: ${esc(e.message)}</div>`; }
     };
 
-    /* ---------- Navegação ---------- */
-    const originalOpenPage=window.openPage;
-    window.openPage=async function(page,button){
-        if(page==='notifications'){
-            document.querySelectorAll('.page').forEach(el=>{el.classList.toggle('hidden',el.id!=='page-notifications');el.style.display=el.id==='page-notifications'?'':'none';});
-            document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-            if(button)button.classList.add('active');
-            const bar=$('communitiesBar');if(bar)bar.style.display='none';
-            await window.loadNotifications(); return;
-        }
-        if(page==='admin'){
-            if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
-            document.querySelectorAll('.page').forEach(el=>{el.classList.toggle('hidden',el.id!=='page-admin');el.style.display=el.id==='page-admin'?'':'none';});
-            document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active')); if(button)button.classList.add('active');
-            const bar=$('communitiesBar');if(bar)bar.style.display='none';
-            await window.loadAdminCommunities(); await window.loadCommunityAdmins(); await window.loadAdminContentManager?.(); return;
-        }
-        return originalOpenPage(page,button);
+    /* ---------- NAVEGAÇÃO ÚNICA ---------- */
+    window.openPage = async function(page,button){
+        const target=$('page-'+page);if(!target)return alert('Página não encontrada: '+page);
+        showOnly(page);
+        try{
+            if(page==='home'&&typeof window.loadHome==='function')await window.loadHome();
+            else if(page==='communities'&&typeof window.loadCommunities==='function')await window.loadCommunities();
+            else if(page==='profile'&&typeof window.loadProfilePage==='function')await window.loadProfilePage();
+            else if(page==='notifications')await window.loadNotifications();
+            else if(page==='admin'){
+                if(!isAdminNow())return alert('Acesso restrito ao administrador geral.');
+                await window.loadAdminCommunities();await window.loadCommunityAdmins();if(typeof window.loadAdminContentManager==='function')await window.loadAdminContentManager();
+            } else if(page==='store'&&typeof window.loadContent==='function')await window.loadContent('products');
+            else if(S.contentTypes?.[page]&&typeof window.loadContent==='function')await window.loadContent(page);
+        }catch(e){console.error('openPage:',e);target.insertAdjacentHTML('beforeend',`<div class="error">Erro ao carregar esta página: ${esc(e.message)}</div>`);}
+    };
+    window.navigateMain=window.openPage;
+    window.openPageByName=page=>window.openPage(page,null);
+
+    /* ---------- COMUNIDADES ---------- */
+    window.openCommunity=async function(id){
+        const u=userNow();if(!u)return alert('Você precisa estar conectado.');
+        try{
+            const snap=await getDoc(doc(db,'communities',id));if(!snap.exists())return alert('Comunidade não encontrada.');
+            const c=snap.data()||{};const member=(c.memberUids||[]).includes(u.uid)||(c.members||[]).includes(u.email);
+            if(!member)return alert('Você ainda não é membro desta comunidade.');
+            window.currentCommunityId=id;window.currentCommunityData=c;showOnly('communities');
+            const list=$('communitiesList'); if(list) list.style.display='none';
+            $('createCommunityBox')?.classList.add('hidden');
+            const area=$('communityArea'); if(!area) throw new Error('Área da comunidade não encontrada.');
+            area.classList.remove('hidden'); area.style.display='block'; area.style.visibility='visible';
+            const title=$('communityAreaTitle'); if(title) title.textContent='🏘️ '+(c.name||'Comunidade');
+            const desc=$('communityAreaDescription'); if(desc) desc.textContent=c.description||'';
+            let admin=false; if(typeof window.isCommunityAdmin==='function') admin=await window.isCommunityAdmin(id);
+            window.currentCommunityIsAdmin=admin;
+            const tools=$('communityStudyAdminTools'); if(tools) tools.classList.toggle('hidden',!admin);
+            if(typeof loadStudyVideos==='function') await loadStudyVideos(id);
+            if(typeof window.loadCommunityMessages==='function') await window.loadCommunityMessages(id);
+            area.scrollIntoView({behavior:'smooth',block:'start'});
+        }catch(e){console.error(e);alert('Erro ao abrir comunidade: '+e.message);}
     };
 
-    /* ---------- Inicialização dos controles administrativos ---------- */
-    window.addEventListener('load',async()=>{
-        setTimeout(async()=>{
-            if(isAdmin){
-                Object.values(contentTypes).forEach(info=>$(info.adminId)?.classList.remove('hidden'));
-                $('adminMenu')?.classList.remove('hidden');
-                await window.loadAdminCommunities();
-            }
-            const profileBtn=[...document.querySelectorAll('#page-profile button')].find(b=>safeText(b.textContent).toLowerCase().includes('salvar perfil'));
-            if(profileBtn)profileBtn.onclick=window.saveProfile;
-        },300);
-    });
+    /* ---------- INICIALIZAÇÃO ---------- */
+    window.addEventListener('load',()=>setTimeout(()=>{
+        if(isAdminNow()){$('adminMenu')?.classList.remove('hidden');window.loadAdminCommunities();}
+        const b=[...document.querySelectorAll('#page-profile button')].find(x=>/salvar perfil/i.test(x.textContent||''));if(b)b.onclick=window.saveProfile;
+        const addProd=$('addProductHomeBtn');if(addProd)addProd.onclick=()=>window.showContentForm('products');
+    },300));
 })();
 </script>
 
