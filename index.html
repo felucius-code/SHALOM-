@@ -4866,6 +4866,7 @@ async function(
     }
 
 };
+    
 /* =====================================================
    RECUSAR
 ===================================================== */
@@ -5843,9 +5844,10 @@ window.openVideo = function(url) {
     );
 
 };
-/* =====================================================
-   CARREGAR MENSAGENS DA COMUNIDADE
-===================================================== */
+    
+ /* =====================================================
+    CARREGAR MENSAGENS DA COMUNIDADE
+ ===================================================== */
 
 window.loadCommunityMessages = async function(id) {
 
@@ -5918,11 +5920,13 @@ window.loadCommunityMessages = async function(id) {
                         ? a.createdAt.toMillis()
                         : 0;
 
+
                 const timeB =
                     b.createdAt &&
                     typeof b.createdAt.toMillis === "function"
                         ? b.createdAt.toMillis()
                         : 0;
+
 
                 return timeA - timeB;
 
@@ -5933,53 +5937,106 @@ window.loadCommunityMessages = async function(id) {
         messagesBox.innerHTML = "";
 
 
-        messages.forEach(
-            message => {
+        /*
+         * CARREGAR CADA MENSAGEM
+         */
 
-                const author =
-                    escapeHtml(
-                        message.author ||
-                        "Usuário"
+        for (
+            const message
+            of messages
+        ) {
+
+            let authorName =
+                message.author ||
+                "Usuário";
+
+
+            /*
+             * Se a mensagem possui o UID,
+             * procura o perfil do usuário.
+             */
+
+            if (message.authorUid) {
+
+                try {
+
+                    const userSnap =
+                        await getDoc(
+                            doc(
+                                db,
+                                "users",
+                                message.authorUid
+                            )
+                        );
+
+
+                    if (userSnap.exists()) {
+
+                        const userData =
+                            userSnap.data();
+
+
+                        authorName =
+                            userData.name ||
+                            message.author ||
+                            "Usuário";
+
+                    }
+
+                } catch (userError) {
+
+                    console.warn(
+                        "Não foi possível carregar o perfil do autor:",
+                        userError
                     );
 
-
-                const text =
-                    escapeHtml(
-                        message.text ||
-                        ""
-                    );
-
-
-                messagesBox.innerHTML += `
-
-                    <div
-                        style="
-                            margin-bottom:12px;
-                            padding:10px;
-                            background:#0A0E27;
-                            border-radius:8px;
-                        "
-                    >
-
-                        <strong>
-                            ${author}
-                        </strong>
-
-                        <p
-                            style="
-                                margin:5px 0 0 0;
-                                white-space:pre-wrap;
-                            "
-                        >
-                            ${text}
-                        </p>
-
-                    </div>
-
-                `;
+                }
 
             }
-        );
+
+
+            const author =
+                escapeHtml(
+                    authorName
+                );
+
+
+            const text =
+                escapeHtml(
+                    message.text ||
+                    ""
+                );
+
+
+            messagesBox.innerHTML += `
+
+                <div
+                    style="
+                        margin-bottom:12px;
+                        padding:10px;
+                        background:#0A0E27;
+                        border-radius:8px;
+                    "
+                >
+
+                    <strong>
+                        ${author}
+                    </strong>
+
+                    <p
+                        style="
+                            margin:5px 0 0 0;
+                            white-space:pre-wrap;
+                        "
+                    >
+                        ${text}
+                    </p>
+
+                </div>
+
+            `;
+
+        }
 
 
         messagesBox.scrollTop =
@@ -5988,15 +6045,16 @@ window.loadCommunityMessages = async function(id) {
 
     } catch (error) {
 
-    console.error(
-        "Erro ao carregar mensagens:",
-        error
-    );
+        console.error(
+            "Erro ao carregar mensagens:",
+            error
+        );
 
-    messagesBox.innerHTML =
-        "<p style='color:#ff6b6b;'>Erro ao carregar mensagens.</p>";
 
-}
+        messagesBox.innerHTML =
+            "<p style='color:#ff6b6b;'>Erro ao carregar mensagens.</p>";
+
+    }
 
 };
     
