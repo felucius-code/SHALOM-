@@ -10287,5 +10287,338 @@ onAuthStateChanged(auth, async user => {
 })();
 </script>
 
+
+<script>
+/* =========================================================
+   SHALOM — PATCH FINAL V4
+   Correções desta revisão:
+   1. Perfil: salvar nome/interesses/foto com feedback real.
+   2. Notificações: permanecem na página de notificações.
+   3. Solicitações: aprovação/recusa sem redirecionar para Comunidades.
+   4. Conteúdo: formulário é inserido na página atualmente aberta.
+   5. Storage: timeout para não ficar preso indefinidamente em "Salvando...".
+   6. Loja: Adicionar produto abre o formulário dentro da Loja.
+   7. Administração: funções são expostas em window e comunidades carregam no select.
+   8. Administração: gerenciamento de conteúdo permanece funcional.
+========================================================= */
+(function(){
+    const $ = id => document.getElementById(id);
+    const currentUser = () => auth.currentUser;
+
+    function safeText(v){ return String(v ?? '').trim(); }
+
+    async function withTimeout(promise, ms, message){
+        let timer;
+        const timeout = new Promise((_, reject)=>{
+            timer=setTimeout(()=>reject(new Error(message)), ms);
+        });
+        try { return await Promise.race([promise, timeout]); }
+        finally { clearTimeout(timer); }
+    }
+
+    /* ---------- Perfil ---------- */
+    window.saveProfile = async function(){
+        const user=currentUser();
+        if(!user) return alert('Você precisa estar conectado.');
+        const btn=[...document.querySelectorAll('#page-profile button')]
+            .find(b=>safeText(b.textContent).toLowerCase().includes('salvar perfil'));
+        const name=safeText($('profileName')?.value);
+        if(!name) return alert('Informe seu nome.');
+        const interests=[...document.querySelectorAll('#page-profile .interest-option input:checked')].map(i=>i.value);
+        const file=$('profilePhoto')?.files?.[0];
+        const old=btn?.textContent;
+        if(btn){btn.disabled=true;btn.textContent='Salvando perfil...';}
+        try{
+            let photoURL=shalomProfile?.photoURL||user.photoURL||'';
+            if(file){
+                if(!file.type.startsWith('image/')) throw new Error('Selecione uma imagem válida.');
+                const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+                const r=ref(storage,`profile-images/${user.uid}/${Date.now()}.${ext}`);
+                const up=await withTimeout(uploadBytes(r,file),15000,'O upload da foto demorou demais. Verifique o Firebase Storage.');
+                photoURL=await withTimeout(getDownloadURL(up.ref),10000,'Não foi possível obter a URL da foto.');
+            }
+            await withTimeout(setDoc(doc(db,'users',user.uid),{
+                uid:user.uid,name,email:user.email||'',photoURL,interests,updatedAt:serverTimestamp()
+            },{merge:true}),15000,'O salvamento do perfil demorou demais. Verifique o Firestore.');
+            shalomProfile=await getUserProfile(user.uid);
+            if(typeof applyPublicIdentity==='function') applyPublicIdentity(shalomProfile);
+            if($('profilePhoto')) $('profilePhoto').value='';
+            alert('Perfil atualizado com sucesso.');
+        }catch(e){
+            console.error('saveProfile:',e);
+            alert('Erro ao salvar perfil: '+e.message);
+        }finally{
+            if(btn){btn.disabled=false;btn.textContent=old||'Salvar perfil';}
+        }
+    };
+
+    /* ---------- Administração: funções precisam ser globais ---------- */
+    window.loadAdminCommunities = async function(){
+        const select=$('adminCommunitySelect');
+        if(!select) return;
+        select.innerHTML='<option value="">Carregando comunidades...</option>';
+        try{
+            const snap=await getDocs(collection(db,'communities'));
+            const rows=snap.docs
+                .map(d=>({id:d.id,data:d.data()}))
+                .sort((a,b)=>String(a.data.name||'').localeCompare(String(b.data.name||''),'pt-BR'));
+            select.innerHTML='<option value="">Selecione uma comunidade</option>';
+            rows.forEach(({id,data})=>{
+                const opt=document.createElement('option');
+                opt.value=id;
+                opt.textContent=`${data.name||'Comunidade'}${data.status==='pending'?' (pendente)':''}`;
+                select.appendChild(opt);
+            });
+            if(!rows.length) select.innerHTML='<option value="">Nenhuma comunidade cadastrada</option>';
+        }catch(e){
+            console.error('loadAdminCommunities:',e);
+            select.innerHTML='<option value="">Erro ao carregar comunidades</option>';
+            const msg=$('adminCommunitySelect')?.parentElement;
+            if(msg) msg.insertAdjacentHTML('beforeend',`<p class="error" style="margin-top:8px">${typeof escapeHtml==='function'?escapeHtml(e.message):e.message}</p>`);
+        }
+    };
+
+    /* ---------- Notificações ---------- */
+    window.loadNotifications = async function(){
+        const user=currentUser(); if(!user) return;
+        const page=$('page-notifications');
+        const badge=$('notificationBadge');
+        if(!page) return;
+        const card=page.querySelector('.card');
+        if(card) card.innerHTML='<p style="color:#6B7A99">Carregando notificações...</p>';
+        try{
+            const snap=await getDocs(collection(db,'communities'));
+            const notifications=[];
+            snap.forEach(d=>{
+                const data=d.data();
+                const admin=isAdmin || data.createdByUid===user.uid || (data.communityAdminUids||[]).includes(user.uid) || data.createdBy===user.email || (data.communityAdmins||[]).includes(user.email);
+                if(!admin) return;
+                const uids=data.pendingMemberUids||[];
+                const emails=data.pendingMembers||[];
+                const count=Math.max(uids.length,emails.length);
+                if(count) notifications.push({id:d.id,name:data.name||'Comunidade',count});
+            });
+            const total=notifications.reduce((n,x)=>n+x.count,0);
+            if(badge){badge.textContent=String(total);badge.classList.toggle('hidden',total===0);}
+            if(card){
+                card.innerHTML=notifications.length
+                    ? `<h2 class="card-title">Solicitações de entrada</h2>`+notifications.map(n=>`
+                        <div class="notification-item" style="padding:14px 0;border-bottom:1px solid #303654">
+                            <strong style="color:var(--gold)">${escapeHtml(n.name)}</strong>
+                            <p style="margin:6px 0;color:#B8BDD0">${n.count} solicitação(ões) aguardando análise.</p>
+                            <button type="button" class="btn btn-small" onclick="viewRequests('${escapeAttribute(n.id)}')">🔔 Ver solicitações</button>
+                        </div>`).join('')
+                    : '<p style="color:#6B7A99">Nenhuma notificação no momento.</p>';
+            }
+        }catch(e){
+            console.error('loadNotifications:',e);
+            if(card) card.innerHTML=`<div class="error">Erro ao carregar notificações: ${escapeHtml(e.message)}</div>`;
+        }
+    };
+
+    /* ---------- Solicitações: renderizar na página de notificações ---------- */
+    window.viewRequests = async function(id){
+        const user=currentUser(); if(!user) return alert('Você precisa estar conectado.');
+        try{
+            const snap=await getDoc(doc(db,'communities',id));
+            if(!snap.exists()) return alert('Comunidade não encontrada.');
+            const data=snap.data();
+            const admin=isAdmin || data.createdByUid===user.uid || (data.communityAdminUids||[]).includes(user.uid) || data.createdBy===user.email || (data.communityAdmins||[]).includes(user.email);
+            if(!admin) return alert('Você não administra esta comunidade.');
+            const entries=[]; const seen=new Set();
+            for(const uid of (data.pendingMemberUids||[])){
+                const p=await getUserProfile(uid);
+                entries.push({uid,email:p?.email||'',name:p?.name||p?.email||uid}); seen.add(uid);
+            }
+            for(const email of (data.pendingMembers||[])){
+                const p=typeof findProfileByEmail==='function'?await findProfileByEmail(email):null;
+                const uid=p?.uid||p?.id||'';
+                if(uid && seen.has(uid)) continue;
+                entries.push({uid,email,name:p?.name||email});
+            }
+            window.openPage('notifications',null);
+            const page=$('page-notifications');
+            const card=page?.querySelector('.card');
+            if(!card) return;
+            if(!entries.length){card.innerHTML='<p style="color:#6B7A99">Não há solicitações pendentes.</p>';return;}
+            card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="card-title">🔔 ${escapeHtml(data.name||'Comunidade')}</h2><button type="button" class="btn btn-secondary btn-small" onclick="loadNotifications()">← Voltar às notificações</button></div>`;
+            entries.forEach(e=>{
+                card.insertAdjacentHTML('beforeend',`<div style="padding:14px 0;border-bottom:1px solid #303654"><strong style="color:var(--gold)">${escapeHtml(e.name)}</strong><div style="color:#6B7A99;font-size:12px;margin:4px 0 8px">${escapeHtml(e.email||'')}</div><button type="button" class="btn btn-small" onclick="approveMember('${escapeAttribute(id)}','${encodeURIComponent(e.email||'')}','${encodeURIComponent(e.uid||'')}')">Aprovar</button><button type="button" class="btn btn-small btn-danger" onclick="rejectMember('${escapeAttribute(id)}','${encodeURIComponent(e.email||'')}','${encodeURIComponent(e.uid||'')}')">Recusar</button></div>`);
+            });
+        }catch(e){console.error('viewRequests:',e);alert('Erro ao carregar solicitações: '+e.message);}
+    };
+
+    /* ---------- Aprovação/recusa: atualizar notificações sem trocar de página ---------- */
+    window.approveMember = async function(communityId, encodedEmail='', encodedUid=''){
+        const email=encodedEmail?decodeURIComponent(encodedEmail):'';
+        const uid=encodedUid?decodeURIComponent(encodedUid):'';
+        try{
+            const updates={}; if(uid)updates.memberUids=arrayUnion(uid); if(email)updates.members=arrayUnion(email); if(uid)updates.pendingMemberUids=arrayRemove(uid); if(email)updates.pendingMembers=arrayRemove(email);
+            await updateDoc(doc(db,'communities',communityId),updates);
+            await loadNotifications();
+            alert('Membro aprovado.');
+        }catch(e){console.error(e);alert('Erro ao aprovar: '+e.message);}
+    };
+    window.rejectMember = async function(communityId, encodedEmail='', encodedUid=''){
+        const email=encodedEmail?decodeURIComponent(encodedEmail):'';
+        const uid=encodedUid?decodeURIComponent(encodedUid):'';
+        try{
+            const updates={}; if(uid)updates.pendingMemberUids=arrayRemove(uid); if(email)updates.pendingMembers=arrayRemove(email);
+            await updateDoc(doc(db,'communities',communityId),updates);
+            await loadNotifications();
+            alert('Solicitação recusada.');
+        }catch(e){console.error(e);alert('Erro ao recusar: '+e.message);}
+    };
+
+    /* ---------- Admin de comunidade ---------- */
+    window.assignCommunityAdmin = async function(){
+        if(!isAdmin) return alert('Somente o administrador geral pode fazer isso.');
+        const communityId=$( 'adminCommunitySelect')?.value;
+        const email=safeText($('communityAdminEmail')?.value).toLowerCase();
+        if(!communityId)return alert('Selecione uma comunidade.');
+        if(!email)return alert('Digite o email do usuário.');
+        try{
+            const profile=await findProfileByEmail(email);
+            if(!profile)return alert('Usuário não encontrado. Ele precisa possuir um perfil no SHALOM.');
+            const uid=profile.uid||profile.id;
+            const cs=await getDoc(doc(db,'communities',communityId));
+            if(!cs.exists())return alert('Comunidade não encontrada.');
+            const d=cs.data();
+            const member=(d.memberUids||[]).includes(uid)||(d.members||[]).includes(email);
+            if(!member)return alert('Esse usuário precisa ser membro da comunidade antes de ser nomeado administrador.');
+            await updateDoc(doc(db,'communities',communityId),{communityAdminUids:arrayUnion(uid),communityAdmins:arrayUnion(email)});
+            const q=await getDocs(query(collection(db,'communityAdmins'),where('communityId','==',communityId),where('userUid','==',uid)));
+            if(q.empty) await addDoc(collection(db,'communityAdmins'),{userUid:uid,userEmail:email,communityId,assignedByUid:currentUser().uid,assignedBy:currentUser().email||'',createdAt:serverTimestamp()});
+            $('communityAdminEmail').value='';
+            await loadCommunityAdmins();
+            alert('Administrador de comunidade definido com sucesso.');
+        }catch(e){console.error(e);alert('Erro ao definir administrador: '+e.message);}
+    };
+
+    window.loadCommunityAdmins = async function(){
+        if(!isAdmin)return;
+        const box=$('communityAdminsList'); if(!box)return;
+        box.innerHTML='<p style="color:#6B7A99">Carregando...</p>';
+        try{
+            const snap=await getDocs(collection(db,'communityAdmins'));
+            if(snap.empty){box.innerHTML='<p style="color:#6B7A99">Nenhum administrador de comunidade definido.</p>';return;}
+            const rows=[];
+            for(const d of snap.docs){
+                const x=d.data(); let name='Usuário';
+                if(x.userUid){const p=await getUserProfile(x.userUid);name=p?.name||x.userEmail||name;}
+                rows.push(`<div style="padding:10px 0;border-bottom:1px solid #303654"><strong style="color:var(--gold)">${escapeHtml(name)}</strong><div style="font-size:12px;color:#6B7A99">${escapeHtml(x.userEmail||'')}</div></div>`);
+            }
+            box.innerHTML=rows.join('');
+        }catch(e){console.error(e);box.innerHTML=`<div class="error">Erro ao carregar administradores: ${escapeHtml(e.message)}</div>`;}
+    };
+
+    /* ---------- Conteúdo / Loja ---------- */
+    window.showContentForm = function(type){
+        if(!isAdmin)return alert('Somente o administrador geral pode adicionar conteúdo.');
+        const info=contentTypes[type]; if(!info)return alert('Tipo de conteúdo não reconhecido: '+type);
+        $('dynamicContentForm')?.remove();
+        const form=document.createElement('div'); form.id='dynamicContentForm'; form.className='card'; form.style.margin='15px 0';
+        form.innerHTML=`<h2 class="card-title">＋ Adicionar ${escapeHtml(info.title)}</h2>
+        <div class="form-group"><label>Título</label><input id="newContentTitle" type="text" placeholder="Título"></div>
+        <div class="form-group"><label>Descrição</label><textarea id="newContentDescription" placeholder="Descrição"></textarea></div>
+        <div class="form-group"><label>Imagem / capa</label><input id="newContentImage" type="file" accept="image/*"><div id="newContentImagePreview" style="display:none;margin-top:10px"><img id="newContentImagePreviewImg" style="max-width:180px;max-height:240px;border-radius:8px;object-fit:cover"></div></div>
+        <div class="form-group"><label>URL do conteúdo / compra</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
+        <div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">Gratuito</option><option value="subscription">Assinatura</option></select></div>
+        <div class="form-group"><label>Preço</label><input id="newContentPrice" type="number" min="0" step="0.01" value="0"></div>
+        <div class="form-group"><label>Categoria</label><input id="newContentCategory" type="text" placeholder="Categoria"></div>
+        <div class="form-group"><label>Ano</label><input id="newContentYear" type="number" placeholder="Ano"></div>
+        <div class="form-group"><label>Duração</label><input id="newContentDuration" type="text" placeholder="Ex.: 1h 45min"></div>
+        <div class="form-group"><label>Player</label><select id="newContentPlayer"><option value="external">Externo</option><option value="youtube">YouTube</option><option value="internal">Player interno</option></select></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" id="saveContentButton" class="btn">💾 Salvar ${escapeHtml(info.title)}</button><button type="button" id="cancelContentButton" class="btn btn-secondary">Cancelar</button></div>`;
+
+        let parent,target;
+        if(type==='products'){
+            target=$('productsGrid'); parent=target?.parentNode || $('page-store');
+        }else{
+            target=$(type+'Grid'); parent=target?.parentNode || $('page-'+type);
+            if(!parent) { target=$( {films:'homeFilms',series:'homeSeries',documentaries:'homeDocumentaries',books:'homeBooks',articles:'homeArticles',studies:'homeStudies',videos:'homeVideos'}[type] ); parent=target?.parentNode || $('page-home'); }
+        }
+        if(!parent) return alert('Não foi possível localizar a página do conteúdo.');
+        if(target) parent.insertBefore(form,target); else parent.prepend(form);
+        $('saveContentButton').addEventListener('click',()=>window.saveContent(type));
+        $('cancelContentButton').addEventListener('click',()=>form.remove());
+        $('newContentImage').addEventListener('change',function(){const f=this.files?.[0],pr=$('newContentImagePreview'),im=$('newContentImagePreviewImg');if(!f){pr.style.display='none';return;}if(!f.type.startsWith('image/')){alert('Selecione uma imagem válida.');this.value='';return;}const r=new FileReader();r.onload=e=>{im.src=e.target.result;pr.style.display='block';};r.readAsDataURL(f);});
+        form.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+
+    window.saveContent = async function(type){
+        if(!isAdmin)return alert('Somente o administrador geral pode adicionar conteúdo.');
+        const info=contentTypes[type]; if(!info)return alert('Tipo de conteúdo não reconhecido.');
+        const val=id=>safeText($(id)?.value);
+        const title=val('newContentTitle'),description=val('newContentDescription'),url=val('newContentUrl'),category=val('newContentCategory'),duration=val('newContentDuration');
+        const access=$('newContentAccess')?.value||'free', price=Number($('newContentPrice')?.value||0), year=Number($('newContentYear')?.value||0), player=$('newContentPlayer')?.value||'external', file=$('newContentImage')?.files?.[0];
+        if(!title)return alert('Digite o título.'); if(!description)return alert('Digite uma descrição.');
+        if(['films','series','documentaries'].includes(type)&&!url)return alert('Informe a URL do vídeo.');
+        if(access==='subscription'&&price<=0)return alert('Informe um valor válido para a assinatura.');
+        const btn=$('saveContentButton'); if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+        try{
+            let image='';
+            if(file){
+                if(!file.type.startsWith('image/'))throw new Error('Selecione uma imagem válida.');
+                const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+                const r=ref(storage,`content-images/${type}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`);
+                try{
+                    const up=await withTimeout(uploadBytes(r,file),15000,'O upload da imagem demorou mais de 15 segundos. Verifique as regras do Firebase Storage.');
+                    image=await withTimeout(getDownloadURL(up.ref),10000,'O Firebase Storage não retornou a URL da imagem.');
+                }catch(storageError){
+                    console.warn('Imagem não enviada; conteúdo será salvo sem capa.',storageError);
+                    const proceed=confirm('A imagem não pôde ser enviada ao Firebase Storage. Deseja salvar o conteúdo mesmo assim, sem a capa?');
+                    if(!proceed) throw storageError;
+                }
+            }
+            const u=currentUser();
+            await withTimeout(addDoc(collection(db,info.collection),{title,description,image,url,access,price,category,year,duration,player,type,createdBy:u?.email||'',createdByUid:u?.uid||'',createdAt:serverTimestamp(),active:true,featured:false,views:0,rating:0,ratingCount:0}),15000,'O salvamento no Firestore demorou demais. Verifique as regras do Firebase.');
+            $('dynamicContentForm')?.remove();
+            if(typeof window.loadContent==='function')await window.loadContent(type);
+            if(typeof window.loadHome==='function')await window.loadHome();
+            alert(info.title+' adicionado com sucesso.');
+        }catch(e){
+            console.error('saveContent:',e);
+            alert('Erro ao adicionar conteúdo: '+e.message);
+        }finally{
+            if(btn){btn.disabled=false;btn.textContent='💾 Salvar '+info.title;}
+        }
+    };
+
+    /* ---------- Navegação ---------- */
+    const originalOpenPage=window.openPage;
+    window.openPage=async function(page,button){
+        if(page==='notifications'){
+            document.querySelectorAll('.page').forEach(el=>{el.classList.toggle('hidden',el.id!=='page-notifications');el.style.display=el.id==='page-notifications'?'':'none';});
+            document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+            if(button)button.classList.add('active');
+            const bar=$('communitiesBar');if(bar)bar.style.display='none';
+            await window.loadNotifications(); return;
+        }
+        if(page==='admin'){
+            if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
+            document.querySelectorAll('.page').forEach(el=>{el.classList.toggle('hidden',el.id!=='page-admin');el.style.display=el.id==='page-admin'?'':'none';});
+            document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active')); if(button)button.classList.add('active');
+            const bar=$('communitiesBar');if(bar)bar.style.display='none';
+            await window.loadAdminCommunities(); await window.loadCommunityAdmins(); await window.loadAdminContentManager?.(); return;
+        }
+        return originalOpenPage(page,button);
+    };
+
+    /* ---------- Inicialização dos controles administrativos ---------- */
+    window.addEventListener('load',async()=>{
+        setTimeout(async()=>{
+            if(isAdmin){
+                Object.values(contentTypes).forEach(info=>$(info.adminId)?.classList.remove('hidden'));
+                $('adminMenu')?.classList.remove('hidden');
+                await window.loadAdminCommunities();
+            }
+            const profileBtn=[...document.querySelectorAll('#page-profile button')].find(b=>safeText(b.textContent).toLowerCase().includes('salvar perfil'));
+            if(profileBtn)profileBtn.onclick=window.saveProfile;
+        },300);
+    });
+})();
+</script>
+
 </body>
     </html>
