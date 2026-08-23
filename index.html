@@ -3069,31 +3069,14 @@ const firebaseConfig = {
 };
 
 
-/* =====================================================
-   INICIALIZAÇÃO FIREBASE
-===================================================== */
-
 const app =
-    initializeApp(
-        firebaseConfig
-    );
-
+    initializeApp(firebaseConfig);
 
 const auth =
     getAuth(app);
 
-
 const db =
     getFirestore(app);
-
-
-/* =====================================================
-   FIREBASE STORAGE
-===================================================== */
-
-const storage =
-    getStorage(app);
-
 /* =====================================================
    PERMISSÕES
 ===================================================== */
