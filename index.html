@@ -2352,12 +2352,34 @@ select option {
 
             <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
                 <button
-                    id="deleteCommunityBtn"
-                    class="btn btn-danger hidden"
+                    id="communityToolsBtn"
+                    class="btn btn-secondary hidden"
                     type="button"
-                    onclick="deleteCurrentCommunity()">
-                    🗑️ Deletar comunidade
+                    onclick="toggleCommunityTools()">
+                    ⚙️ Ferramentas da comunidade
                 </button>
+            </div>
+
+            <div id="communityToolsPanel" class="card hidden" style="margin-top:14px;background:rgba(10,14,30,.55);">
+                <h3 class="card-title">⚙️ Ferramentas da comunidade</h3>
+                <div class="form-group">
+                    <label>Nome da comunidade</label>
+                    <input id="editCommunityName" type="text">
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="editCommunityDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Imagem da comunidade</label>
+                    <input id="editCommunityImage" type="file" accept="image/*">
+                    <small style="display:block;color:#6B7A99;margin-top:5px;">A imagem será usada no carrossel de comunidades.</small>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn" type="button" onclick="saveCommunitySettings()">💾 Salvar alterações</button>
+                    <button id="deleteCommunityBtn" class="btn btn-danger" type="button" onclick="deleteCurrentCommunity()">🗑️ Deletar comunidade</button>
+                    <button class="btn btn-secondary" type="button" onclick="toggleCommunityTools(false)">Fechar</button>
+                </div>
             </div>
 
         </div>
@@ -3215,12 +3237,37 @@ function youtubeUrl(url){
  }catch{}
  return url;
 }
+function youtubeVideoId(url){
+ try{
+  const u=new URL(url);
+  if(u.hostname==='youtu.be') return u.pathname.split('/').filter(Boolean)[0]||'';
+  if(u.hostname.endsWith('youtube.com')){
+   if(u.pathname==='/watch') return u.searchParams.get('v')||'';
+   if(u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2]||'';
+   if(u.pathname.startsWith('/embed/')) return u.pathname.split('/')[2]||'';
+  }
+ }catch{}
+ return '';
+}
+function openVideoPlayer(url,title=''){
+ const id=youtubeVideoId(url);
+ if(!id)return alert('Não foi possível identificar o vídeo do YouTube.');
+ const modal=$('videoPlayerModal'),frame=$('youtubePlayerFrame');
+ if(!modal||!frame)return;
+ frame.title=title||'Player de vídeo';
+ frame.src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&modestbranding=1`;
+ modal.classList.remove('hidden');
+ modal.style.display='flex';
+ document.body.style.overflow='hidden';
+}
+window.openVideoPlayer=openVideoPlayer;
+window.closeVideoPlayer=function(){const modal=$('videoPlayerModal'),frame=$('youtubePlayerFrame');if(frame)frame.src='';if(modal){modal.classList.add('hidden');modal.style.display='none'}document.body.style.overflow='';};
 function renderContentCard(type,id,d){
  const info=contentTypes[type];
  const cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;
- const link=d.url?youtubeUrl(d.url):'';
- const action=link?`<a class="btn btn-small" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${type==='videos'?'▶ Assistir':'Abrir'}</a>`:'';
- return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`
+ const isVideo=type==='videos';
+ const action=d.url?(isVideo?`<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">▶ Assistir</button>`:`<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Abrir</a>`):'';
+ return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`;
 }
 async function fetchContent(type){const snap=await getDocs(collection(db,contentTypes[type].collection));return snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(b.createdAt)-ts(a.createdAt))}
 window.loadContent=async function(type){const info=contentTypes[type],grid=$(info.grid);if(!grid)return;const adminBox=$(info.admin);if(adminBox)adminBox.classList.toggle('hidden',!isAdmin);grid.innerHTML='<p style="color:#6B7A99">Carregando...</p>';try{const items=await fetchContent(type);grid.innerHTML=items.length?items.map(x=>renderContentCard(type,x.id,x)).join(''):'<p style="color:#6B7A99">Nenhum conteúdo cadastrado.</p>';}catch(e){console.error(e);grid.innerHTML=`<div class="error">Erro ao carregar ${esc(info.title)}: ${esc(e.message)}</div>`}};
@@ -3237,7 +3284,26 @@ window.loadCommunities=loadCommunities;
 window.showCreateCommunity=()=>{$('createCommunityBox')?.classList.toggle('hidden')};
 window.addCommunity=async function(){if(!user())return;const name=$('communityName')?.value.trim(),description=$('communityDescription')?.value.trim();if(!name)return alert('Informe o nome.');try{await addDoc(collection(db,'communities'),{name,description,createdByUid:user().uid,createdBy:publicName(profileCache),memberUids:[user().uid],members:[user().email],communityAdminUids:[user().uid],communityAdmins:[user().email],pendingMemberUids:[],pendingMembers:[],createdAt:serverTimestamp()});$('communityName').value='';$('communityDescription').value='';$('createCommunityBox')?.classList.add('hidden');await loadCommunities();await loadCommunitiesBar()}catch(e){alert('Erro ao criar comunidade: '+e.message)}};
 
-window.openCommunity=async function(id){const snap=await getDoc(doc(db,'communities',id));if(!snap.exists())return alert('Comunidade não encontrada.');const c={id,...snap.data()},u=user();const member=isAdmin||c.createdByUid===u?.uid||(c.memberUids||[]).includes(u?.uid)||(c.members||[]).includes(u?.email);if(!member)return alert('Você não é membro desta comunidade.');currentCommunityId=id;currentCommunityIsAdmin=await communityIsAdmin(id,c);setPage('communities',document.querySelector('.nav-item[onclick*="communities"]'));$('communitiesList').classList.add('hidden');$('createCommunityBox')?.classList.add('hidden');$('communityArea').classList.remove('hidden');$('communityAreaTitle').textContent=c.name;$('communityAreaDescription').textContent=c.description||'';$('communityAdminButton')?.classList.add('hidden');$('communityStudyAdminTools')?.classList.toggle('hidden',!currentCommunityIsAdmin);$('deleteCommunityBtn')?.classList.toggle('hidden',!currentCommunityIsAdmin);await loadCommunityMessages(id);await loadCommunityStudyVideos(id)};
+window.openCommunity=async function(id){const snap=await getDoc(doc(db,'communities',id));if(!snap.exists())return alert('Comunidade não encontrada.');const c={id,...snap.data()},u=user();const member=isAdmin||c.createdByUid===u?.uid||(c.memberUids||[]).includes(u?.uid)||(c.members||[]).includes(u?.email);if(!member)return alert('Você não é membro desta comunidade.');currentCommunityId=id;currentCommunityIsAdmin=await communityIsAdmin(id,c);setPage('communities',document.querySelector('.nav-item[onclick*="communities"]'));$('communitiesList').classList.add('hidden');$('createCommunityBox')?.classList.add('hidden');$('communityArea').classList.remove('hidden');$('communityAreaTitle').textContent=c.name;$('communityAreaDescription').textContent=c.description||'';$('communityAdminButton')?.classList.add('hidden');$('communityStudyAdminTools')?.classList.toggle('hidden',!currentCommunityIsAdmin);$('communityToolsBtn')?.classList.toggle('hidden',!currentCommunityIsAdmin);$('communityToolsPanel')?.classList.add('hidden');$('editCommunityName').value=c.name||'';$('editCommunityDescription').value=c.description||'';$('editCommunityImage').value='';await loadCommunityMessages(id);await loadCommunityStudyVideos(id)};
+
+window.toggleCommunityTools=function(force){
+ const panel=$('communityToolsPanel'); if(!panel)return;
+ const open=typeof force==='boolean'?force:panel.classList.contains('hidden');
+ panel.classList.toggle('hidden',!open);
+};
+window.saveCommunitySettings=async function(){
+ const id=currentCommunityId,u=user(); if(!id||!u)return;
+ const snap=await getDoc(doc(db,'communities',id)); if(!snap.exists())return alert('Comunidade não encontrada.');
+ const c=snap.data(); if(!(await communityIsAdmin(id,c)))return alert('Você não tem permissão para editar esta comunidade.');
+ const name=$('editCommunityName')?.value.trim(); const description=$('editCommunityDescription')?.value.trim();
+ if(!name)return alert('Informe o nome da comunidade.');
+ try{
+  let imageURL=c.imageURL||''; const file=$('editCommunityImage')?.files?.[0];
+  if(file){const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const imageRef=ref(storage,`community-images/${id}/${Date.now()}-${safe}`);const uploaded=await uploadBytes(imageRef,file);imageURL=await getDownloadURL(uploaded.ref);}
+  await updateDoc(doc(db,'communities',id),{name,description,imageURL,updatedAt:serverTimestamp(),updatedByUid:u.uid});
+  $('communityAreaTitle').textContent=name;$('communityAreaDescription').textContent=description;await loadCommunities();await loadCommunitiesBar();toggleCommunityTools(false);alert('Comunidade atualizada com sucesso.');
+ }catch(e){console.error(e);alert('Erro ao salvar alterações: '+e.message)}
+};
 
 window.deleteCurrentCommunity=async function(){
  const id=currentCommunityId;
@@ -3259,6 +3325,8 @@ window.deleteCurrentCommunity=async function(){
    $('communityArea')?.classList.add('hidden');
    $('communitiesList')?.classList.remove('hidden');
    $('deleteCommunityBtn')?.classList.add('hidden');
+   $('communityToolsBtn')?.classList.add('hidden');
+   $('communityToolsPanel')?.classList.add('hidden');
    await loadCommunities();
    await loadCommunitiesBar();
    alert('Comunidade deletada com sucesso.');
@@ -3299,6 +3367,15 @@ onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen')
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
 </script>
+
+
+<!-- PLAYER DE VÍDEO -->
+<div id="videoPlayerModal" class="hidden" style="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.94);align-items:center;justify-content:center;padding:24px;">
+  <div style="position:relative;width:min(1100px,96vw);aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,.7);">
+    <button type="button" onclick="closeVideoPlayer()" aria-label="Fechar vídeo" style="position:absolute;right:8px;top:8px;z-index:3;width:38px;height:38px;border:0;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;font-size:22px;cursor:pointer;">×</button>
+    <iframe id="youtubePlayerFrame" title="Player de vídeo" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;height:100%;border:0;display:block;"></iframe>
+  </div>
+</div>
 
 </body>
 </html>
