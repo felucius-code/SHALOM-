@@ -2238,6 +2238,9 @@ select option {
 
 </section>
 
+
+</section> <!-- fechamento estrutural de #page-home -->
+
 <!-- =====================================================
      COMUNIDADES
 ===================================================== -->
@@ -2956,6 +2959,14 @@ select option {
 
     </div>
 
+
+    <!-- GERENCIAMENTO DE CONTEÚDOS -->
+
+    <div class="card" style="margin-bottom:20px">
+        <h2 class="card-title">📚 Gerenciar conteúdos</h2>
+        <p style="color:#6B7A99;margin-bottom:15px;">Adicione conteúdos pelas respectivas páginas e exclua-os diretamente aqui.</p>
+        <div id="adminContentManager"><p style="color:#6B7A99">Carregando catálogo...</p></div>
+    </div>
 
     <!-- ADMINISTRAÇÃO GERAL -->
 
@@ -10134,6 +10145,144 @@ onAuthStateChanged(auth, async user => {
         if(!user)return;
         isAdmin=(user.email||"").toLowerCase()===ADMIN_EMAIL.toLowerCase();
         try{ if(typeof getUserProfile === "function"){shalomProfile=await getUserProfile(user.uid);if(typeof applyPublicIdentity === "function")applyPublicIdentity(shalomProfile||{name:user.displayName||"Usuário",photoURL:user.photoURL||""});} }catch(e){console.error(e);}
+    });
+})();
+</script>
+
+
+<script>
+/* =========================================================
+   SHALOM — CORREÇÕES ESTRUTURAIS V3
+   1. Corrige o fechamento da Home para que as demais páginas
+      não fiquem aninhadas dentro de #page-home.
+   2. Uma única navegação final.
+   3. Exclusão de conteúdo.
+   4. Administração com atalhos para catálogo.
+   5. Comunidade abre dentro da página correta.
+   6. Salvamento de conteúdo com feedback e timeout.
+========================================================= */
+(function(){
+    const $ = id => document.getElementById(id);
+    const userNow = () => auth.currentUser;
+
+    function showOnly(page){
+        document.querySelectorAll('.page').forEach(el=>{
+            const active = el.id === 'page-'+page;
+            el.classList.toggle('hidden', !active);
+            el.style.display = active ? '' : 'none';
+        });
+        document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+        const btn=[...document.querySelectorAll('.nav-item')].find(el=>{
+            const oc=el.getAttribute('onclick')||'';
+            return oc.includes("'"+page+"'");
+        });
+        if(btn) btn.classList.add('active');
+        const bar=$('communitiesBar');
+        if(bar) bar.style.display=page==='home'?'':'none';
+    }
+
+    window.openPage = async function(page, button){
+        const target=$('page-'+page);
+        if(!target){ console.error('Página não encontrada:', page); return; }
+        showOnly(page);
+        if(button){
+            document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+            button.classList.add('active');
+        }
+        try{
+            if(page==='home' && typeof window.loadHome==='function') await window.loadHome();
+            else if(page==='communities' && typeof window.loadCommunities==='function') await window.loadCommunities();
+            else if(page==='profile' && typeof window.loadProfilePage==='function') await window.loadProfilePage();
+            else if(page==='notifications' && typeof window.loadNotifications==='function') await window.loadNotifications();
+            else if(page==='admin'){
+                if(!isAdmin){ showOnly('home'); return; }
+                if(typeof window.loadAdminCommunities==='function') await window.loadAdminCommunities();
+                if(typeof window.loadCommunityAdmins==='function') await window.loadCommunityAdmins();
+                if(typeof window.loadAdminContentManager==='function') await window.loadAdminContentManager();
+            } else if(page==='store' && typeof window.loadContent==='function') await window.loadContent('products');
+            else if(window.contentTypes && window.contentTypes[page] && typeof window.loadContent==='function') await window.loadContent(page);
+        }catch(e){
+            console.error('openPage:',e);
+            target.insertAdjacentHTML('beforeend', `<div class="error">Erro ao carregar esta página: ${typeof escapeHtml==='function'?escapeHtml(e.message):e.message}</div>`);
+        }
+    };
+    window.navigateMain=window.openPage;
+    window.openPageByName=function(page){ window.openPage(page,null); };
+
+    window.openCommunity=async function(id){
+        const user=userNow();
+        if(!user) return alert('Você precisa estar conectado.');
+        try{
+            const snap=await getDoc(doc(db,'communities',id));
+            if(!snap.exists()) return alert('Comunidade não encontrada.');
+            const data=snap.data();
+            const member=(data.memberUids||[]).includes(user.uid) || (user.email && (data.members||[]).includes(user.email));
+            if(!member) return alert('Você ainda não é membro desta comunidade.');
+            currentCommunityId=id; window.currentCommunityId=id;
+            currentCommunityIsAdmin=!!(isAdmin || data.createdByUid===user.uid || (data.communityAdminUids||[]).includes(user.uid) || (user.email && ((data.communityAdmins||[]).includes(user.email)||data.createdBy===user.email)));
+            showOnly('communities');
+            const list=$('communitiesList'), area=$('communityArea');
+            if(list) list.classList.add('hidden');
+            if(area) area.classList.remove('hidden');
+            if($('communityAreaTitle')) $('communityAreaTitle').textContent=data.name||'Comunidade';
+            if($('communityAreaDescription')) $('communityAreaDescription').textContent=data.description||'';
+            const tools=$('communityStudyAdminTools'); if(tools) tools.classList.toggle('hidden',!currentCommunityIsAdmin);
+            if(typeof loadCommunityStudyVideos==='function') await loadCommunityStudyVideos(id);
+            if(typeof loadCommunityMessages==='function') await loadCommunityMessages(id);
+            area?.scrollIntoView({behavior:'smooth',block:'start'});
+        }catch(e){ console.error(e); alert('Erro ao abrir comunidade: '+e.message); }
+    };
+
+    window.showCreateCommunity=function(){
+        const box=$('createCommunityBox');
+        if(!box) return alert('Formulário de comunidade não encontrado.');
+        window.openPage('communities',null);
+        box.classList.remove('hidden'); box.style.display='block';
+        setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),50);
+    };
+
+    window.deleteContent=async function(type,id){
+        if(!isAdmin) return alert('Somente o administrador geral pode excluir conteúdos.');
+        const info=window.contentTypes?.[type];
+        if(!info) return alert('Tipo de conteúdo não reconhecido.');
+        const snap=await getDoc(doc(db,info.collection,id));
+        if(!snap.exists()) return alert('Conteúdo não encontrado.');
+        const data=snap.data();
+        if(!confirm(`Excluir definitivamente “${data.title||'este conteúdo'}”?`)) return;
+        try{
+            await deleteDoc(doc(db,info.collection,id));
+            alert('Conteúdo excluído com sucesso.');
+            if(typeof window.loadContent==='function') await window.loadContent(type);
+            if(typeof window.loadHome==='function') await window.loadHome();
+            if(typeof window.loadAdminContentManager==='function') await window.loadAdminContentManager();
+        }catch(e){ console.error(e); alert('Erro ao excluir conteúdo: '+e.message); }
+    };
+
+    window.loadAdminContentManager=async function(){
+        const box=$('adminContentManager'); if(!box) return;
+        const types=window.contentTypes||{};
+        let html='';
+        for(const type of Object.keys(types)){
+            const info=types[type];
+            try{
+                const snap=await getDocs(collection(db,info.collection));
+                const docs=snap.docs.sort((a,b)=>(b.data().createdAt?.toMillis?.()||0)-(a.data().createdAt?.toMillis?.()||0));
+                html+=`<div class="card" style="margin-bottom:14px"><h3 class="card-title">${escapeHtml(info.title||type)} <span style="color:#6B7A99;font-size:13px">(${docs.length})</span></h3>`;
+                if(!docs.length) html+='<p style="color:#6B7A99">Nenhum item.</p>';
+                for(const d of docs.slice(0,20)){
+                    const x=d.data();
+                    html+=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #303654"><div><strong>${escapeHtml(x.title||'Sem título')}</strong><div style="color:#6B7A99;font-size:12px">${escapeHtml(x.category||'')}</div></div><button class="btn btn-small btn-danger" type="button" onclick="deleteContent('${escapeAttribute(type)}','${escapeAttribute(d.id)}')">🗑️ Excluir</button></div>`;
+                }
+                html+='</div>';
+            }catch(e){ html+=`<div class="error">Erro em ${escapeHtml(info.title||type)}: ${escapeHtml(e.message)}</div>`; }
+        }
+        box.innerHTML=html||'<p style="color:#6B7A99">Nenhum catálogo disponível.</p>';
+    };
+
+    // Garante que o administrador veja a área administrativa.
+    window.addEventListener('load',()=>{
+        if(typeof isAdmin!=='undefined' && isAdmin) $('adminMenu')?.classList.remove('hidden');
+        showOnly('home');
     });
 })();
 </script>
