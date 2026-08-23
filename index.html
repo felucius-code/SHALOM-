@@ -6861,7 +6861,7 @@ function(type) {
             <button
     type="button"
     class="btn"
-    onclick="alert(typeof window.saveContent)"
+    onclick="window.saveContent('${type}')"
 >
     💾 Salvar ${info.title}
 </button>
@@ -7067,6 +7067,8 @@ function(type) {
 
 window.saveContent =
 async function(type) {
+
+    alert("ENTROU NO SAVE CONTENT");
 
     if (!isAdmin) {
 
