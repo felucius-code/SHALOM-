@@ -6859,12 +6859,13 @@ function(type) {
         >
 
             <button
-    type="button"
-    class="btn"
-    onclick="window.saveContent('${type}')"
->
-    💾 Salvar ${info.title}
-</button>
+                type="button"
+                class="btn"
+                onclick="saveContent('${type}')">
+
+                💾 Salvar ${info.title}
+
+            </button>
 
 
             <button
@@ -7067,17 +7068,6 @@ function(type) {
 
 window.saveContent =
 async function(type) {
-
-    alert("ENTROU NO SAVE CONTENT");
-
-    alert(
-        "ref = " + typeof ref +
-        "\nuploadBytes = " + typeof uploadBytes +
-        "\ngetDownloadURL = " + typeof getDownloadURL +
-        "\nstorage = " + typeof storage
-    );
-
-    if (!isAdmin) {
 
     if (!isAdmin) {
 
@@ -7427,7 +7417,7 @@ async function(type) {
             0
 
     };
-
+console.log("SHALOM: saveContent carregada corretamente");
 
     /* =========================
        SALVAR NO FIRESTORE
