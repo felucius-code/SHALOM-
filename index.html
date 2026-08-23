@@ -3105,6 +3105,13 @@ let currentUser=null,currentCommunityId=null,currentCommunityIsAdmin=false,isAdm
 const contentTypes={films:{collection:"films",title:"Filmes",singular:"Filme",icon:"🎬",grid:"filmsGrid",admin:"admin-films",home:"homeFilms"},series:{collection:"series",title:"Séries",singular:"Série",icon:"📺",grid:"seriesGrid",admin:"admin-series",home:"homeSeries"},books:{collection:"books",title:"Livros",singular:"Livro",icon:"📚",grid:"booksGrid",admin:"admin-books",home:"homeBooks"},articles:{collection:"articles",title:"Artigos",singular:"Artigo",icon:"📰",grid:"articlesGrid",admin:"admin-articles",home:"homeArticles"},documentaries:{collection:"documentaries",title:"Documentários",singular:"Documentário",icon:"🎞️",grid:"documentariesGrid",admin:"admin-documentaries",home:"homeDocumentaries"},studies:{collection:"studies",title:"Estudos",singular:"Estudo",icon:"📖",grid:"studiesGrid",admin:"admin-studies",home:"homeStudies"},videos:{collection:"videos",title:"Vídeos",singular:"Vídeo",icon:"🎥",grid:"videosGrid",admin:"admin-videos",home:"homeVideos"},products:{collection:"products",title:"Produtos",singular:"Produto",icon:"🛒",grid:"productsGrid",admin:"admin-store",home:"homeProducts"}};
 const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const user=()=>auth.currentUser;
+function withTimeout(promise, ms, label){
+  return Promise.race([
+    promise,
+    new Promise((_, reject)=>setTimeout(()=>reject(new Error(label+' demorou mais de '+Math.round(ms/1000)+' segundos. Verifique a conexão e as regras do Firebase.')), ms))
+  ]);
+}
+
 function ts(v){return v?.toMillis?.()||Date.parse(v)||0}
 function publicName(p,u=user()){return p?.name||u?.displayName||u?.email?.split('@')[0]||'Usuário'}
 function initials(n){return publicName({name:n}).split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'👤'}
@@ -3139,8 +3146,36 @@ function applyIdentity(p){
 async function getProfile(uid=user()?.uid){if(!uid)return null;const s=await getDoc(doc(db,'users',uid));return s.exists()?{id:s.id,...s.data()}:null}
 async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));applyIdentity(p)}
 window.saveProfile=async function(){
- const u=user();if(!u)return alert('Você precisa estar conectado.');const btn=[...document.querySelectorAll('#page-profile button')].find(b=>/salvar perfil/i.test(b.textContent||''));const old=btn?.textContent;if(btn){btn.disabled=true;btn.textContent='Salvando perfil...'}
- try{const name=$('profileName')?.value.trim();if(!name)throw new Error('Informe seu nome.');const interests=[...document.querySelectorAll('#page-profile .interest-option input:checked')].map(i=>i.value);let photoURL=profileCache?.photoURL||u.photoURL||'';const file=$('profilePhoto')?.files?.[0];if(file){const r=ref(storage,`profile-images/${u.uid}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`);photoURL=await uploadBytes(r,file).then(x=>getDownloadURL(x.ref))}await setDoc(doc(db,'users',u.uid),{uid:u.uid,name,email:u.email,photoURL,interests,updatedAt:serverTimestamp()},{merge:true});try{await updateProfile(u,{displayName:name,photoURL})}catch{}profileCache={...(profileCache||{}),uid:u.uid,name,email:u.email,photoURL,interests};applyIdentity(profileCache);alert('Perfil salvo com sucesso.')}catch(e){console.error(e);alert('Erro ao salvar perfil: '+e.message)}finally{if(btn){btn.disabled=false;btn.textContent=old||'Salvar perfil'}}
+ const u=user();
+ if(!u)return alert('Você precisa estar conectado.');
+ const btn=[...document.querySelectorAll('#page-profile button')].find(b=>/salvar perfil/i.test(b.textContent||''));
+ const old=btn?.textContent||'Salvar perfil';
+ if(btn){btn.disabled=true;btn.textContent='Salvando perfil...'}
+ try{
+  const name=$('profileName')?.value.trim();
+  if(!name)throw new Error('Informe seu nome.');
+  const interests=[...document.querySelectorAll('#page-profile .interest-option input:checked')].map(i=>i.value);
+  let photoURL=profileCache?.photoURL||u.photoURL||'';
+  const file=$('profilePhoto')?.files?.[0];
+  if(file){
+   const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+   const imageRef=ref(storage,`profile-images/${u.uid}/${Date.now()}-${safe}`);
+   const uploaded=await withTimeout(uploadBytes(imageRef,file),20000,'O upload da foto do perfil');
+   photoURL=await withTimeout(getDownloadURL(uploaded.ref),10000,'A obtenção da URL da foto');
+  }
+  const data={uid:u.uid,name,email:u.email,photoURL,interests,updatedAt:serverTimestamp()};
+  await withTimeout(setDoc(doc(db,'users',u.uid),data,{merge:true}),15000,'O salvamento do perfil no Firestore');
+  // A atualização do Auth é secundária; não pode bloquear o salvamento do perfil.
+  try{await withTimeout(updateProfile(u,{displayName:name,photoURL}),10000,'A atualização da conta Firebase Authentication')}catch(authErr){console.warn('Perfil salvo no Firestore, mas Auth não foi atualizado:',authErr)}
+  profileCache={...(profileCache||{}),...data};
+  applyIdentity(profileCache);
+  alert('Perfil salvo com sucesso.');
+ }catch(e){
+  console.error('saveProfile:',e);
+  alert('Não foi possível salvar o perfil.\n\n'+e.message);
+ }finally{
+  if(btn){btn.disabled=false;btn.textContent=old}
+ }
 };
 
 window.showSignup=function(){hideError('loginError');hideError('signupError');$('loginForm')?.classList.add('hidden');$('signupForm')?.classList.remove('hidden');$('signupName')?.focus()};
@@ -3196,72 +3231,24 @@ window.saveContent=async function(type){
   if(imageFile){
    const safe=imageFile.name.replace(/[^a-zA-Z0-9._-]/g,'_');
    const imageRef=ref(storage,`content-images/${type}/${Date.now()}-${safe}`);
-   const uploaded=await uploadBytes(imageRef,imageFile);
-   image=await getDownloadURL(uploaded.ref);
+   const uploaded=await withTimeout(uploadBytes(imageRef,imageFile),20000,'O upload da capa');
+   image=await withTimeout(getDownloadURL(uploaded.ref),10000,'A obtenção da URL da capa');
   }
-  const data={
-   title,
-   description:$('newContentDescription')?.value.trim()||'',
-   image,
-   url:youtubeUrl($('newContentUrl')?.value.trim()||''),
-   category:$('newContentCategory')?.value.trim()||'',
-   year:$('newContentYear')?.value||'',
-   duration:$('newContentDuration')?.value.trim()||'',
-   access:$('newContentAccess')?.value||'free',
-   createdAt:serverTimestamp(),
-   createdByUid:user().uid,
-   createdByName:publicName(profileCache)
-  };
+  const rawUrl=$('newContentUrl')?.value.trim()||'';
+  const data={title,description:$('newContentDescription')?.value.trim()||'',image,url:type==='videos'?youtubeUrl(rawUrl):rawUrl,category:$('newContentCategory')?.value.trim()||'',year:$('newContentYear')?.value||'',duration:$('newContentDuration')?.value.trim()||'',access:$('newContentAccess')?.value||'free',createdAt:serverTimestamp(),createdByUid:user().uid,createdByName:publicName(profileCache)};
   if(type==='products')data.price=$('newContentPrice')?.value.trim()||'';
-  await addDoc(collection(db,info.collection),data);
+  await withTimeout(addDoc(collection(db,info.collection),data),15000,'O salvamento do conteúdo no Firestore');
   document.getElementById('dynamicContentForm')?.remove();
   await loadContent(type);
-  await loadHome();
+  if(type!=='products')await loadHome();
   alert(`${info.singular} salvo com sucesso.`);
- }catch(e){console.error(e);alert('Erro ao salvar: '+e.message)}
- finally{if(btn){btn.disabled=false;btn.textContent=`💾 Salvar ${info.singular}`}}
+ }catch(e){
+  console.error('saveContent:',e);
+  alert('Não foi possível salvar o conteúdo.\n\n'+e.message);
+ }finally{
+  if(btn){btn.disabled=false;btn.textContent=`💾 Salvar ${info.singular}`}
+ }
 };
-
-
-function youtubeUrl(url){
- try{
-  const u=new URL(url);
-  if(u.hostname==='youtu.be') return `https://www.youtube.com/watch?v=${u.pathname.slice(1)}`;
-  if(u.hostname.endsWith('youtube.com')){
-   if(u.pathname==='/watch' && u.searchParams.get('v')) return `https://www.youtube.com/watch?v=${u.searchParams.get('v')}`;
-   if(u.pathname.startsWith('/shorts/')||u.pathname.startsWith('/embed/')){
-    const id=u.pathname.split('/').filter(Boolean).pop();
-    if(id) return `https://www.youtube.com/watch?v=${id}`;
-   }
-  }
- }catch{}
- return url;
-}
-function youtubeVideoId(url){
- try{
-  const u=new URL(url);
-  if(u.hostname==='youtu.be') return u.pathname.split('/').filter(Boolean)[0]||'';
-  if(u.hostname.endsWith('youtube.com')){
-   if(u.pathname==='/watch') return u.searchParams.get('v')||'';
-   if(u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2]||'';
-   if(u.pathname.startsWith('/embed/')) return u.pathname.split('/')[2]||'';
-  }
- }catch{}
- return '';
-}
-function openVideoPlayer(url,title=''){
- const id=youtubeVideoId(url);
- if(!id)return alert('Não foi possível identificar o vídeo do YouTube.');
- const modal=$('videoPlayerModal'),frame=$('youtubePlayerFrame');
- if(!modal||!frame)return;
- frame.title=title||'Player de vídeo';
- frame.src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&modestbranding=1`;
- modal.classList.remove('hidden');
- modal.style.display='flex';
- document.body.style.overflow='hidden';
-}
-window.openVideoPlayer=openVideoPlayer;
-window.closeVideoPlayer=function(){const modal=$('videoPlayerModal'),frame=$('youtubePlayerFrame');if(frame)frame.src='';if(modal){modal.classList.add('hidden');modal.style.display='none'}document.body.style.overflow='';};
 function renderContentCard(type,id,d){
  const info=contentTypes[type];
  const cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;
@@ -3292,17 +3279,41 @@ window.toggleCommunityTools=function(force){
  panel.classList.toggle('hidden',!open);
 };
 window.saveCommunitySettings=async function(){
- const id=currentCommunityId,u=user(); if(!id||!u)return;
- const snap=await getDoc(doc(db,'communities',id)); if(!snap.exists())return alert('Comunidade não encontrada.');
- const c=snap.data(); if(!(await communityIsAdmin(id,c)))return alert('Você não tem permissão para editar esta comunidade.');
- const name=$('editCommunityName')?.value.trim(); const description=$('editCommunityDescription')?.value.trim();
- if(!name)return alert('Informe o nome da comunidade.');
+ const id=currentCommunityId,u=user();
+ if(!id||!u)return alert('Nenhuma comunidade está aberta.');
+ const btn=[...document.querySelectorAll('#communityToolsPanel button')].find(b=>/salvar altera/i.test(b.textContent||''));
+ const old=btn?.textContent||'💾 Salvar alterações';
+ if(btn){btn.disabled=true;btn.textContent='Salvando alterações...'}
  try{
-  let imageURL=c.imageURL||''; const file=$('editCommunityImage')?.files?.[0];
-  if(file){const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const imageRef=ref(storage,`community-images/${id}/${Date.now()}-${safe}`);const uploaded=await uploadBytes(imageRef,file);imageURL=await getDownloadURL(uploaded.ref);}
-  await updateDoc(doc(db,'communities',id),{name,description,imageURL,updatedAt:serverTimestamp(),updatedByUid:u.uid});
-  $('communityAreaTitle').textContent=name;$('communityAreaDescription').textContent=description;await loadCommunities();await loadCommunitiesBar();toggleCommunityTools(false);alert('Comunidade atualizada com sucesso.');
- }catch(e){console.error(e);alert('Erro ao salvar alterações: '+e.message)}
+  const refCommunity=doc(db,'communities',id);
+  const snap=await withTimeout(getDoc(refCommunity),10000,'A leitura da comunidade');
+  if(!snap.exists())throw new Error('Comunidade não encontrada.');
+  const c=snap.data();
+  if(!(await communityIsAdmin(id,c)))throw new Error('Você não tem permissão para editar esta comunidade.');
+  const name=$('editCommunityName')?.value.trim();
+  const description=$('editCommunityDescription')?.value.trim()||'';
+  if(!name)throw new Error('Informe o nome da comunidade.');
+  let imageURL=c.imageURL||'';
+  const file=$('editCommunityImage')?.files?.[0];
+  if(file){
+   const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+   const imageRef=ref(storage,`community-images/${id}/${Date.now()}-${safe}`);
+   const uploaded=await withTimeout(uploadBytes(imageRef,file),20000,'O upload da imagem da comunidade');
+   imageURL=await withTimeout(getDownloadURL(uploaded.ref),10000,'A obtenção da URL da imagem');
+  }
+  await withTimeout(updateDoc(refCommunity,{name,description,imageURL,updatedAt:serverTimestamp(),updatedByUid:u.uid}),15000,'O salvamento da comunidade no Firestore');
+  $('communityAreaTitle').textContent=name;
+  $('communityAreaDescription').textContent=description;
+  await loadCommunities();
+  await loadCommunitiesBar();
+  toggleCommunityTools(false);
+  alert('Comunidade atualizada com sucesso.');
+ }catch(e){
+  console.error('saveCommunitySettings:',e);
+  alert('Não foi possível salvar as alterações.\n\n'+e.message);
+ }finally{
+  if(btn){btn.disabled=false;btn.textContent=old}
+ }
 };
 
 window.deleteCurrentCommunity=async function(){
