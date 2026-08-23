@@ -7070,6 +7070,15 @@ async function(type) {
 
     alert("ENTROU NO SAVE CONTENT");
 
+    alert(
+        "ref = " + typeof ref +
+        "\nuploadBytes = " + typeof uploadBytes +
+        "\ngetDownloadURL = " + typeof getDownloadURL +
+        "\nstorage = " + typeof storage
+    );
+
+    if (!isAdmin) {
+
     if (!isAdmin) {
 
         alert(
