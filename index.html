@@ -7058,6 +7058,20 @@ async function(type) {
         contentTypes[type];
 
 
+    if (!info) {
+
+        alert(
+            "Tipo de conteúdo não reconhecido."
+        );
+
+        return;
+    }
+
+
+    /* =========================
+       CAMPOS
+    ========================= */
+
     const title =
         document
         .getElementById(
@@ -7076,13 +7090,10 @@ async function(type) {
         .trim();
 
 
-    const image =
-        document
-        .getElementById(
+    const imageInput =
+        document.getElementById(
             "newContentImage"
-        )
-        ?.value
-        .trim();
+        );
 
 
     const url =
@@ -7103,8 +7114,7 @@ async function(type) {
 
 
     const priceElement =
-        document
-        .getElementById(
+        document.getElementById(
             "newContentPrice"
         );
 
@@ -7129,8 +7139,7 @@ async function(type) {
 
 
     const yearElement =
-        document
-        .getElementById(
+        document.getElementById(
             "newContentYear"
         );
 
@@ -7155,8 +7164,7 @@ async function(type) {
 
 
     const playerElement =
-        document
-        .getElementById(
+        document.getElementById(
             "newContentPlayer"
         );
 
@@ -7212,8 +7220,7 @@ async function(type) {
 
 
     if (
-        access ===
-        "subscription" &&
+        access === "subscription" &&
         price <= 0
     ) {
 
@@ -7225,59 +7232,173 @@ async function(type) {
     }
 
 
+    /* =========================
+       VERIFICAR IMAGEM
+    ========================= */
+
+    let imageUrl = "";
+
+
+    if (
+        imageInput &&
+        imageInput.files &&
+        imageInput.files.length > 0
+    ) {
+
+        const imageFile =
+            imageInput.files[0];
+
+
+        if (
+            !imageFile.type.startsWith(
+                "image/"
+            )
+        ) {
+
+            alert(
+                "Selecione um arquivo de imagem válido."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            /*
+             * Cria um nome único para a imagem.
+             */
+
+            const fileExtension =
+                imageFile.name
+                .split(".")
+                .pop()
+                .toLowerCase();
+
+
+            const fileName =
+                Date.now() +
+                "_" +
+                Math.random()
+                .toString(36)
+                .substring(2, 10) +
+                "." +
+                fileExtension;
+
+
+            /*
+             * Caminho da imagem no Firebase Storage.
+             */
+
+            const imageRef =
+                ref(
+                    storage,
+                    "content-images/" +
+                    type +
+                    "/" +
+                    fileName
+                );
+
+
+            /*
+             * Envia a imagem.
+             */
+
+            const uploadResult =
+                await uploadBytes(
+                    imageRef,
+                    imageFile
+                );
+
+
+            /*
+             * Obtém a URL pública/armazenada
+             * da imagem.
+             */
+
+            imageUrl =
+                await getDownloadURL(
+                    uploadResult.ref
+                );
+
+
+        } catch (imageError) {
+
+            console.error(
+                "Erro ao enviar imagem:",
+                imageError
+            );
+
+
+            alert(
+                "Erro ao enviar a imagem: " +
+                imageError.message
+            );
+
+            return;
+        }
+
+    }
+
+
+    /* =========================
+       DADOS DO CONTEÚDO
+    ========================= */
+
+    const contentData = {
+
+        title,
+
+        description,
+
+        image:
+            imageUrl,
+
+        url,
+
+        access,
+
+        price,
+
+        category,
+
+        year,
+
+        duration,
+
+        player,
+
+        type,
+
+        createdBy:
+            auth.currentUser.email,
+
+        createdAt:
+            serverTimestamp(),
+
+        active:
+            true,
+
+        featured:
+            false,
+
+        views:
+            0,
+
+        rating:
+            0,
+
+        ratingCount:
+            0
+
+    };
+
+
+    /* =========================
+       SALVAR NO FIRESTORE
+    ========================= */
+
     try {
-
-        /*
-           DADOS SALVOS NO FIRESTORE
-        */
-
-        const contentData = {
-
-            title,
-
-            description,
-
-            image,
-
-            url,
-
-            access,
-
-            price,
-
-            category,
-
-            year,
-
-            duration,
-
-            player,
-
-            type,
-
-            createdBy:
-                auth.currentUser.email,
-
-            createdAt:
-                serverTimestamp(),
-
-            active:
-                true,
-
-            featured:
-                false,
-
-            views:
-                0,
-
-            rating:
-                0,
-
-            ratingCount:
-                0
-
-        };
-
 
         await addDoc(
             collection(
@@ -7287,6 +7408,10 @@ async function(type) {
             contentData
         );
 
+
+        /*
+         * Remove o formulário.
+         */
 
         document
             .getElementById(
@@ -7302,8 +7427,8 @@ async function(type) {
 
 
         /*
-           RECARREGA O CATÁLOGO
-        */
+         * Recarrega o catálogo.
+         */
 
         await loadContent(type);
 
