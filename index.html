@@ -2350,6 +2350,16 @@ select option {
                 style="color:#6B7A99;">
             </p>
 
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+                <button
+                    id="deleteCommunityBtn"
+                    class="btn btn-danger hidden"
+                    type="button"
+                    onclick="deleteCurrentCommunity()">
+                    🗑️ Deletar comunidade
+                </button>
+            </div>
+
         </div>
 
 
@@ -3141,7 +3151,33 @@ window.loadCommunities=loadCommunities;
 window.showCreateCommunity=()=>{$('createCommunityBox')?.classList.toggle('hidden')};
 window.addCommunity=async function(){if(!user())return;const name=$('communityName')?.value.trim(),description=$('communityDescription')?.value.trim();if(!name)return alert('Informe o nome.');try{await addDoc(collection(db,'communities'),{name,description,createdByUid:user().uid,createdBy:publicName(profileCache),memberUids:[user().uid],members:[user().email],communityAdminUids:[user().uid],communityAdmins:[user().email],pendingMemberUids:[],pendingMembers:[],createdAt:serverTimestamp()});$('communityName').value='';$('communityDescription').value='';$('createCommunityBox')?.classList.add('hidden');await loadCommunities();await loadCommunitiesBar()}catch(e){alert('Erro ao criar comunidade: '+e.message)}};
 
-window.openCommunity=async function(id){const snap=await getDoc(doc(db,'communities',id));if(!snap.exists())return alert('Comunidade não encontrada.');const c={id,...snap.data()},u=user();const member=isAdmin||c.createdByUid===u?.uid||(c.memberUids||[]).includes(u?.uid)||(c.members||[]).includes(u?.email);if(!member)return alert('Você não é membro desta comunidade.');currentCommunityId=id;currentCommunityIsAdmin=await communityIsAdmin(id,c);setPage('communities',document.querySelector('.nav-item[onclick*="communities"]'));$('communitiesList').classList.add('hidden');$('createCommunityBox')?.classList.add('hidden');$('communityArea').classList.remove('hidden');$('communityAreaTitle').textContent=c.name;$('communityAreaDescription').textContent=c.description||'';$('communityAdminButton')?.classList.add('hidden');$('communityStudyAdminTools')?.classList.toggle('hidden',!currentCommunityIsAdmin);await loadCommunityMessages(id);await loadCommunityStudyVideos(id)};
+window.openCommunity=async function(id){const snap=await getDoc(doc(db,'communities',id));if(!snap.exists())return alert('Comunidade não encontrada.');const c={id,...snap.data()},u=user();const member=isAdmin||c.createdByUid===u?.uid||(c.memberUids||[]).includes(u?.uid)||(c.members||[]).includes(u?.email);if(!member)return alert('Você não é membro desta comunidade.');currentCommunityId=id;currentCommunityIsAdmin=await communityIsAdmin(id,c);setPage('communities',document.querySelector('.nav-item[onclick*="communities"]'));$('communitiesList').classList.add('hidden');$('createCommunityBox')?.classList.add('hidden');$('communityArea').classList.remove('hidden');$('communityAreaTitle').textContent=c.name;$('communityAreaDescription').textContent=c.description||'';$('communityAdminButton')?.classList.add('hidden');$('communityStudyAdminTools')?.classList.toggle('hidden',!currentCommunityIsAdmin);$('deleteCommunityBtn')?.classList.toggle('hidden',!currentCommunityIsAdmin);await loadCommunityMessages(id);await loadCommunityStudyVideos(id)};
+
+window.deleteCurrentCommunity=async function(){
+ const id=currentCommunityId;
+ if(!id)return;
+ const snap=await getDoc(doc(db,'communities',id));
+ if(!snap.exists())return alert('Esta comunidade já não existe.');
+ const c=snap.data();
+ if(!(await communityIsAdmin(id,c)))return alert('Você não tem permissão para deletar esta comunidade.');
+ const confirmed=confirm(`Você quer mesmo deletar a comunidade "${String(c.name||'esta comunidade').replace(/\"/g,'\\"')}"?\n\nEsta ação não pode ser desfeita.`);
+ if(!confirmed)return;
+ try{
+   // Remove subcoleções conhecidas antes do documento principal.
+   for(const sub of ['messages','studyVideos']){
+     const subSnap=await getDocs(collection(db,'communities',id,sub));
+     for(const d of subSnap.docs) await deleteDoc(d.ref);
+   }
+   await deleteDoc(doc(db,'communities',id));
+   currentCommunityId=null;currentCommunityIsAdmin=false;
+   $('communityArea')?.classList.add('hidden');
+   $('communitiesList')?.classList.remove('hidden');
+   $('deleteCommunityBtn')?.classList.add('hidden');
+   await loadCommunities();
+   await loadCommunitiesBar();
+   alert('Comunidade deletada com sucesso.');
+ }catch(e){console.error(e);alert('Erro ao deletar comunidade: '+e.message)}
+};
 window.backToCommunities=async()=>{currentCommunityId=null;$('communityArea')?.classList.add('hidden');$('communitiesList')?.classList.remove('hidden');await loadCommunities()};
 async function loadCommunityMessages(id){const box=$('communityMessages');if(!box)return;const snap=await getDocs(collection(db,'communities',id,'messages'));const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';box.scrollTop=box.scrollHeight}
 window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){const u=user(),text=$('messageInput')?.value.trim();if(!u||!currentCommunityId||!text)return;await addDoc(collection(db,'communities',currentCommunityId,'messages'),{text,authorUid:u.uid,authorName:publicName(profileCache),createdAt:serverTimestamp()});$('messageInput').value='';await loadCommunityMessages(currentCommunityId)};
@@ -3163,7 +3199,7 @@ window.loadNotifications=async function(){const box=$('page-notifications')?.que
 async function loadAdmin(){await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager()}
 window.loadAdmin=loadAdmin;
 
-onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));profileCache=await getProfile(u.uid);authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
+onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));profileCache=await getProfile(u.uid);authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
