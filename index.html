@@ -4389,6 +4389,26 @@ async function(id) {
 
     try {
 
+        const user =
+            auth.currentUser;
+
+
+        if (!user) {
+
+            alert(
+                "Você precisa estar conectado."
+            );
+
+            return;
+        }
+
+
+        /*
+         * Adiciona o e-mail à lista antiga,
+         * mantendo compatibilidade com
+         * solicitações já existentes.
+         */
+
         await updateDoc(
             doc(
                 db,
@@ -4399,7 +4419,17 @@ async function(id) {
 
                 pendingMembers:
                     arrayUnion(
-                        auth.currentUser.email
+                        user.email
+                    ),
+
+                /*
+                 * Nova identificação interna
+                 * através do UID.
+                 */
+
+                pendingMemberUids:
+                    arrayUnion(
+                        user.uid
                     )
 
             }
@@ -4416,7 +4446,11 @@ async function(id) {
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Erro ao solicitar entrada:",
+            error
+        );
+
 
         alert(
             "Erro ao solicitar entrada: " +
