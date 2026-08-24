@@ -1425,6 +1425,10 @@ select option {
 .admin-table th,.admin-table td{padding:9px;border-bottom:1px solid #303654;text-align:left;vertical-align:middle}
 .admin-table th{color:var(--gold)}.admin-select{width:100%;padding:9px;border-radius:7px;background:var(--panel2);color:#fff;border:1px solid #303654}
 .store-form-note{color:#6B7A99;font-size:12px;margin-top:5px}
+.community-admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.community-member-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #303654}
+.community-member-meta{min-width:0}.community-member-name{font-weight:600}.community-member-sub{font-size:11px;color:#6B7A99;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.community-danger{border-color:#8b3a3a!important;color:#ffb0b0!important}
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
 </style>
@@ -3408,8 +3412,158 @@ window.loadNotifications=async function(){const box=$('page-notifications')?.que
 
 function adminWorkspace(){return $('adminWorkspace');}
 window.adminShowUsers=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando...</p>';try{const s=await getDocs(collection(db,'users'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.email||'—')}</td><td>${esc(x.uid||d.id)}</td><td>${(x.interests||[]).length}</td></tr>`)});w.innerHTML=`<h2 class="card-title">👥 Usuários</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Nome</th><th>E-mail</th><th>UID</th><th>Interesses</th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum usuário.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
-window.adminShowCommunities=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">🏘️ Comunidades</h2><p>Carregando...</p>';try{const s=await getDocs(collection(db,'communities'));let opts='';s.forEach(d=>{const x=d.data();opts+=`<option value="${esc(d.id)}">${esc(x.name||d.id)}</option>`});w.innerHTML=`<h2 class="card-title">🏘️ Comunidades</h2><label>Selecione uma comunidade</label><select id="adminCommunitySelect" class="admin-select"><option value="">Selecione uma comunidade</option>${opts}</select><div id="adminCommunityDetails" style="margin-top:14px"></div>`;$('adminCommunitySelect')?.addEventListener('change',e=>adminLoadCommunityDetails(e.target.value))}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
-window.adminLoadCommunityDetails=async function(id){const box=$('adminCommunityDetails');if(!box)return;if(!id){box.innerHTML='';return}try{const s=await getDoc(doc(db,'communities',id));if(!s.exists()){box.innerHTML='<p>Comunidade não encontrada.</p>';return}const c=s.data();const admins=c.communityAdminUids||[];box.innerHTML=`<div class="card"><h3>${esc(c.name||'Comunidade')}</h3><p style="color:#6B7A99">${esc(c.description||'')}</p><strong>Administradores</strong><div>${admins.length?admins.map(x=>`<div style="padding:7px 0;border-bottom:1px solid #303654">${esc(x)}</div>`).join(''):'Nenhum UID registrado.'}</div></div>`}catch(e){box.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
+window.adminShowCommunities=async function(){
+ const w=adminWorkspace();if(!w)return;
+ w.innerHTML='<h2 class="card-title">🏘️ Comunidades</h2><p>Carregando comunidades...</p>';
+ try{
+   const s=await getDocs(collection(db,'communities'));
+   let opts='';
+   s.forEach(d=>{const x=d.data();opts+=`<option value="${esc(d.id)}">${esc(x.name||d.id)}</option>`});
+   w.innerHTML=`<h2 class="card-title">🏘️ Comunidades</h2>
+     <label>Selecione uma comunidade</label>
+     <select id="adminCommunitySelect" class="admin-select">
+       <option value="">Selecione uma comunidade</option>${opts}
+     </select>
+     <div id="adminCommunityDetails" style="margin-top:14px"></div>`;
+   $('adminCommunitySelect')?.addEventListener('change',e=>adminLoadCommunityDetails(e.target.value));
+ }catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}
+};
+
+window.adminLoadCommunityDetails=async function(id){
+ const box=$('adminCommunityDetails');if(!box)return;
+ if(!id){box.innerHTML='';return}
+ try{
+   const s=await getDoc(doc(db,'communities',id));
+   if(!s.exists()){box.innerHTML='<p>Comunidade não encontrada.</p>';return}
+   const c=s.data();
+   const memberUids=Array.isArray(c.memberUids)?c.memberUids:[];
+   const members=Array.isArray(c.members)?c.members:[];
+   const adminUids=Array.isArray(c.communityAdminUids)?c.communityAdminUids:[];
+   const adminEmails=Array.isArray(c.communityAdmins)?c.communityAdmins:[];
+   const creatorUid=c.createdByUid||c.createdBy||'';
+
+   // Prefer UID-based membership. Keep legacy e-mail members visible but do not
+   // silently delete them; this preserves compatibility with older communities.
+   const uidSet=new Set(memberUids);
+   const legacySet=new Set(members);
+   const allIds=[...new Set([...memberUids,...members])];
+
+   const rows=[];
+   for(const identifier of allIds){
+     let profile=null;
+     if(memberUids.includes(identifier)){
+       try{
+         const ps=await getDoc(doc(db,'users',identifier));
+         if(ps.exists())profile=ps.data();
+       }catch(_){}
+     }
+     const name=profile?.name||profile?.displayName||identifier;
+     const email=profile?.email||'';
+     const isAdmin=adminUids.includes(identifier);
+     const isCreator=creatorUid===identifier;
+     const legacy=!uidSet.has(identifier)&&legacySet.has(identifier);
+     rows.push(`<div class="community-member-row">
+       <div class="community-member-meta">
+         <div class="community-member-name">${esc(name)} ${isCreator?'· criador':''} ${isAdmin?'· administrador':''}</div>
+         <div class="community-member-sub">${esc(email||identifier)}${legacy?' · registro antigo':''}</div>
+       </div>
+       <div>
+         ${(!isCreator&&!isAdmin)?`<button class="btn btn-small community-danger" type="button" onclick="adminRemoveCommunityMember('${esc(id)}','${esc(identifier)}')">Excluir</button>`:''}
+       </div>
+     </div>`);
+   }
+
+   box.innerHTML=`<div class="card">
+     <h3>${esc(c.name||'Comunidade')}</h3>
+     <p style="color:#6B7A99">${esc(c.description||'')}</p>
+
+     <h4 style="margin-top:16px">Administradores</h4>
+     <div>${adminUids.length
+       ? adminUids.map(x=>`<div class="community-member-row"><div class="community-member-meta"><div class="community-member-name">${esc(x)}</div><div class="community-member-sub">UID</div></div><button class="btn btn-small community-danger" type="button" onclick="adminRemoveCommunityAdmin('${esc(id)}','${esc(x)}')">Remover</button></div>`).join('')
+       : (adminEmails.length?adminEmails.map(x=>`<div class="community-member-row"><div class="community-member-meta"><div class="community-member-name">${esc(x)}</div><div class="community-member-sub">registro antigo por e-mail</div></div></div>`).join(''):'<p style="color:#6B7A99">Nenhum administrador adicional registrado.</p>')}
+     </div>
+
+     <div class="community-admin-actions">
+       <button class="btn btn-small" type="button" onclick="adminAddCommunityMember('${esc(id)}')">+ Incluir membro</button>
+       <button class="btn btn-small" type="button" onclick="adminAddCommunityAdmin('${esc(id)}')">+ Incluir administrador</button>
+     </div>
+
+     <h4 style="margin-top:20px">Membros</h4>
+     <div>${rows.join('')||'<p style="color:#6B7A99">Nenhum membro registrado.</p>'}</div>
+   </div>`;
+ }catch(e){box.innerHTML=`<div class="error">${esc(e.message)}</div>`}
+};
+
+window.adminAddCommunityMember=async function(communityId){
+ const value=prompt('Digite o UID do usuário que deseja incluir na comunidade:');
+ if(!value?.trim())return;
+ const uid=value.trim();
+ try{
+   const ref=doc(db,'communities',communityId);
+   const snap=await getDoc(ref);
+   if(!snap.exists())return alert('Comunidade não encontrada.');
+   const c=snap.data();
+   const memberUids=Array.isArray(c.memberUids)?[...c.memberUids]:[];
+   if(memberUids.includes(uid))return alert('Esse usuário já é membro da comunidade.');
+   memberUids.push(uid);
+   await updateDoc(ref,{memberUids});
+   alert('Membro incluído com sucesso.');
+   adminLoadCommunityDetails(communityId);
+ }catch(e){alert('Não foi possível incluir o membro: '+e.message)}
+};
+
+window.adminRemoveCommunityMember=async function(communityId,identifier){
+ if(!confirm('Você quer mesmo excluir este membro da comunidade?'))return;
+ try{
+   const ref=doc(db,'communities',communityId);
+   const snap=await getDoc(ref);
+   if(!snap.exists())return alert('Comunidade não encontrada.');
+   const c=snap.data();
+   const memberUids=Array.isArray(c.memberUids)?c.memberUids.filter(x=>x!==identifier):[];
+   const members=Array.isArray(c.members)?c.members.filter(x=>x!==identifier):[];
+   await updateDoc(ref,{memberUids,members});
+   alert('Membro excluído da comunidade.');
+   adminLoadCommunityDetails(communityId);
+ }catch(e){alert('Não foi possível excluir o membro: '+e.message)}
+};
+
+window.adminAddCommunityAdmin=async function(communityId){
+ const value=prompt('Digite o UID do usuário que deseja tornar administrador:');
+ if(!value?.trim())return;
+ const uid=value.trim();
+ try{
+   const ref=doc(db,'communities',communityId);
+   const snap=await getDoc(ref);
+   if(!snap.exists())return alert('Comunidade não encontrada.');
+   const c=snap.data();
+   const adminUids=Array.isArray(c.communityAdminUids)?[...c.communityAdminUids]:[];
+   if(adminUids.includes(uid))return alert('Esse usuário já é administrador.');
+   adminUids.push(uid);
+   const memberUids=Array.isArray(c.memberUids)?[...c.memberUids]:[];
+   if(!memberUids.includes(uid))memberUids.push(uid);
+   await updateDoc(ref,{communityAdminUids:adminUids,memberUids});
+   alert('Administrador incluído com sucesso.');
+   adminLoadCommunityDetails(communityId);
+ }catch(e){alert('Não foi possível incluir o administrador: '+e.message)}
+};
+
+window.adminRemoveCommunityAdmin=async function(communityId,uid){
+ if(!confirm('Você quer mesmo remover este administrador?'))return;
+ try{
+   const ref=doc(db,'communities',communityId);
+   const snap=await getDoc(ref);
+   if(!snap.exists())return alert('Comunidade não encontrada.');
+   const c=snap.data();
+   const creatorUid=c.createdByUid||c.createdBy||'';
+   if(creatorUid===uid)return alert('O criador da comunidade não pode ser removido por esta ferramenta.');
+   const adminUids=Array.isArray(c.communityAdminUids)?c.communityAdminUids.filter(x=>x!==uid):[];
+   await updateDoc(ref,{communityAdminUids:adminUids});
+   alert('Administrador removido.');
+   adminLoadCommunityDetails(communityId);
+ }catch(e){alert('Não foi possível remover o administrador: '+e.message)}
+};
+
+;
 window.adminShowContents=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">📚 Conteúdos</h2><p>Carregando...</p>';const rows=[];for(const [type,info] of Object.entries(contentTypes||{})){try{const s=await getDocs(collection(db,info.collection));s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(info.title||type)}</td><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.category||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','${esc(type)}')">Excluir</button></td></tr>`)})}catch(e){console.warn(type,e)}}w.innerHTML=`<h2 class="card-title">📚 Conteúdos</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Tipo</th><th>Título</th><th>Categoria</th><th></th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum conteúdo.</td></tr>'}</table></div>`};
 window.adminShowStore=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">🛒 Loja</h2><p>Carregando produtos...</p>';try{const s=await getDocs(collection(db,'products'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.price||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','products')">Excluir</button></td></tr>`)});w.innerHTML=`<h2 class="card-title">🛒 Loja</h2><p class="store-form-note">Produtos são itens para compra. Livros permanecem na Biblioteca.</p><div style="overflow:auto"><table class="admin-table"><tr><th>Produto</th><th>Preço</th><th></th></tr>${rows.join('')||'<tr><td colspan="3">Nenhum produto.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
 async function loadAdmin(){await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager()}
