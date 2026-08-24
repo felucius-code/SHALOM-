@@ -1413,6 +1413,8 @@ select option {
 .custom-interest-input-row input{flex:1}
 .custom-interest-preview{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 .custom-interest-preview span{display:inline-block;background:var(--panel2);border:1px solid var(--gold);border-radius:15px;padding:5px 9px;color:#fff;font-size:12px}
+.custom-interest-preview .custom-interest-tag{display:inline-flex;align-items:center;gap:5px}
+.custom-interest-preview .custom-interest-remove{border:0;background:transparent;color:var(--gold);cursor:pointer;font-size:14px;line-height:1;padding:0}
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
 </style>
@@ -2900,15 +2902,11 @@ select option {
                 </p>
                 <div class="custom-interest-input-row">
                     <input id="customInterestInputPreview" type="text" maxlength="30"
-                           placeholder="Ex.: Egiptologia" disabled>
-                    <button class="btn btn-small" type="button" disabled>Adicionar</button>
+                           placeholder="Ex.: Egiptologia">
+                    <button id="customInterestAddBtn" class="btn btn-small" type="button" onclick="addCustomInterest()">Adicionar</button>
                 </div>
-                <div style="color:#6B7A99;font-size:12px;margin-top:7px;">
-                    0 de 5 interesses personalizados
-                </div>
-                <div class="custom-interest-preview">
-                    <span>Exemplo</span>
-                </div>
+                <div id="customInterestCounter" style="color:#6B7A99;font-size:12px;margin-top:7px;">0 de 5 interesses personalizados</div>
+                <div id="customInterestList" class="custom-interest-preview"></div>
             </div>
         </div>
 
@@ -3192,6 +3190,27 @@ function applyIdentity(p){
  document.querySelectorAll('.public-user-name').forEach(x=>x.textContent=name);
 }
 async function getProfile(uid=user()?.uid){if(!uid)return null;const s=await getDoc(doc(db,'users',uid));return s.exists()?{id:s.id,...s.data()}:null}
+
+let customInterestsCache=[];
+
+function renderCustomInterests(){
+  const list=$('customInterestList'), counter=$('customInterestCounter');
+  if(counter)counter.textContent=`${customInterestsCache.length} de 5 interesses personalizados`;
+  if(list)list.innerHTML=customInterestsCache.length
+    ? customInterestsCache.map((x,i)=>`<span class="custom-interest-tag">${esc(x)}<button type="button" class="custom-interest-remove" onclick="removeCustomInterest(${i})">×</button></span>`).join('')
+    : '<span style="color:#6B7A99;font-size:12px;">Nenhum interesse personalizado.</span>';
+}
+window.addCustomInterest=function(){
+  const input=$('customInterestInputPreview'), value=(input?.value||'').trim();
+  if(!value)return alert('Digite uma palavra para adicionar.');
+  if(/\s/.test(value))return alert('Cada interesse personalizado deve ter apenas uma palavra.');
+  if(!/^[\p{L}\p{N}_-]+$/u.test(value))return alert('Use apenas letras, números, hífen ou sublinhado.');
+  if(customInterestsCache.length>=5)return alert('Você já atingiu o limite de 5 interesses personalizados.');
+  if(customInterestsCache.some(x=>x.toLocaleLowerCase()===value.toLocaleLowerCase()))return alert('Esse interesse já foi adicionado.');
+  customInterestsCache.push(value); input.value=''; renderCustomInterests(); input.focus();
+};
+window.removeCustomInterest=function(i){if(i>=0&&i<customInterestsCache.length){customInterestsCache.splice(i,1);renderCustomInterests();}};
+window.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement?.id==='customInterestInputPreview'){e.preventDefault();addCustomInterest();}});
 async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));applyIdentity(p)}
 window.saveProfile=async function(){
  const u=user();
@@ -3203,12 +3222,13 @@ window.saveProfile=async function(){
   const name=$('profileName')?.value.trim();
   if(!name)throw new Error('Informe seu nome.');
   const interests=[...document.querySelectorAll('#page-profile .interest-option input:checked')].map(i=>i.value);
+   const customInterests=customInterestsCache.slice(0,5);
   let photoURL=profileCache?.photoURL||u.photoURL||'';
   const file=$('profilePhoto')?.files?.[0];
   if(file){
    photoURL=await uploadImageToCloudinary(file,'O upload da foto do perfil');
   }
-  const data={uid:u.uid,name,email:u.email,photoURL,interests,updatedAt:serverTimestamp()};
+  const data={uid:u.uid,name,email:u.email,photoURL,interests,customInterests,updatedAt:serverTimestamp()};
   await withTimeout(setDoc(doc(db,'users',u.uid),data,{merge:true}),15000,'O salvamento do perfil no Firestore');
   // A atualização do Auth é secundária; não pode bloquear o salvamento do perfil.
   try{await withTimeout(updateProfile(u,{displayName:name,photoURL}),10000,'A atualização da conta Firebase Authentication')}catch(authErr){console.warn('Perfil salvo no Firestore, mas Auth não foi atualizado:',authErr)}
