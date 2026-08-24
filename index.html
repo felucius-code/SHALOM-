@@ -1408,6 +1408,11 @@ select option {
 .interest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
 .interest-option{background:var(--panel2);border:1px solid #303654;border-radius:7px;padding:9px;color:#fff;cursor:pointer}
 .interest-option:has(input:checked){border-color:var(--gold);color:var(--gold)}
+.custom-interests-box{margin-top:14px;padding:12px;border:1px solid #303654;border-radius:8px;background:rgba(34,40,70,.55)}
+.custom-interest-input-row{display:flex;gap:8px;align-items:center}
+.custom-interest-input-row input{flex:1}
+.custom-interest-preview{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.custom-interest-preview span{display:inline-block;background:var(--panel2);border:1px solid var(--gold);border-radius:15px;padding:5px 9px;color:#fff;font-size:12px}
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
 </style>
@@ -2880,6 +2885,30 @@ select option {
                 <label class="interest-option"><input type="checkbox" value="Literatura"> Literatura</label>
                 <label class="interest-option"><input type="checkbox" value="Cinema"> Cinema</label>
                 <label class="interest-option"><input type="checkbox" value="Estudos"> Estudos</label>
+                <label class="interest-option"><input type="checkbox" value="Filosofia"> Filosofia</label>
+                <label class="interest-option"><input type="checkbox" value="Música"> Música</label>
+                <label class="interest-option"><input type="checkbox" value="Arte"> Arte</label>
+                <label class="interest-option"><input type="checkbox" value="Astronomia"> Astronomia</label>
+                <label class="interest-option"><input type="checkbox" value="Geografia"> Geografia</label>
+                <label class="interest-option"><input type="checkbox" value="Tecnologia"> Tecnologia</label>
+            </div>
+
+            <div class="custom-interests-box">
+                <strong>Interesses personalizados</strong>
+                <p style="color:#6B7A99;font-size:13px;margin:5px 0 10px;">
+                    Esta área será usada para seus interesses próprios. Você poderá acrescentar até 5 palavras, uma por vez.
+                </p>
+                <div class="custom-interest-input-row">
+                    <input id="customInterestInputPreview" type="text" maxlength="30"
+                           placeholder="Ex.: Egiptologia" disabled>
+                    <button class="btn btn-small" type="button" disabled>Adicionar</button>
+                </div>
+                <div style="color:#6B7A99;font-size:12px;margin-top:7px;">
+                    0 de 5 interesses personalizados
+                </div>
+                <div class="custom-interest-preview">
+                    <span>Exemplo</span>
+                </div>
             </div>
         </div>
 
