@@ -3096,11 +3096,30 @@ select option {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js";
 
 const firebaseConfig={apiKey:"AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",authDomain:"shalom-a1626.firebaseapp.com",projectId:"shalom-a1626",storageBucket:"shalom-a1626.firebasestorage.app",messagingSenderId:"746323382164",appId:"1:746323382164:web:1bca1a1df5f5ec6f2b8981",measurementId:"G-QXD13ER8SK"};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),storage=getStorage(app);
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const ADMIN_EMAIL="felucius@gmail.com";
+
+// Cloudinary: upload direto do navegador usando o preset UNSIGNED.
+// Nunca coloque API Secret neste arquivo.
+const CLOUDINARY_CLOUD_NAME="p9wb3dxx";
+const CLOUDINARY_UPLOAD_PRESET="shalom_images";
+const CLOUDINARY_UPLOAD_URL=`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+async function uploadImageToCloudinary(file,label="Upload da imagem"){
+  if(!file)return "";
+  if(!file.type || !file.type.startsWith("image/"))throw new Error("Selecione um arquivo de imagem válido.");
+  const form=new FormData();
+  form.append("file",file);
+  form.append("upload_preset",CLOUDINARY_UPLOAD_PRESET);
+  const response=await withTimeout(fetch(CLOUDINARY_UPLOAD_URL,{method:"POST",body:form}),30000,label);
+  let payload;
+  try{payload=await response.json()}catch(e){throw new Error("O Cloudinary retornou uma resposta inválida.")}
+  if(!response.ok || !payload?.secure_url){throw new Error(payload?.error?.message||`Falha no upload (${response.status}).`)}
+  return payload.secure_url;
+}
+
 let currentUser=null,currentCommunityId=null,currentCommunityIsAdmin=false,isAdmin=false,profileCache=null;
 const contentTypes={films:{collection:"films",title:"Filmes",singular:"Filme",icon:"🎬",grid:"filmsGrid",admin:"admin-films",home:"homeFilms"},series:{collection:"series",title:"Séries",singular:"Série",icon:"📺",grid:"seriesGrid",admin:"admin-series",home:"homeSeries"},books:{collection:"books",title:"Livros",singular:"Livro",icon:"📚",grid:"booksGrid",admin:"admin-books",home:"homeBooks"},articles:{collection:"articles",title:"Artigos",singular:"Artigo",icon:"📰",grid:"articlesGrid",admin:"admin-articles",home:"homeArticles"},documentaries:{collection:"documentaries",title:"Documentários",singular:"Documentário",icon:"🎞️",grid:"documentariesGrid",admin:"admin-documentaries",home:"homeDocumentaries"},studies:{collection:"studies",title:"Estudos",singular:"Estudo",icon:"📖",grid:"studiesGrid",admin:"admin-studies",home:"homeStudies"},videos:{collection:"videos",title:"Vídeos",singular:"Vídeo",icon:"🎥",grid:"videosGrid",admin:"admin-videos",home:"homeVideos"},products:{collection:"products",title:"Produtos",singular:"Produto",icon:"🛒",grid:"productsGrid",admin:"admin-store",home:"homeProducts"}};
 const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -3158,10 +3177,7 @@ window.saveProfile=async function(){
   let photoURL=profileCache?.photoURL||u.photoURL||'';
   const file=$('profilePhoto')?.files?.[0];
   if(file){
-   const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-   const imageRef=ref(storage,`profile-images/${u.uid}/${Date.now()}-${safe}`);
-   const uploaded=await withTimeout(uploadBytes(imageRef,file),20000,'O upload da foto do perfil');
-   photoURL=await withTimeout(getDownloadURL(uploaded.ref),10000,'A obtenção da URL da foto');
+   photoURL=await uploadImageToCloudinary(file,'O upload da foto do perfil');
   }
   const data={uid:u.uid,name,email:u.email,photoURL,interests,updatedAt:serverTimestamp()};
   await withTimeout(setDoc(doc(db,'users',u.uid),data,{merge:true}),15000,'O salvamento do perfil no Firestore');
@@ -3229,10 +3245,7 @@ window.saveContent=async function(type){
   let image=$('newContentImage')?.value.trim()||'';
   const imageFile=$('newContentImageFile')?.files?.[0];
   if(imageFile){
-   const safe=imageFile.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-   const imageRef=ref(storage,`content-images/${type}/${Date.now()}-${safe}`);
-   const uploaded=await withTimeout(uploadBytes(imageRef,imageFile),20000,'O upload da capa');
-   image=await withTimeout(getDownloadURL(uploaded.ref),10000,'A obtenção da URL da capa');
+    image=await uploadImageToCloudinary(imageFile,'O upload da capa');
   }
   const rawUrl=$('newContentUrl')?.value.trim()||'';
   const data={title,description:$('newContentDescription')?.value.trim()||'',image,url:type==='videos'?youtubeUrl(rawUrl):rawUrl,category:$('newContentCategory')?.value.trim()||'',year:$('newContentYear')?.value||'',duration:$('newContentDuration')?.value.trim()||'',access:$('newContentAccess')?.value||'free',createdAt:serverTimestamp(),createdByUid:user().uid,createdByName:publicName(profileCache)};
@@ -3296,10 +3309,7 @@ window.saveCommunitySettings=async function(){
   let imageURL=c.imageURL||'';
   const file=$('editCommunityImage')?.files?.[0];
   if(file){
-   const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-   const imageRef=ref(storage,`community-images/${id}/${Date.now()}-${safe}`);
-   const uploaded=await withTimeout(uploadBytes(imageRef,file),20000,'O upload da imagem da comunidade');
-   imageURL=await withTimeout(getDownloadURL(uploaded.ref),10000,'A obtenção da URL da imagem');
+    imageURL=await uploadImageToCloudinary(file,'O upload da imagem da comunidade');
   }
   await withTimeout(updateDoc(refCommunity,{name,description,imageURL,updatedAt:serverTimestamp(),updatedByUid:u.uid}),15000,'O salvamento da comunidade no Firestore');
   $('communityAreaTitle').textContent=name;
