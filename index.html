@@ -1408,6 +1408,13 @@ select option {
 .interest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
 .interest-option{background:var(--panel2);border:1px solid #303654;border-radius:7px;padding:9px;color:#fff;cursor:pointer}
 .interest-option:has(input:checked){border-color:var(--gold);color:var(--gold)}
+.custom-interests-box{margin-top:14px;padding:12px;border:1px solid #303654;border-radius:8px;background:rgba(34,40,70,.55)}
+.custom-interest-row{display:flex;gap:8px;align-items:center}
+.custom-interest-row input{margin:0}
+.custom-interest-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.custom-interest-tag{display:inline-flex;align-items:center;gap:5px;background:var(--panel2);border:1px solid var(--gold);border-radius:15px;padding:5px 9px;color:#fff;font-size:12px}
+.custom-interest-remove{border:0;background:transparent;color:var(--gold);cursor:pointer;font-size:14px;line-height:1;padding:0}
+.custom-interest-counter{color:#6B7A99;font-size:12px;margin-top:6px}
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
 </style>
@@ -2880,6 +2887,26 @@ select option {
                 <label class="interest-option"><input type="checkbox" value="Literatura"> Literatura</label>
                 <label class="interest-option"><input type="checkbox" value="Cinema"> Cinema</label>
                 <label class="interest-option"><input type="checkbox" value="Estudos"> Estudos</label>
+                <label class="interest-option"><input type="checkbox" value="Filosofia"> Filosofia</label>
+                <label class="interest-option"><input type="checkbox" value="Música"> Música</label>
+                <label class="interest-option"><input type="checkbox" value="Arte"> Arte</label>
+                <label class="interest-option"><input type="checkbox" value="Astronomia"> Astronomia</label>
+                <label class="interest-option"><input type="checkbox" value="Geografia"> Geografia</label>
+                <label class="interest-option"><input type="checkbox" value="Tecnologia"> Tecnologia</label>
+                <label class="interest-option"><input type="checkbox" value="Filosofia"> Filosofia</label>
+            </div>
+
+            <div class="custom-interests-box">
+                <strong>Meus interesses</strong>
+                <p style="color:#6B7A99;font-size:12px;margin:5px 0 10px;">
+                    Você pode acrescentar até 5 interesses próprios. Cada interesse deve ter apenas uma palavra.
+                </p>
+                <div class="custom-interest-row">
+                    <input id="customInterestInput" type="text" maxlength="30" placeholder="Ex.: Egiptologia">
+                    <button class="btn btn-small" type="button" onclick="addCustomInterest()">Adicionar</button>
+                </div>
+                <div id="customInterestCounter" class="custom-interest-counter">0 de 5</div>
+                <div id="customInterestList" class="custom-interest-list"></div>
             </div>
         </div>
 
@@ -3163,7 +3190,45 @@ function applyIdentity(p){
  document.querySelectorAll('.public-user-name').forEach(x=>x.textContent=name);
 }
 async function getProfile(uid=user()?.uid){if(!uid)return null;const s=await getDoc(doc(db,'users',uid));return s.exists()?{id:s.id,...s.data()}:null}
-async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));applyIdentity(p)}
+
+let customInterestsCache=[];
+
+function normalizeCustomInterest(value){
+  return String(value||'').trim();
+}
+
+function renderCustomInterests(list){
+  const box=$('customInterestList');
+  const counter=$('customInterestCounter');
+  customInterestsCache=Array.isArray(list)?list.slice(0,5):[];
+  if(counter)counter.textContent=`${customInterestsCache.length} de 5`;
+  if(box){
+    box.innerHTML=customInterestsCache.length
+      ? customInterestsCache.map((item,i)=>`<span class="custom-interest-tag">${esc(item)}<button type="button" class="custom-interest-remove" onclick="removeCustomInterest(${i})">×</button></span>`).join('')
+      : '<span style="color:#6B7A99;font-size:12px;">Nenhum interesse personalizado.</span>';
+  }
+}
+
+window.addCustomInterest=function(){
+  const input=$('customInterestInput');
+  const raw=input?.value.trim()||'';
+  if(!raw)return alert('Digite uma palavra para adicionar.');
+  if(/\s/.test(raw))return alert('Cada interesse personalizado deve ter apenas uma palavra.');
+  if(!/^[\p{L}\p{N}_-]+$/u.test(raw))return alert('Use apenas uma palavra, sem símbolos.');
+  if(customInterestsCache.length>=5)return alert('Você já atingiu o limite de 5 interesses personalizados.');
+  if(customInterestsCache.some(x=>x.toLocaleLowerCase()===raw.toLocaleLowerCase()))return alert('Esse interesse já foi adicionado.');
+  customInterestsCache.push(raw);
+  if(input)input.value='';
+  renderCustomInterests(customInterestsCache);
+  input?.focus();
+};
+
+window.removeCustomInterest=function(index){
+  customInterestsCache.splice(index,1);
+  renderCustomInterests(customInterestsCache);
+};
+
+async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';const allInterests=p.interests||[];document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=allInterests.includes(i.value));customInterestsCache=Array.isArray(p.customInterests)?p.customInterests.slice(0,5):[];renderCustomInterests(customInterestsCache);applyIdentity(p)}
 window.saveProfile=async function(){
  const u=user();
  if(!u)return alert('Você precisa estar conectado.');
@@ -3174,12 +3239,14 @@ window.saveProfile=async function(){
   const name=$('profileName')?.value.trim();
   if(!name)throw new Error('Informe seu nome.');
   const interests=[...document.querySelectorAll('#page-profile .interest-option input:checked')].map(i=>i.value);
+  const customInterests=customInterestsCache.slice(0,5);
+  const allSavedInterests=[...new Set([...interests,...customInterests])];
   let photoURL=profileCache?.photoURL||u.photoURL||'';
   const file=$('profilePhoto')?.files?.[0];
   if(file){
    photoURL=await uploadImageToCloudinary(file,'O upload da foto do perfil');
   }
-  const data={uid:u.uid,name,email:u.email,photoURL,interests,updatedAt:serverTimestamp()};
+  const data={uid:u.uid,name,email:u.email,photoURL,interests:allSavedInterests,customInterests,updatedAt:serverTimestamp()};
   await withTimeout(setDoc(doc(db,'users',u.uid),data,{merge:true}),15000,'O salvamento do perfil no Firestore');
   // A atualização do Auth é secundária; não pode bloquear o salvamento do perfil.
   try{await withTimeout(updateProfile(u,{displayName:name,photoURL}),10000,'A atualização da conta Firebase Authentication')}catch(authErr){console.warn('Perfil salvo no Firestore, mas Auth não foi atualizado:',authErr)}
@@ -3198,6 +3265,7 @@ window.showSignup=function(){hideError('loginError');hideError('signupError');$(
 window.showLogin=function(){hideError('loginError');hideError('signupError');$('signupForm')?.classList.add('hidden');$('loginForm')?.classList.remove('hidden');$('loginEmail')?.focus()};
 window.handleLogin=async function(){const email=$('loginEmail')?.value.trim(),password=$('loginPassword')?.value;if(!email||!password)return alert('Preencha email e senha.');try{await signInWithEmailAndPassword(auth,email,password)}catch(e){console.error(e);alert('Não foi possível entrar: '+e.message)}};
 window.handleSignup=async function(){const name=$('signupName')?.value.trim(),email=$('signupEmail')?.value.trim(),password=$('signupPassword')?.value;if(!name||!email||!password)return showError('signupError','Preencha todos os campos.');if(password.length<6)return showError('signupError','A senha precisa ter pelo menos 6 caracteres.');try{const c=await createUserWithEmailAndPassword(auth,email,password);await updateProfile(c.user,{displayName:name});await setDoc(doc(db,'users',c.user.uid),{uid:c.user.uid,name,email,photoURL:'',interests:[],createdAt:serverTimestamp(),updatedAt:serverTimestamp()});document.getElementById('signupForm')?.classList.add('hidden');document.getElementById('loginForm')?.classList.remove('hidden');document.getElementById('signupPassword')&&(document.getElementById('signupPassword').value='');hideError('signupError')}catch(e){console.error(e);showError('signupError',e.message)}};
+window.addEventListener('keydown',e=>{if(e.key==='Enter' && document.activeElement?.id==='customInterestInput'){e.preventDefault();addCustomInterest();}});
 window.logout=()=>signOut(auth);
 
 function contentForm(type){
