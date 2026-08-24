@@ -1411,27 +1411,6 @@ select option {
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
 </style>
-
-<style>
-.custom-interest-row{display:flex;gap:8px;align-items:center;margin-top:12px}
-.custom-interest-row input{flex:1}
-.custom-interest-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
-.custom-interest-tag{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid #3b4568;border-radius:999px;padding:6px 10px;font-size:13px}
-.custom-interest-tag button{border:0;background:transparent;color:#fff;cursor:pointer;padding:0;font-size:15px}
-.interest-counter{font-size:12px;color:#6B7A99;margin-top:6px}
-.notification-card{border:1px solid #303654;background:var(--panel);border-radius:12px;padding:16px;margin-bottom:12px}
-.notification-card-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.notification-user{display:flex;align-items:center;gap:12px}
-.notification-avatar{width:42px;height:42px;border-radius:50%;overflow:hidden;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-weight:700}
-.notification-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.admin-dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0}
-.admin-dashboard-card{border:1px solid #303654;background:var(--panel);border-radius:12px;padding:16px;cursor:pointer;transition:.15s}
-.admin-dashboard-card:hover{border-color:var(--gold);transform:translateY(-1px)}
-.admin-dashboard-card h3{margin:0 0 7px}.admin-dashboard-card p{margin:0;color:#6B7A99;font-size:13px}
-.admin-section{margin-top:18px}
-.recommended-section{margin-bottom:22px}
-.recommended-section .home-section-header{display:flex;justify-content:space-between;align-items:center}
-</style>
 </head>
 
 <body>
@@ -1782,13 +1761,6 @@ select option {
 
         </div>
 
-    </section>
-
-    <section id="recommendedSection" class="home-section recommended-section hidden">
-        <div class="home-section-header">
-            <h2>✨ Recomendados para você</h2>
-        </div>
-        <div id="homeRecommended" class="home-carousel"></div>
     </section>
 
 
@@ -2845,7 +2817,7 @@ select option {
     </h1>
 
     <p class="page-description">
-        Produtos disponíveis para compra. Livros para leitura e estudo ficam na Biblioteca.
+        Produtos disponíveis no SHALOM.
     </p>
 
     <div id="admin-store"
@@ -2908,20 +2880,7 @@ select option {
                 <label class="interest-option"><input type="checkbox" value="Literatura"> Literatura</label>
                 <label class="interest-option"><input type="checkbox" value="Cinema"> Cinema</label>
                 <label class="interest-option"><input type="checkbox" value="Estudos"> Estudos</label>
-                <label class="interest-option"><input type="checkbox" value="Filosofia"> Filosofia</label>
-                <label class="interest-option"><input type="checkbox" value="Música"> Música</label>
-                <label class="interest-option"><input type="checkbox" value="Arte"> Arte</label>
-                <label class="interest-option"><input type="checkbox" value="Tecnologia"> Tecnologia</label>
-                <label class="interest-option"><input type="checkbox" value="Astronomia"> Astronomia</label>
-                <label class="interest-option"><input type="checkbox" value="Literatura brasileira"> Literatura brasileira</label>
-                <label class="interest-option"><input type="checkbox" value="Cinema brasileiro"> Cinema brasileiro</label>
             </div>
-            <div class="custom-interest-row">
-                <input id="customInterestInput" type="text" maxlength="30" placeholder="Outro interesse (uma palavra)">
-                <button type="button" class="btn btn-small" onclick="addCustomInterest()">Adicionar</button>
-            </div>
-            <div id="customInterestTags" class="custom-interest-tags"></div>
-            <div id="interestCounter" class="interest-counter">0 de 5 interesses personalizados</div>
         </div>
 
         <button class="btn" onclick="saveProfile()">Salvar perfil</button>
@@ -2970,7 +2929,7 @@ select option {
 
     <!-- ADMINISTRADORES DE COMUNIDADE -->
 
-    <div id="adminCommunityManager" class="card">
+    <div class="card">
 
         <h2 class="card-title">
             👥 Administradores de Comunidade
@@ -3035,26 +2994,75 @@ select option {
 
     <!-- GERENCIAMENTO DE CONTEÚDOS -->
 
-    <div id="adminContentSection" class="card" style="margin-bottom:20px">
+    <div class="card" style="margin-bottom:20px">
         <h2 class="card-title">📚 Gerenciar conteúdos</h2>
-        <p style="color:#6B7A99;margin-bottom:15px;">Adicione conteúdos pelas respectivas páginas e exclua-os diretamente aqui. Os conteúdos mais recentes aparecem primeiro, usando a data interna de criação (createdAt).</p>
+        <p style="color:#6B7A99;margin-bottom:15px;">Adicione conteúdos pelas respectivas páginas e exclua-os diretamente aqui.</p>
         <div id="adminContentManager"><p style="color:#6B7A99">Carregando catálogo...</p></div>
     </div>
 
-    <!-- PAINEL ADMINISTRATIVO -->
-    <div class="admin-dashboard">
-        <div class="admin-dashboard-card" onclick="scrollToAdmin('adminUsersSection')"><h3>👥 Usuários</h3><p>Consultar usuários cadastrados.</p></div>
-        <div class="admin-dashboard-card" onclick="scrollToAdmin('adminCommunitiesSection')"><h3>🏘️ Comunidades</h3><p>Administrar comunidades e administradores.</p></div>
-        <div class="admin-dashboard-card" onclick="scrollToAdmin('adminContentSection')"><h3>📚 Conteúdo</h3><p>Gerenciar o catálogo do SHALOM.</p></div>
-        <div class="admin-dashboard-card" onclick="openPageByName('store')"><h3>🛒 Loja</h3><p>Abrir a área de produtos.</p></div>
-    </div>
+    <!-- ADMINISTRAÇÃO GERAL -->
 
-    <div id="adminUsersSection" class="card admin-section">
-        <h2 class="card-title">👥 Usuários cadastrados</h2>
-        <div id="adminUsersList"><p style="color:#6B7A99">Carregando usuários...</p></div>
-    </div>
+    <div class="grid">
 
-    <div id="adminCommunitiesSection" class="admin-section">
+        <div class="card">
+
+            <h3 class="card-title">
+                👥 Usuários
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão dos usuários.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                🏘️ Comunidades
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão das comunidades.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                🚨 Moderação
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Denúncias e moderação.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                🛒 Loja
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão da loja.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3 class="card-title">
+                📚 Conteúdo
+            </h3>
+
+            <p style="color:#6B7A99;">
+                Gestão do catálogo.
+            </p>
+
+        </div>
 
         <div class="card">
 
@@ -3155,35 +3163,7 @@ function applyIdentity(p){
  document.querySelectorAll('.public-user-name').forEach(x=>x.textContent=name);
 }
 async function getProfile(uid=user()?.uid){if(!uid)return null;const s=await getDoc(doc(db,'users',uid));return s.exists()?{id:s.id,...s.data()}:null}
-
-function getCustomInterests(p=profileCache){
- const preset=[...document.querySelectorAll('#page-profile .interest-option input')].map(i=>i.value);
- return (p?.interests||[]).filter(x=>!preset.includes(x));
-}
-function renderCustomInterestTags(){
- const box=$('customInterestTags'),counter=$('interestCounter');if(!box)return;
- const vals=getCustomInterests();
- box.innerHTML=vals.map(v=>`<span class="custom-interest-tag">${esc(v)}<button type="button" onclick="removeCustomInterest('${esc(v).replace(/'/g,"\\'")}')">×</button></span>`).join('');
- if(counter)counter.textContent=`${vals.length} de 5 interesses personalizados`;
-}
-window.addCustomInterest=function(){
- const input=$('customInterestInput');if(!input)return;
- const raw=input.value.trim();
- if(!raw)return;
- if(/\s/.test(raw))return alert('Digite apenas uma palavra por interesse.');
- const word=raw.replace(/[^\p{L}\p{N}_-]/gu,'');
- if(!word)return alert('Digite um interesse válido.');
- const current=getCustomInterests();
- if(current.length>=5)return alert('Você pode adicionar no máximo 5 interesses personalizados.');
- if(current.some(x=>x.toLocaleLowerCase()===word.toLocaleLowerCase()))return alert('Esse interesse já foi adicionado.');
- profileCache={...(profileCache||{}),interests:[...(profileCache?.interests||[]),word]};
- input.value='';renderCustomInterestTags();
-};
-window.removeCustomInterest=function(value){
- profileCache={...(profileCache||{}),interests:(profileCache?.interests||[]).filter(x=>x!==value)};renderCustomInterestTags();
-};
-
-async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));renderCustomInterestTags();applyIdentity(p)}
+async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));applyIdentity(p)}
 window.saveProfile=async function(){
  const u=user();
  if(!u)return alert('Você precisa estar conectado.');
@@ -3193,9 +3173,7 @@ window.saveProfile=async function(){
  try{
   const name=$('profileName')?.value.trim();
   if(!name)throw new Error('Informe seu nome.');
-  const presetInterests=[...document.querySelectorAll('#page-profile .interest-option input:checked')].map(i=>i.value);
-  const customInterests=getCustomInterests();
-  const interests=[...new Set([...presetInterests,...customInterests])];
+  const interests=[...document.querySelectorAll('#page-profile .interest-option input:checked')].map(i=>i.value);
   let photoURL=profileCache?.photoURL||u.photoURL||'';
   const file=$('profilePhoto')?.files?.[0];
   if(file){
@@ -3287,26 +3265,16 @@ window.saveContent=async function(type){
 function renderContentCard(type,id,d){
  const info=contentTypes[type];
  const cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;
- const isVideo=type==='videos',isProduct=type==='products';
- const action=d.url?(isVideo?`<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">▶ Assistir</button>`:isProduct?`<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">🛒 Comprar</a>`:`<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Abrir</a>`):'';
- const price=isProduct&&d.price?`<strong style="display:block;margin-top:7px;color:var(--gold)">${esc(d.price)}</strong>`:'';
- return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}${price}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`;
+ const isVideo=type==='videos';
+ const action=d.url?(isVideo?`<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">▶ Assistir</button>`:`<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Abrir</a>`):'';
+ return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`;
 }
 async function fetchContent(type){const snap=await getDocs(collection(db,contentTypes[type].collection));return snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(b.createdAt)-ts(a.createdAt))}
 window.loadContent=async function(type){const info=contentTypes[type],grid=$(info.grid);if(!grid)return;const adminBox=$(info.admin);if(adminBox)adminBox.classList.toggle('hidden',!isAdmin);grid.innerHTML='<p style="color:#6B7A99">Carregando...</p>';try{const items=await fetchContent(type);grid.innerHTML=items.length?items.map(x=>renderContentCard(type,x.id,x)).join(''):'<p style="color:#6B7A99">Nenhum conteúdo cadastrado.</p>';}catch(e){console.error(e);grid.innerHTML=`<div class="error">Erro ao carregar ${esc(info.title)}: ${esc(e.message)}</div>`}};
 window.deleteContent=async function(type,id){if(!isAdmin)return;if(!confirm('Excluir este conteúdo?'))return;try{await deleteDoc(doc(db,contentTypes[type].collection,id));await loadContent(type);await loadAdminContentManager();await loadHome()}catch(e){alert('Erro ao excluir: '+e.message)}};
 window.loadAdminContentManager=async function(){const box=$('adminContentManager');if(!box)return;let html='';for(const type of Object.keys(contentTypes)){const items=await fetchContent(type);html+=`<h3 style="color:var(--gold);margin:15px 0 8px">${contentTypes[type].icon} ${contentTypes[type].title}</h3>`;html+=items.length?items.map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #303654"><span>${esc(x.title||'Sem título')}</span><button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${x.id}')">Excluir</button></div>`).join(''):'<p style="color:#6B7A99">Nenhum.</p>'}box.innerHTML=html};
 
-async function loadRecommendations(){
- const section=$('recommendedSection'),host=$('homeRecommended');if(!section||!host)return;
- const interests=(profileCache?.interests||[]).map(x=>String(x).toLocaleLowerCase()).filter(Boolean);
- if(!interests.length){section.classList.add('hidden');host.innerHTML='';return}
- const all=[];for(const type of Object.keys(contentTypes).filter(t=>t!=='products')){const items=await fetchContent(type);for(const item of items)all.push({type,...item})}
- const scored=all.map(item=>{const hay=[item.title,item.description,item.category,item.author,item.tags].filter(Boolean).join(' ').toLocaleLowerCase();let score=0;for(const i of interests){if(hay.includes(i))score+=1}return {...item,score}}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||ts(b.createdAt)-ts(a.createdAt)).slice(0,10);
- if(!scored.length){section.classList.add('hidden');host.innerHTML='';return}
- section.classList.remove('hidden');host.innerHTML=scored.map(x=>renderContentCard(x.type,x.id,x)).join('');
-}
-async function loadHome(){for(const type of Object.keys(contentTypes)){const host=$(contentTypes[type].home);if(!host)continue;const items=await fetchContent(type);host.innerHTML=items.slice(0,10).map(x=>renderContentCard(type,x.id,x)).join('')||'<p style="color:#6B7A99">Nenhum conteúdo.</p>'}await loadRecommendations();await loadCommunitiesBar()}
+async function loadHome(){for(const type of Object.keys(contentTypes)){const host=$(contentTypes[type].home);if(!host)continue;const items=await fetchContent(type);host.innerHTML=items.slice(0,10).map(x=>renderContentCard(type,x.id,x)).join('')||'<p style="color:#6B7A99">Nenhum conteúdo.</p>'}await loadCommunitiesBar()}
 window.loadHome=loadHome;
 
 async function communityIsAdmin(id,data=null){if(isAdmin)return true;const u=user();if(!u)return false;data=data||((await getDoc(doc(db,'communities',id))).data()||{});return data.createdByUid===u.uid||(data.memberUids||[]).includes(u.uid)&&(data.communityAdminUids||[]).includes(u.uid)}
@@ -3391,34 +3359,19 @@ window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async func
 async function loadCommunityStudyVideos(id){const list=$('studyVideosList');if(!list)return;const snap=await getDocs(collection(db,'communities',id,'studyVideos'));const arr=snap.docs.map(x=>x.data());list.innerHTML=arr.map(v=>`<a class="btn btn-small" target="_blank" rel="noopener" href="${esc(v.url||'#')}">${esc(v.title||'Vídeo')}</a>`).join('')||'<p style="color:#6B7A99">Nenhum vídeo de estudo.</p>'}
 window.loadCommunityStudyVideos=loadCommunityStudyVideos;
 
-async function visibleAdminCommunities(){const snap=await getDocs(collection(db,'communities'));const u=user();return snap.docs.map(x=>({id:x.id,...x.data()})).filter(c=>isAdmin||c.createdByUid===u?.uid||(c.communityAdminUids||[]).includes(u?.uid)||(c.communityAdmins||[]).includes(u?.email))}
+async function visibleAdminCommunities(){const snap=await getDocs(collection(db,'communities'));return snap.docs.map(x=>({id:x.id,...x.data()})).filter(c=>isAdmin||c.createdByUid===user()?.uid)}
 window.loadAdminCommunities=async function(){const sel=$('adminCommunitySelect');if(!sel)return;const arr=await visibleAdminCommunities();sel.innerHTML='<option value="">Selecione uma comunidade</option>'+arr.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')};
-window.assignCommunityAdmin=async function(){const id=$('adminCommunitySelect')?.value,email=$('communityAdminEmail')?.value.trim();if(!id||!email)return alert('Selecione a comunidade e informe o e-mail.');try{const q=query(collection(db,'users'),where('email','==',email));const s=await getDocs(q);if(s.empty)return alert('Usuário não encontrado.');const p={id:s.docs[0].id,...s.docs[0].data()};const uid=p.uid||p.id;const r=doc(db,'communities',id);await updateDoc(r,{communityAdminUids:arrayUnion(uid),communityAdmins:arrayUnion(email)});await loadCommunityAdmins();alert(`${p.name||email} agora é administrador da comunidade.`)}catch(e){alert('Erro: '+e.message)}};
+window.assignCommunityAdmin=async function(){const id=$('adminCommunitySelect')?.value,email=$('communityAdminEmail')?.value.trim();if(!id||!email)return alert('Selecione a comunidade e informe o e-mail.');try{const q=query(collection(db,'users'),where('email','==',email));const s=await getDocs(q);if(s.empty)return alert('Usuário não encontrado.');const p={id:s.docs[0].id,...s.docs[0].data()};const r=doc(db,'communities',id);await updateDoc(r,{communityAdminUids:arrayUnion(p.uid||p.id),communityAdmins:arrayUnion(email)});await loadCommunityAdmins();alert('Administrador definido.')}catch(e){alert('Erro: '+e.message)}};
+window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');if(!box)return;const snap=await getDocs(collection(db,'communityAdmins'));box.innerHTML=snap.docs.map(x=>{const d=x.data();return `<div style="padding:7px 0;border-bottom:1px solid #303654">${esc(d.userName||d.userEmail||d.userUid||'Administrador')}</div>`}).join('')||'<p style="color:#6B7A99">Nenhum administrador adicional.</p>'};
 
-window.removeCommunityAdmin=async function(communityId,uid,email){if(!isAdmin)return;try{const r=doc(db,'communities',communityId);const patch={};if(uid)patch.communityAdminUids=arrayRemove(uid);if(email)patch.communityAdmins=arrayRemove(email);await updateDoc(r,patch);await loadCommunityAdmins();alert('Administrador removido.')}catch(e){alert('Erro ao remover administrador: '+e.message)}};
-window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');if(!box)return;const arr=await visibleAdminCommunities();let html='';for(const c of arr){const uids=c.communityAdminUids||[],emails=c.communityAdmins||[];const rows=[];for(const uid of uids){const p=await getProfile(uid);rows.push({uid,email:p?.email||'',name:p?.name||p?.email||uid})}for(const email of emails){if(!rows.some(r=>r.email===email))rows.push({uid:'',email,name:email})}html+=`<div style="padding:12px 0;border-bottom:1px solid #303654"><strong>${esc(c.name)}</strong>${rows.length?rows.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px"><div><div>${esc(r.name)}</div><div style="color:#6B7A99;font-size:12px">${esc(r.email||'')}</div></div>${r.uid&&r.uid!==c.createdByUid?`<button class="btn btn-danger btn-small" onclick="removeCommunityAdmin('${esc(c.id)}','${esc(r.uid)}','${esc(r.email)}')">Remover</button>`:''}</div>`).join(''):'<div style="color:#6B7A99;margin-top:6px">Nenhum administrador adicional.</div>'}</div>`}box.innerHTML=html||'<p style="color:#6B7A99">Nenhuma comunidade administrável.</p>'};
-
-window.viewRequests=async function(communityId){
- const cSnap=await getDoc(doc(db,'communities',communityId));if(!cSnap.exists())return;
- const c={id:communityId,...cSnap.data()};if(!(await communityIsAdmin(communityId,c)))return alert('Sem permissão.');
- const ids=c.pendingMemberUids||[],emails=c.pendingMembers||[],requests=[];
- for(const uid of ids){const p=await getProfile(uid);if(p)requests.push({uid,email:p.email,name:p.name||p.email,photoURL:p.photoURL})}
- for(const email of emails){if(requests.some(r=>r.email===email))continue;const q=query(collection(db,'users'),where('email','==',email)),s=await getDocs(q);if(!s.empty){const p={id:s.docs[0].id,...s.docs[0].data()};requests.push({uid:p.uid||p.id,email,name:p.name||email,photoURL:p.photoURL})}else requests.push({email,name:email})}
- setPage('notifications',document.querySelector('.nav-item[onclick*="notifications"]'));
- const card=$('page-notifications')?.querySelector('.card');if(!card)return;
- card.innerHTML=`<div class="notification-card-header"><div><h2 class="card-title" style="margin:0">Solicitações de entrada</h2><div style="color:#6B7A99;font-size:13px;margin-top:4px">Comunidade: ${esc(c.name)}</div></div><button class="btn btn-secondary btn-small" onclick="loadNotifications()">Voltar</button></div><div style="margin-top:14px">${requests.length?requests.map(r=>`<div class="notification-card"><div class="notification-user"><div class="notification-avatar">${r.photoURL?`<img src="${esc(r.photoURL)}" style="width:100%;height:100%;object-fit:cover">`:initials(r.name)}</div><div><strong>${esc(r.name||'Usuário')}</strong><div style="color:#6B7A99;font-size:13px">${esc(r.email||'')}</div></div></div><div style="color:#c4c9d9;margin-top:10px">Solicitou entrada na comunidade <strong>${esc(c.name)}</strong>.</div><div class="notification-actions"><button class="btn btn-small" onclick="approveJoin('${esc(communityId)}','${esc(r.uid||'')}','${esc(r.email||'')}')">✓ Aceitar</button><button class="btn btn-danger btn-small" onclick="rejectJoin('${esc(communityId)}','${esc(r.uid||'')}','${esc(r.email||'')}')">✕ Recusar</button></div></div>`).join(''):'<p style="color:#6B7A99">Nenhuma solicitação pendente.</p>'}</div>`;
-};
+window.viewRequests=async function(communityId){const cSnap=await getDoc(doc(db,'communities',communityId));if(!cSnap.exists())return;const c={id:communityId,...cSnap.data()};if(!(await communityIsAdmin(communityId,c)))return alert('Sem permissão.');const ids=c.pendingMemberUids||[],emails=c.pendingMembers||[];const requests=[];for(const uid of ids){const p=await getProfile(uid);if(p)requests.push({uid,email:p.email,name:p.name||p.email})}for(const email of emails){if(requests.some(r=>r.email===email))continue;const q=query(collection(db,'users'),where('email','==',email)),s=await getDocs(q);if(!s.empty){const p={id:s.docs[0].id,...s.docs[0].data()};requests.push({uid:p.uid||p.id,email,name:p.name||email})}else requests.push({email,name:email})}const card=$('page-notifications');setPage('notifications',document.querySelector('.nav-item[onclick*="notifications"]'));card.querySelector('.card').innerHTML=`<div style="display:flex;justify-content:space-between"><h2 class="card-title">Solicitações — ${esc(c.name)}</h2><button class="btn btn-secondary btn-small" onclick="loadNotifications()">Voltar</button></div>${requests.length?requests.map(r=>`<div class="card" style="margin-top:10px"><strong>${esc(r.name)}</strong><div style="color:#6B7A99">${esc(r.email||'')}</div><button class="btn btn-small" onclick="approveJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Aprovar</button><button class="btn btn-danger btn-small" onclick="rejectJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Recusar</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma solicitação.</p>'}`};
 window.approveJoin=async function(id,uid,email){const r=doc(db,'communities',id),s=await getDoc(r);if(!s.exists())return;const c=s.data(),data={memberUids:uid?arrayUnion(uid):arrayUnion(),members:email?arrayUnion(email):arrayUnion(),pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
 window.rejectJoin=async function(id,uid,email){const r=doc(db,'communities',id),data={pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
 window.requestJoin=async function(id){const u=user();if(!u)return;await updateDoc(doc(db,'communities',id),{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});alert('Solicitação enviada.');await loadCommunities()};
 
-window.loadNotifications=async function(){
- const box=$('page-notifications')?.querySelector('.card');if(!box)return;
- try{const arr=await visibleAdminCommunities();const pending=arr.filter(c=>(c.pendingMemberUids||[]).length||(c.pendingMembers||[]).length);
- box.innerHTML=pending.length?`<div><h2 class="card-title" style="margin-bottom:4px">Solicitações de entrada</h2><p style="color:#6B7A99;margin-top:0">Há solicitações aguardando sua análise.</p></div>`+pending.map(c=>{const count=Math.max((c.pendingMemberUids||[]).length,(c.pendingMembers||[]).length);return `<div class="notification-card"><div class="notification-card-header"><div><strong>${esc(c.name)}</strong><div style="color:#6B7A99;font-size:13px">${count} solicitação(ões) pendente(s)</div></div><button class="btn btn-small" onclick="viewRequests('${esc(c.id)}')">Ver solicitações</button></div></div>`}).join(''):'<div style="text-align:center;padding:24px 8px"><div style="font-size:34px">🔔</div><h3>Nenhuma solicitação pendente</h3><p style="color:#6B7A99">Quando alguém solicitar entrada em uma comunidade que você administra, ela aparecerá aqui.</p></div>`;
- }catch(e){box.innerHTML=`<div class="error">Erro ao carregar notificações: ${esc(e.message)}</div>`}};
+window.loadNotifications=async function(){const box=$('page-notifications')?.querySelector('.card');if(!box)return;const arr=await visibleAdminCommunities();const pending=arr.filter(c=>(c.pendingMemberUids||[]).length||(c.pendingMembers||[]).length);box.innerHTML=pending.length?pending.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #303654"><div><strong>${esc(c.name)}</strong><div style="color:#6B7A99">${(c.pendingMemberUids||c.pendingMembers||[]).length} solicitação(ões)</div></div><button class="btn btn-small" onclick="viewRequests('${c.id}')">Ver solicitações</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma notificação no momento.</p>'};
 
-async function loadAdmin(){await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager();await loadAdminUsers()}
+async function loadAdmin(){await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager()}
 window.loadAdmin=loadAdmin;
 
 function bindHomeAddButtons(){
@@ -3430,9 +3383,7 @@ function bindHomeAddButtons(){
  });
 }
 
-onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();
-    try{const aq=query(collection(db,'users'),where('email','==',ADMIN_EMAIL));const as=await getDocs(aq);if(!as.empty){const ap=as.docs[0].data();if(ap.uid&&ap.uid===u.uid)isAdmin=true;}}catch(e){console.warn('Não foi possível resolver o UID do administrador geral:',e)}
-    Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
+onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
