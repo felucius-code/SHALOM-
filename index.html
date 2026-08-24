@@ -1418,7 +1418,13 @@ select option {
 .recommendation-card{position:relative}
 .recommendation-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
 .recommendation-empty{color:#6B7A99;font-size:14px;padding:8px 0}
-.recommendation-match{display:inline-block;margin-top:6px;font-size:11px;color:var(--gold)}
+ .recommendation-match{display:inline-block;margin-top:6px;font-size:11px;color:var(--gold)}
+.admin-dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}
+.admin-panel{background:var(--panel);border:1px solid #303654;border-radius:10px;padding:16px}
+.admin-panel h3{margin:0 0 8px}.admin-table{width:100%;border-collapse:collapse;font-size:13px}
+.admin-table th,.admin-table td{padding:9px;border-bottom:1px solid #303654;text-align:left;vertical-align:middle}
+.admin-table th{color:var(--gold)}.admin-select{width:100%;padding:9px;border-radius:7px;background:var(--panel2);color:#fff;border:1px solid #303654}
+.store-form-note{color:#6B7A99;font-size:12px;margin-top:5px}
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
 </style>
@@ -2857,7 +2863,7 @@ select option {
 
 <section id="page-profile" class="page">
 
-    <h1 class="page-title">👤 Perfil</h1>
+    <h1 class="page-title">👤 Perfil</h1><div class="card" style="margin-bottom:16px;"><h2 class="card-title">🛒 Loja</h2><p style="color:#6B7A99;margin:0;">Produtos são itens para compra. Livros para leitura e estudo permanecem na seção Livros.</p></div>
     <div id="recommendationsSection" class="card recommendation-card" style="margin-bottom:18px;">
         <h2 class="card-title">✨ Recomendados para você</h2>
         <p id="recommendationsIntro" style="color:#6B7A99;font-size:13px;margin:0 0 12px;">
@@ -2956,169 +2962,18 @@ select option {
      ADMINISTRAÇÃO GERAL
 ===================================================== -->
 
-<section id="page-admin"
-         class="page">
-
-    <h1 class="page-title">
+<section id="page-admin" class="page">
+<h1 class="page-title">
         🛡️ Administração
     </h1>
-
-    <p class="page-description">
-        Administração geral do SHALOM.
-    </p>
-
-
-    <!-- ADMINISTRADORES DE COMUNIDADE -->
-
-    <div class="card">
-
-        <h2 class="card-title">
-            👥 Administradores de Comunidade
-        </h2>
-
-        <p style="color:#6B7A99;margin-bottom:20px;">
-
-            O administrador geral pode definir
-            quem administra cada comunidade.
-
-        </p>
-
-
-        <div class="form-group">
-
-            <label>
-                Comunidade
-            </label>
-
-            <select
-                id="adminCommunitySelect">
-
-                <option value="">
-                    Selecione uma comunidade
-                </option>
-
-            </select>
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-                Email do usuário (busca)
-            </label>
-
-            <input
-                type="email"
-                id="communityAdminEmail"
-                placeholder="usuario@email.com">
-
-        </div>
-
-
-        <button
-            class="btn"
-            onclick="assignCommunityAdmin()">
-
-            Tornar administrador
-
-        </button>
-
-
-        <div
-            id="communityAdminsList"
-            style="margin-top:20px;">
-        </div>
-
-    </div>
-
-
-    <!-- GERENCIAMENTO DE CONTEÚDOS -->
-
-    <div class="card" style="margin-bottom:20px">
-        <h2 class="card-title">📚 Gerenciar conteúdos</h2>
-        <p style="color:#6B7A99;margin-bottom:15px;">Adicione conteúdos pelas respectivas páginas e exclua-os diretamente aqui.</p>
-        <div id="adminContentManager"><p style="color:#6B7A99">Carregando catálogo...</p></div>
-    </div>
-
-    <!-- ADMINISTRAÇÃO GERAL -->
-
-    <div class="grid">
-
-        <div class="card">
-
-            <h3 class="card-title">
-                👥 Usuários
-            </h3>
-
-            <p style="color:#6B7A99;">
-                Gestão dos usuários.
-            </p>
-
-        </div>
-
-        <div class="card">
-
-            <h3 class="card-title">
-                🏘️ Comunidades
-            </h3>
-
-            <p style="color:#6B7A99;">
-                Gestão das comunidades.
-            </p>
-
-        </div>
-
-        <div class="card">
-
-            <h3 class="card-title">
-                🚨 Moderação
-            </h3>
-
-            <p style="color:#6B7A99;">
-                Denúncias e moderação.
-            </p>
-
-        </div>
-
-        <div class="card">
-
-            <h3 class="card-title">
-                🛒 Loja
-            </h3>
-
-            <p style="color:#6B7A99;">
-                Gestão da loja.
-            </p>
-
-        </div>
-
-        <div class="card">
-
-            <h3 class="card-title">
-                📚 Conteúdo
-            </h3>
-
-            <p style="color:#6B7A99;">
-                Gestão do catálogo.
-            </p>
-
-        </div>
-
-        <div class="card">
-
-            <h3 class="card-title">
-                ⚙️ Configurações
-            </h3>
-
-            <p style="color:#6B7A99;">
-                Configurações da plataforma.
-            </p>
-
-        </div>
-
-    </div>
-
+<p class="page-description">Administração geral do SHALOM.</p>
+<div class="admin-dashboard">
+<div class="admin-panel"><h3>👥 Usuários</h3><p style="color:#6B7A99;font-size:13px">Visualizar usuários, UID e interesses.</p><button class="btn btn-small" type="button" onclick="adminShowUsers()">Gerenciar usuários</button></div>
+<div class="admin-panel"><h3>🏘️ Comunidades</h3><p style="color:#6B7A99;font-size:13px">Selecionar comunidade e permissões.</p><button class="btn btn-small" type="button" onclick="adminShowCommunities()">Gerenciar comunidades</button></div>
+<div class="admin-panel"><h3>📚 Conteúdos</h3><p style="color:#6B7A99;font-size:13px">Visualizar e excluir conteúdos.</p><button class="btn btn-small" type="button" onclick="adminShowContents()">Gerenciar conteúdos</button></div>
+<div class="admin-panel"><h3>🛒 Loja</h3><p style="color:#6B7A99;font-size:13px">Visualizar produtos e links de compra.</p><button class="btn btn-small" type="button" onclick="adminShowStore()">Gerenciar loja</button></div>
+</div>
+<div id="adminWorkspace" class="card"><h2 class="card-title">Painel administrativo</h2><p style="color:#6B7A99">Escolha uma área acima.</p></div>
 </section>
 
 
@@ -3275,19 +3130,30 @@ function contentForm(type){
  f.style.margin='18px 0';
  const isVideo=type==='videos';
  const isProduct=type==='products';
+  const isBook=type==='books';
  f.innerHTML=`
  <h2 class="card-title">${info.icon} Adicionar ${info.singular}</h2>
  <div class="form-group"><label>Título</label><input id="newContentTitle" type="text" autocomplete="off"></div>
  <div class="form-group"><label>Descrição</label><textarea id="newContentDescription"></textarea></div>
- <div class="form-group"><label>Imagem/capa</label><input type="file" id="newContentImageFile" accept="image/*"><input type="url" id="newContentImage" placeholder="ou cole a URL da imagem" style="margin-top:6px"></div>
- <div class="form-group"><label>${isProduct?'Link externo de compra':'Link / URL do conteúdo'}</label><input type="url" id="newContentUrl" placeholder="https://..."></div>
- ${isVideo?'<div class="form-group"><small style="color:#8f9ab3">Para YouTube, cole a URL normal do vídeo, por exemplo https://www.youtube.com/watch?v=...</small></div>':''}
- <div class="grid"><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div><div class="form-group"><label>Ano</label><input id="newContentYear" type="number"></div></div>
- <div class="form-group"><label>Duração</label><input id="newContentDuration" placeholder="Ex.: 1h 42min"></div>
- ${isProduct?'<div class="form-group"><label>Preço</label><input id="newContentPrice" type="text" placeholder="Ex.: R$ 49,90"></div>':''}
- <div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">🔓 Gratuito</option><option value="subscription">🔐 Por assinatura</option></select></div>
+ <div class="form-group"><label>${isProduct?'Imagem do produto':(isBook?'Capa do livro':'Imagem/capa')}</label><input type="file" id="newContentImageFile" accept="image/*"><input type="url" id="newContentImage" placeholder="ou cole a URL da imagem" style="margin-top:6px"></div>
+ ${isProduct?`
+   <div class="form-group"><label>Link de compra</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
+   <div class="grid"><div class="form-group"><label>Preço</label><input id="newContentPrice" type="text" placeholder="Ex.: R$ 49,90"></div><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div></div>
+   <div class="form-group"><label>Marca / autor (opcional)</label><input id="newContentAuthor" type="text"></div>
+ `:isBook?`
+   <div class="form-group"><label>Autor</label><input id="newContentAuthor" type="text"></div>
+   <div class="grid"><div class="form-group"><label>Ano de publicação</label><input id="newContentYear" type="number"></div><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div></div>
+   <div class="form-group"><label>ISBN (opcional)</label><input id="newContentISBN" type="text"></div>
+   <div class="form-group"><label>Link externo (opcional)</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
+ `:`
+   <div class="form-group"><label>Link / URL do conteúdo</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
+   ${isVideo?'<div class="form-group"><small style="color:#8f9ab3">Para YouTube, cole a URL normal do vídeo.</small></div>':''}
+   <div class="grid"><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div><div class="form-group"><label>Ano</label><input id="newContentYear" type="number"></div></div>
+   <div class="form-group"><label>Duração</label><input id="newContentDuration" placeholder="Ex.: 1h 42min"></div>
+ `}
+ ${!isBook&&!isProduct?'<div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">🔓 Gratuito</option><option value="subscription">🔐 Por assinatura</option></select></div>':''}
  <div id="contentFormMessage" class="hidden"></div>
- <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="saveContentBtn" class="btn" type="button">💾 Salvar ${info.singular}</button><button id="cancelContentBtn" class="btn btn-secondary" type="button">Cancelar</button></div>`;
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="saveContentBtn" class="btn" type="button">💾 Salvar ${info.singular}</button><button id="cancelContentBtn" class="btn btn-secondary" type="button">Cancelar</button></div>`
  // Na Home, inserir o formulário no início da própria seção, acima do carrossel.
  // Nas páginas de catálogo, inserir antes do grid.
  const targetParent=host.parentElement;
@@ -3311,7 +3177,10 @@ window.saveContent=async function(type){
     image=await uploadImageToCloudinary(imageFile,'O upload da capa');
   }
   const rawUrl=$('newContentUrl')?.value.trim()||'';
-  const data={title,description:$('newContentDescription')?.value.trim()||'',image,url:type==='videos'?youtubeUrl(rawUrl):rawUrl,category:$('newContentCategory')?.value.trim()||'',year:$('newContentYear')?.value||'',duration:$('newContentDuration')?.value.trim()||'',access:$('newContentAccess')?.value||'free',createdAt:serverTimestamp(),createdByUid:user().uid,createdByName:publicName(profileCache)};
+   const author=$('newContentAuthor')?.value.trim()||'';
+   const isbn=$('newContentISBN')?.value.trim()||'';
+   const price=$('newContentPrice')?.value.trim()||'';
+  const data={title,description:$('newContentDescription')?.value.trim()||'',image,url:type==='videos'?youtubeUrl(rawUrl):rawUrl,category:$('newContentCategory')?.value.trim()||'',year:$('newContentYear')?.value||'',duration:$('newContentDuration')?.value.trim()||'',access:$('newContentAccess')?.value||'free',author,isbn,price,createdAt:serverTimestamp(),createdByUid:user().uid,createdByName:publicName(profileCache)};
   if(type==='products')data.price=$('newContentPrice')?.value.trim()||'';
   await withTimeout(addDoc(collection(db,info.collection),data),15000,'O salvamento do conteúdo no Firestore');
   document.getElementById('dynamicContentForm')?.remove();
@@ -3536,6 +3405,13 @@ window.requestJoin=async function(id){const u=user();if(!u)return;await updateDo
 
 window.loadNotifications=async function(){const box=$('page-notifications')?.querySelector('.card');if(!box)return;const arr=await visibleAdminCommunities();const pending=arr.filter(c=>(c.pendingMemberUids||[]).length||(c.pendingMembers||[]).length);box.innerHTML=pending.length?pending.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #303654"><div><strong>${esc(c.name)}</strong><div style="color:#6B7A99">${(c.pendingMemberUids||c.pendingMembers||[]).length} solicitação(ões)</div></div><button class="btn btn-small" onclick="viewRequests('${c.id}')">Ver solicitações</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma notificação no momento.</p>'};
 
+
+function adminWorkspace(){return $('adminWorkspace');}
+window.adminShowUsers=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando...</p>';try{const s=await getDocs(collection(db,'users'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.email||'—')}</td><td>${esc(x.uid||d.id)}</td><td>${(x.interests||[]).length}</td></tr>`)});w.innerHTML=`<h2 class="card-title">👥 Usuários</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Nome</th><th>E-mail</th><th>UID</th><th>Interesses</th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum usuário.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
+window.adminShowCommunities=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">🏘️ Comunidades</h2><p>Carregando...</p>';try{const s=await getDocs(collection(db,'communities'));let opts='';s.forEach(d=>{const x=d.data();opts+=`<option value="${esc(d.id)}">${esc(x.name||d.id)}</option>`});w.innerHTML=`<h2 class="card-title">🏘️ Comunidades</h2><label>Selecione uma comunidade</label><select id="adminCommunitySelect" class="admin-select"><option value="">Selecione uma comunidade</option>${opts}</select><div id="adminCommunityDetails" style="margin-top:14px"></div>`;$('adminCommunitySelect')?.addEventListener('change',e=>adminLoadCommunityDetails(e.target.value))}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
+window.adminLoadCommunityDetails=async function(id){const box=$('adminCommunityDetails');if(!box)return;if(!id){box.innerHTML='';return}try{const s=await getDoc(doc(db,'communities',id));if(!s.exists()){box.innerHTML='<p>Comunidade não encontrada.</p>';return}const c=s.data();const admins=c.communityAdminUids||[];box.innerHTML=`<div class="card"><h3>${esc(c.name||'Comunidade')}</h3><p style="color:#6B7A99">${esc(c.description||'')}</p><strong>Administradores</strong><div>${admins.length?admins.map(x=>`<div style="padding:7px 0;border-bottom:1px solid #303654">${esc(x)}</div>`).join(''):'Nenhum UID registrado.'}</div></div>`}catch(e){box.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
+window.adminShowContents=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">📚 Conteúdos</h2><p>Carregando...</p>';const rows=[];for(const [type,info] of Object.entries(contentTypes||{})){try{const s=await getDocs(collection(db,info.collection));s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(info.title||type)}</td><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.category||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','${esc(type)}')">Excluir</button></td></tr>`)})}catch(e){console.warn(type,e)}}w.innerHTML=`<h2 class="card-title">📚 Conteúdos</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Tipo</th><th>Título</th><th>Categoria</th><th></th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum conteúdo.</td></tr>'}</table></div>`};
+window.adminShowStore=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">🛒 Loja</h2><p>Carregando produtos...</p>';try{const s=await getDocs(collection(db,'products'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.price||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','products')">Excluir</button></td></tr>`)});w.innerHTML=`<h2 class="card-title">🛒 Loja</h2><p class="store-form-note">Produtos são itens para compra. Livros permanecem na Biblioteca.</p><div style="overflow:auto"><table class="admin-table"><tr><th>Produto</th><th>Preço</th><th></th></tr>${rows.join('')||'<tr><td colspan="3">Nenhum produto.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
 async function loadAdmin(){await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager()}
 window.loadAdmin=loadAdmin;
 
