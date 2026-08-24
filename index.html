@@ -1415,6 +1415,10 @@ select option {
 .custom-interest-preview span{display:inline-block;background:var(--panel2);border:1px solid var(--gold);border-radius:15px;padding:5px 9px;color:#fff;font-size:12px}
 .custom-interest-preview .custom-interest-tag{display:inline-flex;align-items:center;gap:5px}
 .custom-interest-preview .custom-interest-remove{border:0;background:transparent;color:var(--gold);cursor:pointer;font-size:14px;line-height:1;padding:0}
+.recommendation-card{position:relative}
+.recommendation-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.recommendation-empty{color:#6B7A99;font-size:14px;padding:8px 0}
+.recommendation-match{display:inline-block;margin-top:6px;font-size:11px;color:var(--gold)}
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
 </style>
@@ -2854,6 +2858,16 @@ select option {
 <section id="page-profile" class="page">
 
     <h1 class="page-title">👤 Perfil</h1>
+    <div id="recommendationsSection" class="card recommendation-card" style="margin-bottom:18px;">
+        <h2 class="card-title">✨ Recomendados para você</h2>
+        <p id="recommendationsIntro" style="color:#6B7A99;font-size:13px;margin:0 0 12px;">
+            Conteúdos escolhidos a partir dos seus interesses.
+        </p>
+        <div id="recommendationsGrid" class="recommendation-grid">
+            <div class="recommendation-empty">Escolha seus interesses no perfil para receber recomendações.</div>
+        </div>
+    </div>
+
 
     <div class="card">
         <div class="profile-header">
@@ -3323,7 +3337,109 @@ window.loadContent=async function(type){const info=contentTypes[type],grid=$(inf
 window.deleteContent=async function(type,id){if(!isAdmin)return;if(!confirm('Excluir este conteúdo?'))return;try{await deleteDoc(doc(db,contentTypes[type].collection,id));await loadContent(type);await loadAdminContentManager();await loadHome()}catch(e){alert('Erro ao excluir: '+e.message)}};
 window.loadAdminContentManager=async function(){const box=$('adminContentManager');if(!box)return;let html='';for(const type of Object.keys(contentTypes)){const items=await fetchContent(type);html+=`<h3 style="color:var(--gold);margin:15px 0 8px">${contentTypes[type].icon} ${contentTypes[type].title}</h3>`;html+=items.length?items.map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #303654"><span>${esc(x.title||'Sem título')}</span><button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${x.id}')">Excluir</button></div>`).join(''):'<p style="color:#6B7A99">Nenhum.</p>'}box.innerHTML=html};
 
-async function loadHome(){for(const type of Object.keys(contentTypes)){const host=$(contentTypes[type].home);if(!host)continue;const items=await fetchContent(type);host.innerHTML=items.slice(0,10).map(x=>renderContentCard(type,x.id,x)).join('')||'<p style="color:#6B7A99">Nenhum conteúdo.</p>'}await loadCommunitiesBar()}
+
+function recommendationTokens(value){
+  return String(value||'')
+    .toLocaleLowerCase('pt-BR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .split(/[^a-z0-9À-ÿ]+/i)
+    .map(x=>x.trim())
+    .filter(x=>x.length>=2);
+}
+
+function contentSearchText(item){
+  return [
+    item?.title,item?.name,item?.description,item?.category,item?.type,
+    ...(Array.isArray(item?.tags)?item.tags:[])
+  ].join(' ');
+}
+
+function recommendationScore(item, interests){
+  const text=contentSearchText(item);
+  const tokens=new Set(recommendationTokens(text));
+  let score=0;
+  const matched=[];
+  for(const interest of interests){
+    const raw=String(interest||'').trim();
+    if(!raw)continue;
+    const words=recommendationTokens(raw);
+    if(!words.length)continue;
+    const hit=words.some(w=>tokens.has(w) || text.toLocaleLowerCase('pt-BR').includes(w));
+    if(hit){
+      score+=words.length>1?3:2;
+      matched.push(raw);
+    }
+  }
+  return {score,matched};
+}
+
+function recommendationDate(item){
+  const v=item?.createdAt;
+  if(v?.toMillis)return v.toMillis();
+  if(v?.seconds)return Number(v.seconds)*1000;
+  if(typeof v==='string')return Date.parse(v)||0;
+  return 0;
+}
+
+function recommendationCard(item, matched){
+  const image=item?.image||item?.imageURL||item?.cover||'';
+  const title=esc(item?.title||item?.name||'Sem título');
+  const desc=esc(item?.description||'');
+  const imageHtml=image
+    ? `<img src="${esc(image)}" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:8px 8px 0 0;display:block">`
+    : `<div style="height:150px;border-radius:8px 8px 0 0;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:38px">📚</div>`;
+  const matchText=matched.length?`Interesse: ${esc(matched.slice(0,2).join(', '))}`:'';
+  return `<article class="card" style="padding:0;overflow:hidden">
+    ${imageHtml}
+    <div style="padding:12px">
+      <strong style="display:block;font-size:16px">${title}</strong>
+      ${desc?`<p style="color:#6B7A99;font-size:12px;margin:7px 0;line-height:1.4">${desc.slice(0,140)}${desc.length>140?'…':''}</p>`:''}
+      ${matchText?`<span class="recommendation-match">${matchText}</span>`:''}
+    </div>
+  </article>`;
+}
+
+async function loadRecommendations(){
+  const section=$('recommendationsSection'), grid=$('recommendationsGrid'), intro=$('recommendationsIntro');
+  if(!section||!grid)return;
+  const p=profileCache||await getProfile();
+  const interests=Array.isArray(p?.interests)?p.interests:[];
+  const custom=Array.isArray(p?.customInterests)?p.customInterests:[];
+  const all=[...new Set([...interests,...custom])].filter(Boolean);
+  if(!all.length){
+    section.classList.add('hidden');
+    return;
+  }
+  section.classList.remove('hidden');
+  if(intro)intro.textContent=`Conteúdos relacionados a: ${all.slice(0,5).join(', ')}${all.length>5?'…':''}`;
+
+  const results=[];
+  for(const [type,info] of Object.entries(contentTypes||{})){
+    try{
+      const snap=await getDocs(collection(db,info.collection));
+      snap.forEach(d=>{
+        const item={id:d.id,type,...d.data()};
+        const scored=recommendationScore(item,all);
+        if(scored.score>0)results.push({...item,...scored});
+      });
+    }catch(e){
+      console.warn('Não foi possível carregar recomendações de',type,e);
+    }
+  }
+
+  results.sort((a,b)=>b.score-a.score || recommendationDate(b)-recommendationDate(a));
+  const top=results.slice(0,8);
+  if(!top.length){
+    grid.innerHTML='<div class="recommendation-empty">Ainda não encontramos conteúdos relacionados aos seus interesses.</div>';
+    return;
+  }
+  grid.innerHTML=top.map(x=>recommendationCard(x,x.matched)).join('');
+}
+
+async function loadHome(){for(const type of Object.keys(contentTypes)){const host=$(contentTypes[type].home);if(!host)continue;const items=await fetchContent(type);host.innerHTML=items.slice(0,10).map(x=>renderContentCard(type,x.id,x)).join('')||'<p style="color:#6B7A99">Nenhum conteúdo.</p>'}await loadCommunitiesBar()
+  try{await loadRecommendations()}catch(e){console.warn('Recomendações:',e)}
+}
 window.loadHome=loadHome;
 
 async function communityIsAdmin(id,data=null){if(isAdmin)return true;const u=user();if(!u)return false;data=data||((await getDoc(doc(db,'communities',id))).data()||{});return data.createdByUid===u.uid||(data.memberUids||[]).includes(u.uid)&&(data.communityAdminUids||[]).includes(u.uid)}
