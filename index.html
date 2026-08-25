@@ -3586,7 +3586,144 @@ window.loadAdminCommunities=async function(){const sel=$('adminCommunitySelect')
 window.assignCommunityAdmin=async function(){const id=$('adminCommunitySelect')?.value,email=$('communityAdminEmail')?.value.trim();if(!id||!email)return alert('Selecione a comunidade e informe o e-mail.');try{const q=query(collection(db,'users'),where('email','==',email));const s=await getDocs(q);if(s.empty)return alert('Usuário não encontrado.');const p={id:s.docs[0].id,...s.docs[0].data()};const r=doc(db,'communities',id);await updateDoc(r,{communityAdminUids:arrayUnion(p.uid||p.id),communityAdmins:arrayUnion(email)});await loadCommunityAdmins();alert('Administrador definido.')}catch(e){alert('Erro: '+e.message)}};
 window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');if(!box)return;const snap=await getDocs(collection(db,'communityAdmins'));box.innerHTML=snap.docs.map(x=>{const d=x.data();return `<div style="padding:7px 0;border-bottom:1px solid #303654">${esc(d.userName||d.userEmail||d.userUid||'Administrador')}</div>`}).join('')||'<p style="color:#6B7A99">Nenhum administrador adicional.</p>'};
 
-window.viewRequests=async function(communityId){const cSnap=await getDoc(doc(db,'communities',communityId));if(!cSnap.exists())return;const c={id:communityId,...cSnap.data()};if(!(await communityIsAdmin(communityId,c)))return alert('Sem permissão.');const ids=c.pendingMemberUids||[],emails=c.pendingMembers||[];const requests=[];for(const uid of ids){const p=await getProfile(uid);if(p)requests.push({uid,email:p.email,name:p.name||p.email})}for(const email of emails){if(requests.some(r=>r.email===email))continue;const q=query(collection(db,'users'),where('email','==',email)),s=await getDocs(q);if(!s.empty){const p={id:s.docs[0].id,...s.docs[0].data()};requests.push({uid:p.uid||p.id,email,name:p.name||email})}else requests.push({email,name:email})}const card=$('page-notifications');setPage('notifications',document.querySelector('.nav-item[onclick*="notifications"]'));card.querySelector('.card').innerHTML=`<div style="display:flex;justify-content:space-between"><h2 class="card-title">Solicitações — ${esc(c.name)}</h2><button class="btn btn-secondary btn-small" onclick="loadNotifications()">Voltar</button></div>${requests.length?requests.map(r=>`<div class="card" style="margin-top:10px"><strong>${esc(r.name)}</strong><div style="color:#6B7A99">${esc(r.email||'')}</div><button class="btn btn-small" onclick="approveJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Aprovar</button><button class="btn btn-danger btn-small" onclick="rejectJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Recusar</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma solicitação.</p>'}`};
+
+window.approveCommunityMember=async function(communityId,uid,email){
+  if(!confirm('Aceitar este usuário na comunidade?'))return;
+  try{
+    const ref=doc(db,'communities',communityId);
+    const snap=await getDoc(ref);
+    if(!snap.exists())throw new Error('Comunidade não encontrada.');
+    const c=snap.data();
+
+    const updates={
+      memberUids: uid?arrayUnion(uid):arrayUnion(),
+      members: email?arrayUnion(email):arrayUnion(),
+      pendingMemberUids: uid?arrayRemove(uid):arrayRemove(),
+      pendingMembers: email?arrayRemove(email):arrayRemove()
+    };
+    await updateDoc(ref,updates);
+    await viewRequests(communityId);
+    await refreshNotificationBadge();
+  }catch(e){
+    console.error(e);
+    alert('Não foi possível aceitar a solicitação: '+e.message);
+  }
+};
+
+window.rejectCommunityMember=async function(communityId,uid,email){
+  if(!confirm('Recusar esta solicitação de entrada?'))return;
+  try{
+    const ref=doc(db,'communities',communityId);
+    await updateDoc(ref,{
+      pendingMemberUids: uid?arrayRemove(uid):arrayRemove(),
+      pendingMembers: email?arrayRemove(email):arrayRemove()
+    });
+    await viewRequests(communityId);
+    await refreshNotificationBadge();
+  }catch(e){
+    console.error(e);
+    alert('Não foi possível recusar a solicitação: '+e.message);
+  }
+};
+
+window.viewRequests=async function(communityId){
+  try{
+    const ref=doc(db,'communities',communityId);
+    const snap=await getDoc(ref);
+    if(!snap.exists()){
+      alert('Comunidade não encontrada.');
+      return;
+    }
+
+    const c={id:communityId,...snap.data()};
+    if(!(await communityIsAdmin(communityId,c))){
+      alert('Você não é administrador desta comunidade.');
+      return;
+    }
+
+    currentCommunityId=communityId;
+    setPage('notifications',document.querySelector('.nav-item[onclick*="notifications"]'));
+
+    const pendingUids=Array.isArray(c.pendingMemberUids)?c.pendingMemberUids:[];
+    const pendingEmails=Array.isArray(c.pendingMembers)?c.pendingMembers:[];
+
+    // Build a deduplicated list. UID is preferred; legacy email entries remain
+    // supported so old communities are not broken.
+    const requests=[];
+    for(const uid of pendingUids){
+      let profile=null;
+      try{
+        const ps=await getDoc(doc(db,'users',uid));
+        if(ps.exists())profile={id:uid,...ps.data()};
+      }catch(e){console.warn('Perfil por UID:',e)}
+      requests.push({
+        uid,
+        email:profile?.email||'',
+        name:profile?.name||profile?.displayName||'Usuário',
+        photo:profile?.photoURL||profile?.photo||''
+      });
+    }
+
+    for(const email of pendingEmails){
+      if(requests.some(r=>r.email===email))continue;
+      let profile=null;
+      try{
+        const q=await getDocs(query(collection(db,'users'),where('email','==',email),limit(1)));
+        if(!q.empty)profile={id:q.docs[0].id,...q.docs[0].data()};
+      }catch(e){console.warn('Perfil por e-mail legado:',e)}
+      requests.push({
+        uid:profile?.id||'',
+        email,
+        name:profile?.name||profile?.displayName||email,
+        photo:profile?.photoURL||profile?.photo||''
+      });
+    }
+
+    const list=$('notificationsList');
+    if(!list)return;
+
+    if(!requests.length){
+      list.innerHTML=`<div class="notification-empty-modern">
+        <div style="font-size:30px">✓</div>
+        <strong>Nenhuma solicitação pendente</strong>
+        <div style="margin-top:6px">Não há pedidos de entrada aguardando aprovação em <b>${esc(c.name||'esta comunidade')}</b>.</div>
+      </div>`;
+      await refreshNotificationBadge();
+      return;
+    }
+
+    list.innerHTML=`
+      <div style="margin-bottom:12px">
+        <button class="btn btn-secondary btn-small" type="button" onclick="loadNotifications()">← Voltar às notificações</button>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-weight:700">${esc(c.name||'Comunidade')}</div>
+        <div style="color:#6B7A99;font-size:13px;margin-top:4px">
+          ${requests.length} solicitação${requests.length===1?'':'ões'} de entrada pendente${requests.length===1?'':'s'}.
+        </div>
+      </div>
+      <div class="notifications-list-modern">
+        ${requests.map(r=>`
+          <article class="notification-card-modern">
+            <div class="notification-avatar-modern">
+              ${r.photo?`<img src="${esc(r.photo)}" alt="">`:'👤'}
+            </div>
+            <div class="notification-body-modern">
+              <div class="notification-title-modern">${esc(r.name)}</div>
+              ${r.email?`<div class="notification-text-modern">${esc(r.email)}</div>`:''}
+              <div class="notification-actions-modern">
+                <button class="btn btn-small" type="button" onclick="approveCommunityMember('${esc(communityId)}','${esc(r.uid)}','${esc(r.email)}')">✓ Aceitar</button>
+                <button class="btn btn-danger btn-small" type="button" onclick="rejectCommunityMember('${esc(communityId)}','${esc(r.uid)}','${esc(r.email)}')">✕ Recusar</button>
+              </div>
+            </div>
+          </article>
+        `).join('')}
+      </div>`;
+  }catch(e){
+    console.error('Erro ao abrir solicitações:',e);
+    alert('Não foi possível carregar as solicitações: '+(e.message||e));
+  }
+};;
 window.approveJoin=async function(id,uid,email){const r=doc(db,'communities',id),s=await getDoc(r);if(!s.exists())return;const c=s.data(),data={memberUids:uid?arrayUnion(uid):arrayUnion(),members:email?arrayUnion(email):arrayUnion(),pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
 window.rejectJoin=async function(id,uid,email){const r=doc(db,'communities',id),data={pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
 window.requestJoin=async function(id){const u=user();if(!u)return;await updateDoc(doc(db,'communities',id),{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});alert('Solicitação enviada.');await loadCommunities()}
