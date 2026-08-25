@@ -3133,7 +3133,18 @@ window.showSignup=function(){hideError('loginError');hideError('signupError');$(
 window.showLogin=function(){hideError('loginError');hideError('signupError');$('signupForm')?.classList.add('hidden');$('loginForm')?.classList.remove('hidden');$('loginEmail')?.focus()};
 window.handleLogin=async function(){const email=$('loginEmail')?.value.trim(),password=$('loginPassword')?.value;if(!email||!password)return alert('Preencha email e senha.');try{await signInWithEmailAndPassword(auth,email,password)}catch(e){console.error(e);alert('Não foi possível entrar: '+e.message)}};
 window.handleSignup=async function(){const name=$('signupName')?.value.trim(),email=$('signupEmail')?.value.trim(),password=$('signupPassword')?.value;if(!name||!email||!password)return showError('signupError','Preencha todos os campos.');if(password.length<6)return showError('signupError','A senha precisa ter pelo menos 6 caracteres.');try{const c=await createUserWithEmailAndPassword(auth,email,password);await updateProfile(c.user,{displayName:name});await setDoc(doc(db,'users',c.user.uid),{uid:c.user.uid,name,email,photoURL:'',interests:[],createdAt:serverTimestamp(),updatedAt:serverTimestamp()});document.getElementById('signupForm')?.classList.add('hidden');document.getElementById('loginForm')?.classList.remove('hidden');document.getElementById('signupPassword')&&(document.getElementById('signupPassword').value='');hideError('signupError')}catch(e){console.error(e);showError('signupError',e.message)}};
-window.logout=()=>signOut(auth);
+window.logout=async function(){
+  const btn=document.querySelector('.logout-btn');
+  try{
+    if(btn){btn.disabled=true;btn.textContent='Saindo...';}
+    await signOut(auth);
+    updateNotificationBadge(0);
+  }catch(e){
+    console.error('Erro ao sair:',e);
+    alert('Não foi possível sair da conta: '+(e.message||e));
+    if(btn){btn.disabled=false;btn.textContent='Sair';}
+  }
+};
 
 function contentForm(type){
  const info=contentTypes[type];
@@ -3417,6 +3428,7 @@ async function loadRecommendations(){
 
 async function loadHome(){for(const type of Object.keys(contentTypes)){const host=$(contentTypes[type].home);if(!host)continue;const items=await fetchContent(type);host.innerHTML=items.slice(0,10).map(x=>renderContentCard(type,x.id,x)).join('')||'<p style="color:#6B7A99">Nenhum conteúdo.</p>'}await loadCommunitiesBar()
   try{await loadRecommendations()}catch(e){console.warn('Recomendações:',e)}
+  try{await refreshNotificationBadge()}catch(e){console.warn('Notificações:',e)}
 }
 window.loadHome=loadHome;
 
@@ -3613,7 +3625,76 @@ window.requestCurrentCommunityJoin=async function(){
 };
 ;
 
-window.loadNotifications=async function(){const box=$('page-notifications')?.querySelector('.card');if(!box)return;const arr=await visibleAdminCommunities();const pending=arr.filter(c=>(c.pendingMemberUids||[]).length||(c.pendingMembers||[]).length);box.innerHTML=pending.length?pending.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #303654"><div><strong>${esc(c.name)}</strong><div style="color:#6B7A99">${(c.pendingMemberUids||c.pendingMembers||[]).length} solicitação(ões)</div></div><button class="btn btn-small" onclick="viewRequests('${c.id}')">Ver solicitações</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma notificação no momento.</p>'};
+
+window.updateNotificationBadge=function(count){
+  const badge=$('notificationBadge');
+  if(!badge)return;
+  const n=Math.max(0,Number(count)||0);
+  badge.textContent=n>99?'99+':String(n);
+  badge.classList.toggle('hidden',n===0);
+};
+
+window.refreshNotificationBadge=async function(){
+  try{
+    const arr=await visibleAdminCommunities();
+    const count=arr.reduce((total,c)=>{
+      const uids=Array.isArray(c.pendingMemberUids)?c.pendingMemberUids:[];
+      const emails=Array.isArray(c.pendingMembers)?c.pendingMembers:[];
+      return total+uids.length+emails.length;
+    },0);
+    updateNotificationBadge(count);
+    return count;
+  }catch(e){
+    console.warn('Não foi possível atualizar o contador de notificações:',e);
+    updateNotificationBadge(0);
+    return 0;
+  }
+};
+
+window.loadNotifications=async function(){
+  const list=$('notificationsList');
+  if(!list)return;
+  list.innerHTML='<div class="notification-empty-modern">Carregando notificações...</div>';
+  try{
+    const arr=await visibleAdminCommunities();
+    const pending=arr.filter(c=>
+      (c.pendingMemberUids||[]).length ||
+      (c.pendingMembers||[]).length
+    );
+
+    updateNotificationBadge(pending.reduce((total,c)=>
+      total+(c.pendingMemberUids||[]).length+(c.pendingMembers||[]).filter(email=>
+        !(c.pendingMemberUids||[]).some(uid=>uid)
+      ).length,0));
+
+    if(!pending.length){
+      list.innerHTML='<div class="notification-empty-modern">🔔<br><br>Você não tem novas notificações.</div>';
+      return;
+    }
+
+    const cards=[];
+    for(const c of pending){
+      const count=(c.pendingMemberUids||[]).length+(c.pendingMembers||[]).length;
+      cards.push(`<article class="notification-card-modern">
+        <div class="notification-avatar-modern">👥</div>
+        <div class="notification-body-modern">
+          <div class="notification-title-modern">${esc(c.name||'Comunidade')}</div>
+          <div class="notification-text-modern">
+            ${count} solicitação${count===1?'':'ões'} de entrada aguardando análise.
+          </div>
+          <div class="notification-actions-modern">
+            <button class="btn btn-small" type="button" onclick="viewRequests('${esc(c.id)}')">Ver solicitações</button>
+            <button class="btn btn-secondary btn-small" type="button" onclick="openCommunity('${esc(c.id)}')">Abrir comunidade</button>
+          </div>
+        </div>
+      </article>`);
+    }
+    list.innerHTML=cards.join('');
+  }catch(e){
+    console.error('Erro ao carregar notificações:',e);
+    list.innerHTML=`<div class="error">Não foi possível carregar as notificações: ${esc(e.message)}</div>`;
+  }
+};;
 
 
 function adminWorkspace(){return $('adminWorkspace');}
