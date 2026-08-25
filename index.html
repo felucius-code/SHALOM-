@@ -1459,6 +1459,10 @@ select option {
 .community-danger{border-color:#8b3a3a!important;color:#ffb0b0!important}
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
+
+.recommendations-carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 12px;scrollbar-width:thin}
+.recommendations-carousel .recommendation-item{flex:0 0 245px;scroll-snap-align:start}
+.recommendations-carousel::-webkit-scrollbar{height:7px}
 </style>
 </head>
 
@@ -3454,9 +3458,9 @@ function recommendationCard(item, matched){
   const info=contentTypes[type]||{};
   const label=info.title||type||'Conteúdo';
   const imageHtml=image
-    ? `<img src="${esc(image)}" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:8px 8px 0 0;display:block">`
-    : `<div style="height:150px;border-radius:8px 8px 0 0;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:38px">${esc(info.icon||'✨')}</div>`;
-  const matchText=matched.length?`Interesse: ${esc(matched.slice(0,2).join(', '))}`:'';
+    ? `<img src="${esc(image)}" alt="" style="width:100%;height:135px;object-fit:cover;border-radius:9px 9px 0 0;display:block">`
+    : `<div style="height:135px;border-radius:9px 9px 0 0;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:34px">${esc(info.icon||'✨')}</div>`;
+  const matchText=matched.length?`✨ ${esc(matched[0])}`:'';
   let action='';
   if(item?.url){
     if(type==='videos'||getYouTubeVideoId(item.url)){
@@ -3469,14 +3473,14 @@ function recommendationCard(item, matched){
       action=`<a class="btn btn-small" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">Abrir ↗</a>`;
     }
   }
-  return `<article class="card" style="padding:0;overflow:hidden">
+  return `<article class="card recommendation-item" style="padding:0;overflow:hidden">
     ${imageHtml}
-    <div style="padding:12px">
+    <div style="padding:10px">
       <small style="color:var(--gold)">${esc(label)}</small>
-      <strong style="display:block;font-size:16px;margin-top:3px">${title}</strong>
-      ${desc?`<p style="color:#6B7A99;font-size:12px;margin:7px 0;line-height:1.4">${desc.slice(0,140)}${desc.length>140?'…':''}</p>`:''}
+      <strong style="display:block;font-size:15px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</strong>
+      ${desc?`<p style="color:#6B7A99;font-size:11px;margin:6px 0;line-height:1.35;height:30px;overflow:hidden">${desc}</p>`:''}
       ${matchText?`<span class="recommendation-match">${matchText}</span>`:''}
-      ${action?`<div style="margin-top:9px">${action}</div>`:''}
+      ${action?`<div style="margin-top:8px">${action}</div>`:''}
     </div>
   </article>`;
 }
