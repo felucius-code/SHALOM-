@@ -3198,6 +3198,66 @@ window.saveContent=async function(type){
   if(btn){btn.disabled=false;btn.textContent=`💾 Salvar ${info.singular}`}
  }
 };
+
+function getYouTubeVideoId(value){
+  if(!value)return '';
+  try{
+    const url=new URL(String(value).trim());
+    const host=url.hostname.toLowerCase().replace(/^www\./,'');
+    if(host==='youtu.be'){
+      return url.pathname.replace(/^\/+/,'').split('/')[0]||'';
+    }
+    if(host==='youtube.com'||host==='m.youtube.com'||host==='music.youtube.com'){
+      if(url.pathname==='/watch')return url.searchParams.get('v')||'';
+      const parts=url.pathname.split('/').filter(Boolean);
+      if(parts[0]==='shorts'||parts[0]==='embed'||parts[0]==='live')return parts[1]||'';
+    }
+  }catch(e){}
+  const match=String(value).match(/(?:v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{6,})/);
+  return match?match[1]:'';
+}
+
+function youtubeUrl(value){
+  const id=getYouTubeVideoId(value);
+  return id ? `https://www.youtube.com/watch?v=${encodeURIComponent(id)}` : String(value||'').trim();
+}
+
+window.openVideoPlayer=function(url,title='Vídeo'){
+  const modal=$('videoPlayerModal');
+  const frame=$('youtubePlayerFrame');
+  if(!modal||!frame){
+    console.error('Player de vídeo não encontrado no HTML.');
+    return;
+  }
+  const id=getYouTubeVideoId(url);
+  if(!id){
+    alert('Não foi possível identificar o vídeo do YouTube.');
+    return;
+  }
+  frame.src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&modestbranding=1`;
+  modal.classList.remove('hidden');
+  modal.style.display='flex';
+  document.body.style.overflow='hidden';
+};
+
+window.closeVideoPlayer=function(){
+  const modal=$('videoPlayerModal');
+  const frame=$('youtubePlayerFrame');
+  if(frame)frame.src='';
+  if(modal){
+    modal.classList.add('hidden');
+    modal.style.display='none';
+  }
+  document.body.style.overflow='';
+};
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    const modal=$('videoPlayerModal');
+    if(modal && !modal.classList.contains('hidden'))closeVideoPlayer();
+  }
+});
+
 function renderContentCard(type,id,d){
  const info=contentTypes[type];
  const cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;
