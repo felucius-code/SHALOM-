@@ -1463,6 +1463,33 @@ select option {
 .recommendations-carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 12px;scrollbar-width:thin}
 .recommendations-carousel .recommendation-item{flex:0 0 245px;scroll-snap-align:start}
 .recommendations-carousel::-webkit-scrollbar{height:7px}
+
+#recommendationsGrid{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  gap:12px;
+  overflow-x:auto !important;
+  overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  padding:4px 2px 12px;
+  width:100%;
+}
+#recommendationsGrid > .recommendation-item{
+  flex:0 0 245px !important;
+  width:245px;
+  min-width:245px;
+  max-width:245px;
+  scroll-snap-align:start;
+}
+@media (max-width:600px){
+  #recommendationsGrid > .recommendation-item{
+    flex-basis:210px !important;
+    width:210px;
+    min-width:210px;
+    max-width:210px;
+  }
+}
 </style>
 </head>
 
@@ -1794,7 +1821,7 @@ select option {
         <p id="recommendationsIntro" style="color:#6B7A99;font-size:13px;margin:0 0 12px;">
             Conteúdos escolhidos a partir dos seus interesses.
         </p>
-        <div id="recommendationsGrid" class="recommendation-grid">
+        <div id="recommendationsGrid" class="recommendations-carousel">
             <div class="recommendation-empty">Escolha seus interesses no perfil para receber recomendações.</div>
         </div>
     </div>
@@ -3488,6 +3515,8 @@ function recommendationCard(item, matched){
 async function loadRecommendations(){
   const section=$('recommendationsSection'), grid=$('recommendationsGrid'), intro=$('recommendationsIntro');
   if(!section||!grid)return;
+  grid.classList.remove('recommendation-grid','recommendations-grid');
+  grid.classList.add('recommendations-carousel');
   const p=profileCache||await getProfile();
   const interests=Array.isArray(p?.interests)?p.interests:[];
   const custom=Array.isArray(p?.customInterests)?p.customInterests:[];
