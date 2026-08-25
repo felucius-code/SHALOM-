@@ -1413,7 +1413,11 @@ select option {
 .custom-interest-input-row input{flex:1}
 .custom-interest-preview{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 .custom-interest-preview span{display:inline-block;background:var(--panel2);border:1px solid var(--gold);border-radius:15px;padding:5px 9px;color:#fff;font-size:12px}
-.custom-interest-preview .custom-interest-tag{display:inline-flex;align-items:center;gap:5px}
+.custom-interest-preview 
+.interest-grid-expanded{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:8px}
+.interest-section-note{font-size:12px;color:#6B7A99;line-height:1.45;margin:5px 0 10px}
+.custom-interest-box{border:1px solid #303654;border-radius:10px;padding:12px;background:rgba(10,14,30,.35);margin-top:12px}
+.custom-interest-tag{display:inline-flex;align-items:center;gap:5px}
 .custom-interest-preview .custom-interest-remove{border:0;background:transparent;color:var(--gold);cursor:pointer;font-size:14px;line-height:1;padding:0}
 .recommendation-card{position:relative}
 .recommendation-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
@@ -2935,24 +2939,81 @@ select option {
         </div>
 
         <div class="form-group">
-            <label>Interesses</label>
+            <label>Interesses que você acompanha</label>
             <p style="color:#6B7A99;font-size:13px;margin-bottom:8px;">Escolha os temas que deseja priorizar na Home.</p>
             <div class="interest-grid">
-                <label class="interest-option"><input type="checkbox" value="Bíblia"> Bíblia</label>
-                <label class="interest-option"><input type="checkbox" value="História"> História</label>
-                <label class="interest-option"><input type="checkbox" value="Arqueologia"> Arqueologia</label>
-                <label class="interest-option"><input type="checkbox" value="Ciência"> Ciência</label>
-                <label class="interest-option"><input type="checkbox" value="Espaço"> Espaço</label>
-                <label class="interest-option"><input type="checkbox" value="Cultura"> Cultura</label>
-                <label class="interest-option"><input type="checkbox" value="Literatura"> Literatura</label>
-                <label class="interest-option"><input type="checkbox" value="Cinema"> Cinema</label>
-                <label class="interest-option"><input type="checkbox" value="Estudos"> Estudos</label>
-                <label class="interest-option"><input type="checkbox" value="Filosofia"> Filosofia</label>
-                <label class="interest-option"><input type="checkbox" value="Música"> Música</label>
-                <label class="interest-option"><input type="checkbox" value="Arte"> Arte</label>
-                <label class="interest-option"><input type="checkbox" value="Astronomia"> Astronomia</label>
-                <label class="interest-option"><input type="checkbox" value="Geografia"> Geografia</label>
-                <label class="interest-option"><input type="checkbox" value="Tecnologia"> Tecnologia</label>
+                <label class="interest-option">
+      <input type="checkbox" value="historia">
+      <span>História</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="arqueologia">
+      <span>Arqueologia</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="biblia">
+      <span>Bíblia</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="ciencia">
+      <span>Ciência</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="espaco">
+      <span>Espaço</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="astronomia">
+      <span>Astronomia</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="literatura">
+      <span>Literatura</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="cinema">
+      <span>Cinema</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="cultura">
+      <span>Cultura</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="filosofia">
+      <span>Filosofia</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="arte">
+      <span>Arte</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="musica">
+      <span>Música</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="tecnologia">
+      <span>Tecnologia</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="natureza">
+      <span>Natureza</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="religiao">
+      <span>Religião</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="educacao">
+      <span>Educação</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="sociedade">
+      <span>Sociedade</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="geografia">
+      <span>Geografia</span>
+    </label>
             </div>
 
             <div class="custom-interests-box">
@@ -2966,7 +3027,9 @@ select option {
                     <button id="customInterestAddBtn" class="btn btn-small" type="button" onclick="addCustomInterest()">Adicionar</button>
                 </div>
                 <div id="customInterestCounter" style="color:#6B7A99;font-size:12px;margin-top:7px;">0 de 5 interesses personalizados</div>
-                <div id="customInterestList" class="custom-interest-preview"></div>
+                <div class="interest-section-note">Você também pode adicionar até 5 interesses personalizados. Digite uma palavra por vez e pressione <strong>Adicionar</strong>.</div>
+        <div id="profileInterestCounter" class="interest-section-note"></div>
+        <div id="customInterestList" class="custom-interest-preview"></div>
             </div>
         </div>
 
@@ -3097,23 +3160,36 @@ let customInterestsCache=[];
 
 function renderCustomInterests(){
   const list=$('customInterestList'), counter=$('customInterestCounter');
+  const predefined=document.querySelectorAll('#page-profile .interest-option input:checked');
+  const pc=$('profileInterestCounter');
+  if(pc)pc.textContent=`${predefined.length} interesse${predefined.length===1?'':'s'} predefinido${predefined.length===1?'':'s'} selecionado${predefined.length===1?'':'s'}.`;
   if(counter)counter.textContent=`${customInterestsCache.length} de 5 interesses personalizados`;
   if(list)list.innerHTML=customInterestsCache.length
     ? customInterestsCache.map((x,i)=>`<span class="custom-interest-tag">${esc(x)}<button type="button" class="custom-interest-remove" onclick="removeCustomInterest(${i})">×</button></span>`).join('')
     : '<span style="color:#6B7A99;font-size:12px;">Nenhum interesse personalizado.</span>';
 }
+
+document.querySelectorAll('#page-profile .interest-option input').forEach(input=>{
+  input.addEventListener('change',()=>renderCustomInterests());
+});
+
 window.addCustomInterest=function(){
-  const input=$('customInterestInputPreview'), value=(input?.value||'').trim();
-  if(!value)return alert('Digite uma palavra para adicionar.');
-  if(/\s/.test(value))return alert('Cada interesse personalizado deve ter apenas uma palavra.');
-  if(!/^[\p{L}\p{N}_-]+$/u.test(value))return alert('Use apenas letras, números, hífen ou sublinhado.');
-  if(customInterestsCache.length>=5)return alert('Você já atingiu o limite de 5 interesses personalizados.');
-  if(customInterestsCache.some(x=>x.toLocaleLowerCase()===value.toLocaleLowerCase()))return alert('Esse interesse já foi adicionado.');
-  customInterestsCache.push(value); input.value=''; renderCustomInterests(); input.focus();
-};
+  const input=$('customInterestInputPreview');
+  const value=(input?.value||'').trim().replace(/\s+/g,' ');
+  if(!value)return alert('Digite um interesse.');
+  if(value.split(/\s+/).length>1)return alert('Digite apenas uma palavra por vez.');
+  if(customInterestsCache.length>=5)return alert('Você pode adicionar no máximo 5 interesses personalizados.');
+  const normalized=value.toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(customInterestsCache.some(x=>String(x).toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'')===normalized)){
+    return alert('Esse interesse já foi adicionado.');
+  }
+  customInterestsCache.push(value);
+  input.value='';
+  renderCustomInterests();
+};;
 window.removeCustomInterest=function(i){if(i>=0&&i<customInterestsCache.length){customInterestsCache.splice(i,1);renderCustomInterests();}};
 window.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement?.id==='customInterestInputPreview'){e.preventDefault();addCustomInterest();}});
-async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};customInterestsCache=Array.isArray(p.customInterests)?p.customInterests.slice(0,5):[];renderCustomInterests();if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));applyIdentity(p)}
+async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};customInterestsCache=Array.isArray(p.customInterests)?p.customInterests.slice(0,5):[];renderCustomInterests();customInterestsCache=Array.isArray(p.customInterests)?p.customInterests.slice(0,5):[];renderCustomInterests();if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));applyIdentity(p)}
 window.saveProfile=async function(){
  const u=user();
  if(!u)return alert('Você precisa estar conectado.');
