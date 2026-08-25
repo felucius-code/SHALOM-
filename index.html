@@ -3262,7 +3262,10 @@ function renderContentCard(type,id,d){
  const info=contentTypes[type];
  const cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;
  const isVideo=type==='videos';
- const action=d.url?(isVideo?`<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">▶ Assistir</button>`:`<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Abrir</a>`):'';
+ const isYouTube=!!getYouTubeVideoId(d.url||'');
+ const action=d.url?((isVideo||isYouTube)
+   ?`<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">▶ Assistir</button>`
+   :`<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Abrir</a>`):'';
  return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`;
 }
 async function fetchContent(type){const snap=await getDocs(collection(db,contentTypes[type].collection));return snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(b.createdAt)-ts(a.createdAt))}
@@ -3454,7 +3457,12 @@ window.deleteCurrentCommunity=async function(){
 window.backToCommunities=async()=>{currentCommunityId=null;$('communityArea')?.classList.add('hidden');$('communitiesList')?.classList.remove('hidden');await loadCommunities()};
 async function loadCommunityMessages(id){const box=$('communityMessages');if(!box)return;const snap=await getDocs(collection(db,'communities',id,'messages'));const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';box.scrollTop=box.scrollHeight}
 window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){const u=user(),text=$('messageInput')?.value.trim();if(!u||!currentCommunityId||!text)return;await addDoc(collection(db,'communities',currentCommunityId,'messages'),{text,authorUid:u.uid,authorName:publicName(profileCache),createdAt:serverTimestamp()});$('messageInput').value='';await loadCommunityMessages(currentCommunityId)};
-async function loadCommunityStudyVideos(id){const list=$('studyVideosList');if(!list)return;const snap=await getDocs(collection(db,'communities',id,'studyVideos'));const arr=snap.docs.map(x=>x.data());list.innerHTML=arr.map(v=>`<a class="btn btn-small" target="_blank" rel="noopener" href="${esc(v.url||'#')}">${esc(v.title||'Vídeo')}</a>`).join('')||'<p style="color:#6B7A99">Nenhum vídeo de estudo.</p>'}
+async function loadCommunityStudyVideos(id){const list=$('studyVideosList');if(!list)return;const snap=await getDocs(collection(db,'communities',id,'studyVideos'));const arr=snap.docs.map(x=>x.data());list.innerHTML=arr.map(v=>{
+  const url=v.url||'';
+  return getYouTubeVideoId(url)
+    ? `<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(url)}','${esc(v.title||'Vídeo')}')">▶ ${esc(v.title||'Vídeo')}</button>`
+    : `<a class="btn btn-small" target="_blank" rel="noopener" href="${esc(url)}">${esc(v.title||'Vídeo')}</a>`;
+}).join('')||'<p style="color:#6B7A99">Nenhum vídeo de estudo.</p>'}
 window.loadCommunityStudyVideos=loadCommunityStudyVideos;
 
 async function visibleAdminCommunities(){const snap=await getDocs(collection(db,'communities'));return snap.docs.map(x=>({id:x.id,...x.data()})).filter(c=>isAdmin||c.createdByUid===user()?.uid)}
