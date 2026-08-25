@@ -2315,8 +2315,7 @@ select option {
 
     <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-    <div id="adminCommunityButton"
-         class="hidden card">
+    <div id="adminCommunityButton" class="card">
 
         <button
             class="btn"
@@ -2362,6 +2361,23 @@ select option {
                 id="communityDescription"
                 placeholder="Descrição da comunidade">
             </textarea>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+                Tema da comunidade
+            </label>
+
+            <input
+                id="communityTheme"
+                type="text"
+                placeholder="Ex.: Bíblia, História, Arqueologia">
+
+            <small style="display:block;color:#6B7A99;margin-top:5px;">
+                O tema ajuda o SHALOM a sugerir esta comunidade para pessoas com interesses relacionados.
+            </small>
 
         </div>
 
@@ -3097,7 +3113,7 @@ window.addCustomInterest=function(){
 };
 window.removeCustomInterest=function(i){if(i>=0&&i<customInterestsCache.length){customInterestsCache.splice(i,1);renderCustomInterests();}};
 window.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement?.id==='customInterestInputPreview'){e.preventDefault();addCustomInterest();}});
-async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));applyIdentity(p)}
+async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};customInterestsCache=Array.isArray(p.customInterests)?p.customInterests.slice(0,5):[];renderCustomInterests();if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));applyIdentity(p)}
 window.saveProfile=async function(){
  const u=user();
  if(!u)return alert('Você precisa estar conectado.');
@@ -3439,10 +3455,117 @@ async function communityIsAdmin(id,data=null){
   return data.createdByUid===u.uid||(data.communityAdminUids||[]).includes(u.uid);
 }
 async function loadCommunitiesBar(){const list=$('homeCommunitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const u=user();const arr=snap.docs.map(x=>({id:x.id,...x.data()}));list.innerHTML=arr.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Nenhuma comunidade.</div>'}
-async function loadCommunities(){await loadCommunitiesBar();const list=$('communitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const arr=snap.docs.map(x=>({id:x.id,...x.data()}));list.innerHTML=arr.map(c=>`<div class="community-card"><h3>${esc(c.name)}</h3><p>${esc(c.description||'')}</p><span class="badge">${(c.memberUids||c.members||[]).length} membros</span><button class="btn btn-small" onclick="openCommunity('${c.id}')">Abrir</button></div>`).join('')||'<p>Nenhuma comunidade.</p>';}
+async function loadCommunities(){
+  await loadCommunitiesBar();
+  const list=$('communitiesList');
+  if(!list)return;
+
+  const snap=await getDocs(collection(db,'communities'));
+  const arr=snap.docs.map(x=>({id:x.id,...x.data()}));
+
+  const p=profileCache||await getProfile();
+  const interests=[
+    ...((p?.interests)||[]),
+    ...((p?.customInterests)||[])
+  ].map(x=>String(x||'').trim()).filter(Boolean);
+
+  const norm=s=>String(s||'').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const interestNorm=interests.map(norm);
+
+  const scored=arr.map(c=>{
+    const fields=[c.theme,c.themeLower,c.name,c.description].map(norm).join(' ');
+    const matched=interestNorm.filter(i=>i&&fields.includes(i));
+    return {...c,communityScore:matched.length,matchedInterests:matched};
+  });
+
+  const suggested=scored
+    .filter(c=>c.communityScore>0)
+    .sort((a,b)=>b.communityScore-a.communityScore);
+
+  const suggestedIds=new Set(suggested.map(c=>c.id));
+  const rest=scored.filter(c=>!suggestedIds.has(c.id));
+
+  const card=c=>`<div class="community-card">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="community-header-avatar" style="width:48px;height:48px;flex-basis:48px">
+        ${c.imageURL?`<img src="${esc(c.imageURL)}" alt="">`:'👥'}
+      </div>
+      <div style="min-width:0">
+        <h3 style="margin:0">${esc(c.name)}</h3>
+        ${c.theme?`<small style="color:#6B7A99">Tema: ${esc(c.theme)}</small>`:''}
+      </div>
+    </div>
+    <p>${esc(c.description||'')}</p>
+    ${c.communityScore>0?`<div style="font-size:11px;color:var(--gold);margin:5px 0">✨ Relacionada aos seus interesses</div>`:''}
+    <span class="badge">${(c.memberUids||c.members||[]).length} membros</span>
+    <button class="btn btn-small" onclick="openCommunity('${c.id}')">Abrir</button>
+  </div>`;
+
+  let html='';
+  if(suggested.length){
+    html+=`<div class="card" style="margin-bottom:14px">
+      <h2 class="card-title">✨ Comunidades para você</h2>
+      <p style="color:#6B7A99;font-size:13px">Comunidades relacionadas aos interesses escolhidos no seu perfil.</p>
+      <div class="community-grid">${suggested.map(card).join('')}</div>
+    </div>`;
+  }
+
+  html+=`<div class="card" style="margin-bottom:14px">
+    <h2 class="card-title">🌐 Todas as comunidades</h2>
+    <div class="community-grid">${rest.map(card).join('')||'<p>Nenhuma comunidade.</p>'}</div>
+  </div>`;
+
+  list.innerHTML=html;
+}
+window.loadCommunities=loadCommunities;
+
 window.loadCommunities=loadCommunities;
 window.showCreateCommunity=()=>{$('createCommunityBox')?.classList.toggle('hidden')};
-window.addCommunity=async function(){if(!user())return;const name=$('communityName')?.value.trim(),description=$('communityDescription')?.value.trim();if(!name)return alert('Informe o nome.');try{await addDoc(collection(db,'communities'),{name,description,createdByUid:user().uid,createdBy:publicName(profileCache),memberUids:[user().uid],members:[user().email],communityAdminUids:[user().uid],communityAdmins:[user().email],pendingMemberUids:[],pendingMembers:[],createdAt:serverTimestamp()});$('communityName').value='';$('communityDescription').value='';$('createCommunityBox')?.classList.add('hidden');await loadCommunities();await loadCommunitiesBar()}catch(e){alert('Erro ao criar comunidade: '+e.message)}};
+window.addCommunity=async function(){
+  const u=user();
+  if(!u)return alert('Você precisa estar conectado.');
+  const name=$('communityName')?.value.trim();
+  const description=$('communityDescription')?.value.trim();
+  const theme=$('communityTheme')?.value.trim();
+  if(!name)return alert('Informe o nome da comunidade.');
+  if(!theme)return alert('Informe o tema da comunidade.');
+
+  const btn=[...document.querySelectorAll('#createCommunityBox button')].find(b=>/criar comunidade/i.test(b.textContent||''));
+  const old=btn?.textContent||'Criar comunidade';
+  if(btn){btn.disabled=true;btn.textContent='Criando comunidade...'}
+
+  try{
+    await addDoc(collection(db,'communities'),{
+      name,
+      description,
+      theme,
+      themeLower:theme.toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,''),
+      createdByUid:u.uid,
+      createdBy:publicName(profileCache),
+      memberUids:[u.uid],
+      members:[u.email],
+      communityAdminUids:[u.uid],
+      communityAdmins:[u.email],
+      pendingMemberUids:[],
+      pendingMembers:[],
+      createdAt:serverTimestamp()
+    });
+
+    $('communityName').value='';
+    $('communityDescription').value='';
+    $('communityTheme').value='';
+    $('createCommunityBox')?.classList.add('hidden');
+
+    await loadCommunities();
+    await loadCommunitiesBar();
+    alert('Comunidade criada com sucesso.');
+  }catch(e){
+    console.error(e);
+    alert('Erro ao criar comunidade: '+e.message);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent=old}
+  }
+};;
 
 window.openCommunity=async function(id){
   const snap=await getDoc(doc(db,'communities',id));
@@ -3573,6 +3696,60 @@ window.deleteCurrentCommunity=async function(){
 window.backToCommunities=async()=>{currentCommunityId=null;$('communityArea')?.classList.add('hidden');$('communitiesList')?.classList.remove('hidden');await loadCommunities()};
 async function loadCommunityMessages(id){const box=$('communityMessages');if(!box)return;const snap=await getDocs(collection(db,'communities',id,'messages'));const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';box.scrollTop=box.scrollHeight}
 window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){const u=user(),text=$('messageInput')?.value.trim();if(!u||!currentCommunityId||!text)return;await addDoc(collection(db,'communities',currentCommunityId,'messages'),{text,authorUid:u.uid,authorName:publicName(profileCache),createdAt:serverTimestamp()});$('messageInput').value='';await loadCommunityMessages(currentCommunityId)};
+
+window.showStudyVideoForm=function(){
+  if(!currentCommunityIsAdmin){
+    alert('Somente o administrador desta comunidade pode adicionar vídeos de estudo.');
+    return;
+  }
+  $('studyVideoForm')?.classList.remove('hidden');
+  $('studyVideoTitle')?.focus();
+};
+
+window.hideStudyVideoForm=function(){
+  $('studyVideoForm')?.classList.add('hidden');
+  if($('studyVideoTitle'))$('studyVideoTitle').value='';
+  if($('studyVideoDescription'))$('studyVideoDescription').value='';
+  if($('studyVideoUrl'))$('studyVideoUrl').value='';
+};
+
+window.saveStudyVideo=async function(){
+  const u=user();
+  const communityId=currentCommunityId;
+  if(!u||!communityId)return alert('Nenhuma comunidade está aberta.');
+  if(!currentCommunityIsAdmin)return alert('Somente o administrador desta comunidade pode adicionar vídeos.');
+
+  const title=$('studyVideoTitle')?.value.trim();
+  const description=$('studyVideoDescription')?.value.trim();
+  const url=$('studyVideoUrl')?.value.trim();
+
+  if(!title)return alert('Informe o título do vídeo.');
+  if(!url)return alert('Informe o link do vídeo.');
+
+  const btn=[...document.querySelectorAll('#studyVideoForm button')].find(b=>/acrescentar vídeo/i.test(b.textContent||''));
+  const old=btn?.textContent||'🎥 Acrescentar vídeo à comunidade';
+  if(btn){btn.disabled=true;btn.textContent='Salvando vídeo...'}
+
+  try{
+    await addDoc(collection(db,'communities',communityId,'studyVideos'),{
+      title,
+      description,
+      url,
+      createdByUid:u.uid,
+      createdAt:serverTimestamp()
+    });
+
+    hideStudyVideoForm();
+    await loadCommunityStudyVideos(communityId);
+    alert('Vídeo de estudo adicionado com sucesso.');
+  }catch(e){
+    console.error('saveStudyVideo:',e);
+    alert('Não foi possível adicionar o vídeo: '+e.message);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent=old}
+  }
+};
+
 async function loadCommunityStudyVideos(id){const list=$('studyVideosList');if(!list)return;const snap=await getDocs(collection(db,'communities',id,'studyVideos'));const arr=snap.docs.map(x=>x.data());list.innerHTML=arr.map(v=>{
   const url=v.url||'';
   return getYouTubeVideoId(url)
