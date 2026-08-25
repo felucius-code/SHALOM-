@@ -1435,6 +1435,10 @@ select option {
 .community-header-name{font-size:22px;font-weight:700;margin:0}
 .community-header-description{margin:4px 0 0;color:#6B7A99;font-size:13px;line-height:1.4}
 .community-header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.store-book-meta{font-size:12px;color:#8b96ad;margin-top:5px;line-height:1.45}
+.store-price{font-size:17px;font-weight:700;margin-top:7px}
+.external-purchase{display:inline-flex;align-items:center;gap:5px}
+
 .community-join-btn{white-space:nowrap}
 
 .community-danger{border-color:#8b3a3a!important;color:#ffb0b0!important}
@@ -2870,7 +2874,7 @@ select option {
 
 <section id="page-profile" class="page">
 
-    <h1 class="page-title">👤 Perfil</h1><div class="card" style="margin-bottom:16px;"><h2 class="card-title">🛒 Loja</h2><p style="color:#6B7A99;margin:0;">Produtos são itens para compra. Livros para leitura e estudo permanecem na seção Livros.</p></div>
+    <h1 class="page-title">👤 Perfil</h1><div class="card" style="margin-bottom:16px;"><h2 class="card-title">🛒 Loja</h2><p style="color:#6B7A99;margin:0;">A Loja apresenta produtos e livros com links externos. A compra ou leitura é concluída no site indicado; o SHALOM não processa o pagamento.</p></div>
     <div id="recommendationsSection" class="card recommendation-card" style="margin-bottom:18px;">
         <h2 class="card-title">✨ Recomendados para você</h2>
         <p id="recommendationsIntro" style="color:#6B7A99;font-size:13px;margin:0 0 12px;">
@@ -3265,11 +3269,20 @@ function renderContentCard(type,id,d){
  const info=contentTypes[type];
  const cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;
  const isVideo=type==='videos';
+ const isBook=type==='books';
+ const isProduct=type==='products';
  const isYouTube=!!getYouTubeVideoId(d.url||'');
- const action=d.url?((isVideo||isYouTube)
-   ?`<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">▶ Assistir</button>`
-   :`<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Abrir</a>`):'';
- return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`;
+ const action=d.url
+   ? ((isVideo||isYouTube)
+      ? `<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">▶ Assistir</button>`
+      : (isProduct
+         ? `<a class="btn btn-small external-purchase" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">🛒 Comprar ↗</a>`
+         : (isBook
+            ? `<a class="btn btn-small external-purchase" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">🔗 Ver / comprar ↗</a>`
+            : `<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Abrir ↗</a>`)))
+   : '';
+ return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${isBook?`<div class="store-book-meta">${d.author?`Autor: ${esc(d.author)}`:''}${d.year?`${d.author?' · ':''}${esc(d.year)}`:''}${d.isbn?`<br>ISBN: ${esc(d.isbn)}`:''}</div>`:''}
+ ${isProduct?`${d.price?`<div class="store-price">${esc(d.price)}</div>`:''}<div class="store-book-meta">${d.author?`Marca / fabricante: ${esc(d.author)}`:''}</div>`:''}${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`;
 }
 async function fetchContent(type){const snap=await getDocs(collection(db,contentTypes[type].collection));return snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(b.createdAt)-ts(a.createdAt))}
 window.loadContent=async function(type){const info=contentTypes[type],grid=$(info.grid);if(!grid)return;const adminBox=$(info.admin);if(adminBox)adminBox.classList.toggle('hidden',!isAdmin);grid.innerHTML='<p style="color:#6B7A99">Carregando...</p>';try{const items=await fetchContent(type);grid.innerHTML=items.length?items.map(x=>renderContentCard(type,x.id,x)).join(''):'<p style="color:#6B7A99">Nenhum conteúdo cadastrado.</p>';}catch(e){console.error(e);grid.innerHTML=`<div class="error">Erro ao carregar ${esc(info.title)}: ${esc(e.message)}</div>`}};
