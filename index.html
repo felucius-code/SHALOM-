@@ -1428,6 +1428,15 @@ select option {
 .community-admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .community-member-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #303654}
 .community-member-meta{min-width:0}.community-member-name{font-weight:600}.community-member-sub{font-size:11px;color:#6B7A99;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.community-header-minimal{display:flex;align-items:center;gap:14px;padding:4px 0}
+.community-header-avatar{width:72px;height:72px;border-radius:50%;overflow:hidden;flex:0 0 72px;background:#202742;display:flex;align-items:center;justify-content:center;font-size:28px;border:1px solid #303654}
+.community-header-avatar img{width:100%;height:100%;object-fit:cover}
+.community-header-info{min-width:0;flex:1}
+.community-header-name{font-size:22px;font-weight:700;margin:0}
+.community-header-description{margin:4px 0 0;color:#6B7A99;font-size:13px;line-height:1.4}
+.community-header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.community-join-btn{white-space:nowrap}
+
 .community-danger{border-color:#8b3a3a!important;color:#ffb0b0!important}
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
@@ -2356,29 +2365,19 @@ select option {
          class="hidden">
 
 
-        <!-- CABEÇALHO -->
-
+        <!-- CABEÇALHO MINIMALISTA DA COMUNIDADE -->
         <div class="card">
-
-            <h2
-                id="communityAreaTitle"
-                class="card-title">
-            </h2>
-
-
-            <p
-                id="communityAreaDescription"
-                style="color:#6B7A99;">
-            </p>
-
-            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
-                <button
-                    id="communityToolsBtn"
-                    class="btn btn-secondary hidden"
-                    type="button"
-                    onclick="toggleCommunityTools()">
-                    ⚙️ Ferramentas da comunidade
-                </button>
+            <div class="community-header-minimal">
+                <div id="communityAreaImage" class="community-header-avatar">👥</div>
+                <div class="community-header-info">
+                    <h2 id="communityAreaTitle" class="community-header-name"></h2>
+                    <p id="communityAreaDescription" class="community-header-description"></p>
+                </div>
+                <div class="community-header-actions">
+                    <button id="communityJoinBtn" class="btn btn-small community-join-btn hidden" type="button" onclick="requestCurrentCommunityJoin()">Entrar na comunidade</button>
+                    <button id="communityPendingBtn" class="btn btn-secondary btn-small hidden" type="button" disabled>Solicitação enviada</button>
+                    <button id="communityToolsBtn" class="btn btn-secondary btn-small hidden" type="button" onclick="toggleCommunityTools()">⚙️ Ferramentas</button>
+                </div>
             </div>
 
             <div id="communityToolsPanel" class="card hidden" style="margin-top:14px;background:rgba(10,14,30,.55);">
@@ -2394,7 +2393,7 @@ select option {
                 <div class="form-group">
                     <label>Imagem da comunidade</label>
                     <input id="editCommunityImage" type="file" accept="image/*">
-                    <small style="display:block;color:#6B7A99;margin-top:5px;">A imagem será usada no carrossel de comunidades.</small>
+                    <small style="display:block;color:#6B7A99;margin-top:5px;">A imagem será usada no carrossel e no perfil da comunidade.</small>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="btn" type="button" onclick="saveCommunitySettings()">💾 Salvar alterações</button>
@@ -2402,9 +2401,11 @@ select option {
                     <button class="btn btn-secondary" type="button" onclick="toggleCommunityTools(false)">Fechar</button>
                 </div>
             </div>
-
         </div>
 
+        <div id="communityJoinStatus" class="hidden" style="margin-top:10px;color:#6B7A99;font-size:13px;"></div>
+
+        <div id="communityMemberContent" class="hidden">
 
         <!-- ADMINISTRADOR DA COMUNIDADE -->
 
@@ -2602,6 +2603,8 @@ select option {
 
 
     </div>
+
+        </div>
 
 </section>
     
@@ -3378,14 +3381,76 @@ async function loadHome(){for(const type of Object.keys(contentTypes)){const hos
 }
 window.loadHome=loadHome;
 
-async function communityIsAdmin(id,data=null){if(isAdmin)return true;const u=user();if(!u)return false;data=data||((await getDoc(doc(db,'communities',id))).data()||{});return data.createdByUid===u.uid||(data.memberUids||[]).includes(u.uid)&&(data.communityAdminUids||[]).includes(u.uid)}
-async function loadCommunitiesBar(){const list=$('homeCommunitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const u=user();const arr=snap.docs.map(x=>({id:x.id,...x.data()})).filter(c=>!u||c.public!==false||[...(c.memberUids||[])].includes(u.uid));list.innerHTML=arr.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Nenhuma comunidade.</div>'}
+async function communityIsAdmin(id,data=null){
+  const u=user();
+  if(!u)return false;
+  data=data||((await getDoc(doc(db,'communities',id))).data()||{});
+  return data.createdByUid===u.uid||(data.communityAdminUids||[]).includes(u.uid);
+}
+async function loadCommunitiesBar(){const list=$('homeCommunitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const u=user();const arr=snap.docs.map(x=>({id:x.id,...x.data()}));list.innerHTML=arr.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Nenhuma comunidade.</div>'}
 async function loadCommunities(){await loadCommunitiesBar();const list=$('communitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const arr=snap.docs.map(x=>({id:x.id,...x.data()}));list.innerHTML=arr.map(c=>`<div class="community-card"><h3>${esc(c.name)}</h3><p>${esc(c.description||'')}</p><span class="badge">${(c.memberUids||c.members||[]).length} membros</span><button class="btn btn-small" onclick="openCommunity('${c.id}')">Abrir</button></div>`).join('')||'<p>Nenhuma comunidade.</p>';}
 window.loadCommunities=loadCommunities;
 window.showCreateCommunity=()=>{$('createCommunityBox')?.classList.toggle('hidden')};
 window.addCommunity=async function(){if(!user())return;const name=$('communityName')?.value.trim(),description=$('communityDescription')?.value.trim();if(!name)return alert('Informe o nome.');try{await addDoc(collection(db,'communities'),{name,description,createdByUid:user().uid,createdBy:publicName(profileCache),memberUids:[user().uid],members:[user().email],communityAdminUids:[user().uid],communityAdmins:[user().email],pendingMemberUids:[],pendingMembers:[],createdAt:serverTimestamp()});$('communityName').value='';$('communityDescription').value='';$('createCommunityBox')?.classList.add('hidden');await loadCommunities();await loadCommunitiesBar()}catch(e){alert('Erro ao criar comunidade: '+e.message)}};
 
-window.openCommunity=async function(id){const snap=await getDoc(doc(db,'communities',id));if(!snap.exists())return alert('Comunidade não encontrada.');const c={id,...snap.data()},u=user();const member=isAdmin||c.createdByUid===u?.uid||(c.memberUids||[]).includes(u?.uid)||(c.members||[]).includes(u?.email);if(!member)return alert('Você não é membro desta comunidade.');currentCommunityId=id;currentCommunityIsAdmin=await communityIsAdmin(id,c);setPage('communities',document.querySelector('.nav-item[onclick*="communities"]'));$('communitiesList').classList.add('hidden');$('createCommunityBox')?.classList.add('hidden');$('communityArea').classList.remove('hidden');$('communityAreaTitle').textContent=c.name;$('communityAreaDescription').textContent=c.description||'';$('communityAdminButton')?.classList.add('hidden');$('communityStudyAdminTools')?.classList.toggle('hidden',!currentCommunityIsAdmin);$('communityToolsBtn')?.classList.toggle('hidden',!currentCommunityIsAdmin);$('communityToolsPanel')?.classList.add('hidden');$('editCommunityName').value=c.name||'';$('editCommunityDescription').value=c.description||'';$('editCommunityImage').value='';await loadCommunityMessages(id);await loadCommunityStudyVideos(id)};
+window.openCommunity=async function(id){
+  const snap=await getDoc(doc(db,'communities',id));
+  if(!snap.exists())return alert('Comunidade não encontrada.');
+
+  const c={id,...snap.data()},u=user();
+  if(!u)return;
+
+  const member=isAdmin||
+    c.createdByUid===u.uid||
+    (c.memberUids||[]).includes(u.uid)||
+    (c.members||[]).includes(u.email);
+
+  const currentPending=(c.pendingMemberUids||[]).includes(u.uid)||
+    (c.pendingMembers||[]).includes(u.email);
+
+  currentCommunityId=id;
+  currentCommunityIsAdmin=await communityIsAdmin(id,c);
+
+  setPage('communities',document.querySelector('.nav-item[onclick*="communities"]'));
+  $('communitiesList')?.classList.add('hidden');
+  $('createCommunityBox')?.classList.add('hidden');
+  $('communityArea')?.classList.remove('hidden');
+
+  // Cabeçalho minimalista.
+  $('communityAreaTitle').textContent=c.name||'Comunidade';
+  $('communityAreaDescription').textContent=c.description||'';
+
+  const imageBox=$('communityAreaImage');
+  if(imageBox){
+    imageBox.innerHTML=c.imageURL
+      ? `<img src="${esc(c.imageURL)}" alt="">`
+      : '👥';
+  }
+
+  // Ferramentas são exclusivas do administrador DA comunidade.
+  $('communityToolsBtn')?.classList.toggle('hidden',!currentCommunityIsAdmin);
+  $('communityToolsPanel')?.classList.add('hidden');
+
+  // Solicitação de entrada para não-membros.
+  $('communityJoinBtn')?.classList.toggle('hidden',member||currentPending);
+  $('communityPendingBtn')?.classList.toggle('hidden',member||!currentPending);
+  $('communityJoinStatus')?.classList.toggle('hidden',member||(!currentPending));
+
+  // Conteúdo interno só fica disponível para membros.
+  $('communityMemberContent')?.classList.toggle('hidden',!member);
+
+  $('communityStudyAdminTools')?.classList.toggle('hidden',!currentCommunityIsAdmin);
+  $('studyVideoForm')?.classList.add('hidden');
+
+  $('editCommunityName').value=c.name||'';
+  $('editCommunityDescription').value=c.description||'';
+  $('editCommunityImage').value='';
+
+  if(member){
+    await loadCommunityMessages(id);
+    await loadCommunityStudyVideos(id);
+  }
+};;
 
 window.toggleCommunityTools=function(force){
  const panel=$('communityToolsPanel'); if(!panel)return;
@@ -3473,7 +3538,41 @@ window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');i
 window.viewRequests=async function(communityId){const cSnap=await getDoc(doc(db,'communities',communityId));if(!cSnap.exists())return;const c={id:communityId,...cSnap.data()};if(!(await communityIsAdmin(communityId,c)))return alert('Sem permissão.');const ids=c.pendingMemberUids||[],emails=c.pendingMembers||[];const requests=[];for(const uid of ids){const p=await getProfile(uid);if(p)requests.push({uid,email:p.email,name:p.name||p.email})}for(const email of emails){if(requests.some(r=>r.email===email))continue;const q=query(collection(db,'users'),where('email','==',email)),s=await getDocs(q);if(!s.empty){const p={id:s.docs[0].id,...s.docs[0].data()};requests.push({uid:p.uid||p.id,email,name:p.name||email})}else requests.push({email,name:email})}const card=$('page-notifications');setPage('notifications',document.querySelector('.nav-item[onclick*="notifications"]'));card.querySelector('.card').innerHTML=`<div style="display:flex;justify-content:space-between"><h2 class="card-title">Solicitações — ${esc(c.name)}</h2><button class="btn btn-secondary btn-small" onclick="loadNotifications()">Voltar</button></div>${requests.length?requests.map(r=>`<div class="card" style="margin-top:10px"><strong>${esc(r.name)}</strong><div style="color:#6B7A99">${esc(r.email||'')}</div><button class="btn btn-small" onclick="approveJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Aprovar</button><button class="btn btn-danger btn-small" onclick="rejectJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Recusar</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma solicitação.</p>'}`};
 window.approveJoin=async function(id,uid,email){const r=doc(db,'communities',id),s=await getDoc(r);if(!s.exists())return;const c=s.data(),data={memberUids:uid?arrayUnion(uid):arrayUnion(),members:email?arrayUnion(email):arrayUnion(),pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
 window.rejectJoin=async function(id,uid,email){const r=doc(db,'communities',id),data={pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
-window.requestJoin=async function(id){const u=user();if(!u)return;await updateDoc(doc(db,'communities',id),{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});alert('Solicitação enviada.');await loadCommunities()};
+window.requestJoin=async function(id){const u=user();if(!u)return;await updateDoc(doc(db,'communities',id),{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});alert('Solicitação enviada.');await loadCommunities()}
+window.requestCurrentCommunityJoin=async function(){
+  const id=currentCommunityId;
+  if(!id)return;
+  const u=user();
+  if(!u)return;
+  const btn=$('communityJoinBtn');
+  if(btn){btn.disabled=true;btn.textContent='Enviando...';}
+  try{
+    const ref=doc(db,'communities',id);
+    const snap=await getDoc(ref);
+    if(!snap.exists())throw new Error('Comunidade não encontrada.');
+    const c=snap.data();
+    const alreadyMember=(c.memberUids||[]).includes(u.uid)||(c.members||[]).includes(u.email);
+    if(alreadyMember){
+      await openCommunity(id);
+      return;
+    }
+    const pending=(c.pendingMemberUids||[]).includes(u.uid)||(c.pendingMembers||[]).includes(u.email);
+    if(!pending){
+      await updateDoc(ref,{
+        pendingMemberUids:arrayUnion(u.uid),
+        pendingMembers:arrayUnion(u.email)
+      });
+    }
+    $('communityJoinBtn')?.classList.add('hidden');
+    $('communityPendingBtn')?.classList.remove('hidden');
+    alert('Solicitação enviada ao administrador da comunidade.');
+  }catch(e){
+    console.error(e);
+    alert('Não foi possível enviar a solicitação: '+e.message);
+    if(btn){btn.disabled=false;btn.textContent='Entrar na comunidade';}
+  }
+};
+;
 
 window.loadNotifications=async function(){const box=$('page-notifications')?.querySelector('.card');if(!box)return;const arr=await visibleAdminCommunities();const pending=arr.filter(c=>(c.pendingMemberUids||[]).length||(c.pendingMembers||[]).length);box.innerHTML=pending.length?pending.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #303654"><div><strong>${esc(c.name)}</strong><div style="color:#6B7A99">${(c.pendingMemberUids||c.pendingMembers||[]).length} solicitação(ões)</div></div><button class="btn btn-small" onclick="viewRequests('${c.id}')">Ver solicitações</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma notificação no momento.</p>'};
 
