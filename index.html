@@ -3717,42 +3717,55 @@ async function loadHome(){for(const type of Object.keys(contentTypes)){const hos
 }
 window.loadHome=loadHome;
 
-async function communityIsMember(id,data=null){
-  const u=user();
-  if(!u||!id)return false;
-  if(!data){
-    const snap=await getDoc(doc(db,'communities',id));
-    if(!snap.exists())return false;
-    data=snap.data()||{};
-  }
-  return data.createdByUid===u.uid||
-    (Array.isArray(data.memberUids)&&data.memberUids.includes(u.uid))||
-    (Array.isArray(data.members)&&data.members.includes(u.email));
+
+function communityMemberUids(c){return Array.isArray(c?.memberUids)?c.memberUids:[]}
+function communityAdminUids(c){return Array.isArray(c?.communityAdminUids)?c.communityAdminUids:[]}
+function communityPendingUids(c){return Array.isArray(c?.pendingMemberUids)?c.pendingMemberUids:[]}
+
+async function migrateCommunityIdentityFields(id,c){
+ const u=user();if(!u||!c)return;
+ const updates={};
+ const members=communityMemberUids(c),admins=communityAdminUids(c),pending=communityPendingUids(c);
+ const email=u.email?.toLowerCase();
+ if(email){
+   const lm=Array.isArray(c.members)?c.members:[];
+   const la=Array.isArray(c.communityAdmins)?c.communityAdmins:[];
+   const lp=Array.isArray(c.pendingMembers)?c.pendingMembers:[];
+   if(lm.some(x=>String(x).toLowerCase()===email)&&!members.includes(u.uid))updates.memberUids=arrayUnion(u.uid);
+   if(la.some(x=>String(x).toLowerCase()===email)&&!admins.includes(u.uid))updates.communityAdminUids=arrayUnion(u.uid);
+   if(lp.some(x=>String(x).toLowerCase()===email)&&!pending.includes(u.uid))updates.pendingMemberUids=arrayUnion(u.uid);
+ }
+ if(Object.keys(updates).length){
+   try{await updateDoc(doc(db,'communities',id),updates)}catch(e){console.warn('Migração UID não concluída:',e)}
+ }
 }
 
-async function communityIsAdmin(id,data=null){
-  const u=user();
-  if(!u||!id)return false;
-  if(!data){
-    const snap=await getDoc(doc(db,'communities',id));
-    if(!snap.exists())return false;
-    data=snap.data()||{};
-  }
-  // The general SHALOM administrator does not receive community permissions
-  // unless also assigned to this specific community.
-  return data.createdByUid===u.uid ||
-    (Array.isArray(data.communityAdminUids)&&data.communityAdminUids.includes(u.uid));
+async function communityIsMember(id,c){
+ const u=user();if(!u||!c)return false;
+ if(communityMemberUids(c).includes(u.uid))return true;
+ const email=u.email?.toLowerCase();
+ const legacy=Array.isArray(c.members)?c.members:[];
+ if(email&&legacy.some(x=>String(x).toLowerCase()===email)){await migrateCommunityIdentityFields(id,c);return true}
+ return false;
+}
+
+async function communityIsAdmin(id,c){
+ const u=user();if(!u||!c)return false;
+ if(c.createdByUid===u.uid)return true;
+ if(communityAdminUids(c).includes(u.uid))return true;
+ const email=u.email?.toLowerCase();
+ const legacy=Array.isArray(c.communityAdmins)?c.communityAdmins:[];
+ if(email&&legacy.some(x=>String(x).toLowerCase()===email)){await migrateCommunityIdentityFields(id,c);return true}
+ return false;
 }
 async function loadCommunitiesBar(){
  const list=$('homeCommunitiesList');if(!list)return;
  const u=user();if(!u){list.innerHTML='';return;}
  const snap=await getDocs(collection(db,'communities'));
  const arr=snap.docs.map(x=>({id:x.id,...x.data()}));
- const mine=arr.filter(c=>
-   c.createdByUid===u.uid||
-   (Array.isArray(c.memberUids)&&c.memberUids.includes(u.uid))||
-   (Array.isArray(c.members)&&c.members.includes(u.email))
- );
+ const email=u.email?.toLowerCase();
+ const mine=arr.filter(c=>c.createdByUid===u.uid||communityMemberUids(c).includes(u.uid)||
+   (!!email&&Array.isArray(c.members)&&c.members.some(x=>String(x).toLowerCase()===email)));
  list.innerHTML=mine.map(c=>`<button class="community-circle" onclick="openCommunity('${esc(c.id)}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Você ainda não participa de nenhuma comunidade.</div>';
 }
 async function loadCommunities(){
@@ -4269,11 +4282,16 @@ window.requestJoin=async function(id){
  if(!snap.exists())return alert('Comunidade não encontrada.');
  const c=snap.data();
  if(await communityIsMember(id,c))return alert('Você já participa desta comunidade.');
- if((c.pendingMemberUids||[]).includes(u.uid)||(c.pendingMembers||[]).includes(u.email))return alert('Sua solicitação já está pendente.');
- await updateDoc(ref,{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});
+ if(communityPendingUids(c).includes(u.uid))return alert('Sua solicitação já está pendente.');
+ const email=u.email?.toLowerCase();
+ const legacy=Array.isArray(c.pendingMembers)?c.pendingMembers:[];
+ if(email&&legacy.some(x=>String(x).toLowerCase()===email)){await migrateCommunityIdentityFields(id,c);return alert('Sua solicitação já está pendente.');}
+ const updates={pendingMemberUids:arrayUnion(u.uid)};
+ if(u.email)updates.pendingMembers=arrayUnion(u.email);
+ await updateDoc(ref,updates);
  alert('Solicitação enviada.');
  await loadCommunities();
-};
+};;
 window.requestCurrentCommunityJoin=async function(){
   const id=currentCommunityId;
   if(!id)return;
@@ -5020,6 +5038,7 @@ window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((
 </script>
 
 
+<!-- UID_MIGRATION_PHASE_1: UID é principal; campos legados por e-mail preservados temporariamente -->
 <!-- SECURITY_AUDIT_PHASE_1: client-side community permission hardening -->
 <!-- PLAYER DE VÍDEO -->
 <div id="videoPlayerModal" class="hidden" style="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.94);align-items:center;justify-content:center;padding:24px;">
