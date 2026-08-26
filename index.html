@@ -1490,6 +1490,7 @@ select option {
     max-width:210px;
   }
 }
+.admin-detail-card{border:1px solid #303654;border-radius:12px;padding:14px;background:rgba(10,14,30,.25);margin-top:12px}
 </style>
 <!-- COMMUNITY_MEMBERSHIP_NO_GENERAL_ADMIN_BYPASS: general admin does not bypass membership. -->
 <!-- COMMUNITY_ADMIN_ONLY_RULE: general admin is not a community admin unless explicitly assigned to that community. -->
@@ -4196,7 +4197,31 @@ window.loadNotifications=async function(){
 
 
 function adminWorkspace(){return $('adminWorkspace');}
-window.adminShowUsers=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando...</p>';try{const s=await getDocs(collection(db,'users'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.email||'—')}</td><td>${esc(x.uid||d.id)}</td><td>${(x.interests||[]).length}</td></tr>`)});w.innerHTML=`<h2 class="card-title">👥 Usuários</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Nome</th><th>E-mail</th><th>UID</th><th>Interesses</th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum usuário.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
+window.adminShowUsers=async function(){
+ const w=adminWorkspace();if(!w)return;
+ w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando...</p>';
+ try{
+   const s=await getDocs(collection(db,'users'));
+   const rows=[];
+   s.forEach(d=>{
+     const x=d.data()||{};
+     const interests=[...(x.interests||[]),...(x.customInterests||[])].filter(Boolean);
+     rows.push(`<tr>
+       <td>${esc(x.name||x.displayName||'—')}</td>
+       <td>${esc(x.email||'—')}</td>
+       <td><code>${esc(x.uid||d.id)}</code></td>
+       <td>${interests.length}</td>
+     </tr>`);
+   });
+   rows.sort((a,b)=>a.localeCompare(b));
+   w.innerHTML=`<h2 class="card-title">👥 Usuários</h2>
+     <p style="color:#6B7A99;font-size:13px">Consulta administrativa. Nenhum usuário é alterado nesta primeira etapa.</p>
+     <div style="overflow:auto"><table class="admin-table">
+       <tr><th>Nome</th><th>E-mail</th><th>UID</th><th>Interesses</th></tr>
+       ${rows.join('')||'<tr><td colspan="4">Nenhum usuário.</td></tr>'}
+     </table></div>`;
+ }catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}
+};;
 window.adminShowCommunities=async function(){
  const w=adminWorkspace();if(!w)return;
  w.innerHTML='<h2 class="card-title">🏘️ Comunidades</h2><p>Carregando comunidades...</p>';
@@ -4216,68 +4241,27 @@ window.adminShowCommunities=async function(){
 
 window.adminLoadCommunityDetails=async function(id){
  const box=$('adminCommunityDetails');if(!box)return;
- if(!id){box.innerHTML='';return}
+ if(!id){box.innerHTML='';return;}
+ box.innerHTML='<p>Carregando...</p>';
  try{
    const s=await getDoc(doc(db,'communities',id));
-   if(!s.exists()){box.innerHTML='<p>Comunidade não encontrada.</p>';return}
+   if(!s.exists()){box.innerHTML='<div class="error">Comunidade não encontrada.</div>';return;}
    const c=s.data();
-   const memberUids=Array.isArray(c.memberUids)?c.memberUids:[];
-   const members=Array.isArray(c.members)?c.members:[];
-   const adminUids=Array.isArray(c.communityAdminUids)?c.communityAdminUids:[];
-   const adminEmails=Array.isArray(c.communityAdmins)?c.communityAdmins:[];
-   const creatorUid=c.createdByUid||c.createdBy||'';
-
-   // Prefer UID-based membership. Keep legacy e-mail members visible but do not
-   // silently delete them; this preserves compatibility with older communities.
-   const uidSet=new Set(memberUids);
-   const legacySet=new Set(members);
-   const allIds=[...new Set([...memberUids,...members])];
-
-   const rows=[];
-   for(const identifier of allIds){
-     let profile=null;
-     if(memberUids.includes(identifier)){
-       try{
-         const ps=await getDoc(doc(db,'users',identifier));
-         if(ps.exists())profile=ps.data();
-       }catch(_){}
-     }
-     const name=profile?.name||profile?.displayName||identifier;
-     const email=profile?.email||'';
-     const isAdmin=adminUids.includes(identifier);
-     const isCreator=creatorUid===identifier;
-     const legacy=!uidSet.has(identifier)&&legacySet.has(identifier);
-     rows.push(`<div class="community-member-row">
-       <div class="community-member-meta">
-         <div class="community-member-name">${esc(name)} ${isCreator?'· criador':''} ${isAdmin?'· administrador':''}</div>
-         <div class="community-member-sub">${esc(email||identifier)}${legacy?' · registro antigo':''}</div>
-       </div>
-       <div>
-         ${(!isCreator&&!isAdmin)?`<button class="btn btn-small community-danger" type="button" onclick="adminRemoveCommunityMember('${esc(id)}','${esc(identifier)}')">Excluir</button>`:''}
-       </div>
-     </div>`);
-   }
-
-   box.innerHTML=`<div class="card">
+   const admins=Array.isArray(c.communityAdminUids)?c.communityAdminUids:[];
+   const members=Array.isArray(c.memberUids)?c.memberUids:(Array.isArray(c.members)?c.members:[]);
+   box.innerHTML=`<div class="admin-detail-card">
      <h3>${esc(c.name||'Comunidade')}</h3>
-     <p style="color:#6B7A99">${esc(c.description||'')}</p>
-
-     <h4 style="margin-top:16px">Administradores</h4>
-     <div>${adminUids.length
-       ? adminUids.map(x=>`<div class="community-member-row"><div class="community-member-meta"><div class="community-member-name">${esc(x)}</div><div class="community-member-sub">UID</div></div><button class="btn btn-small community-danger" type="button" onclick="adminRemoveCommunityAdmin('${esc(id)}','${esc(x)}')">Remover</button></div>`).join('')
-       : (adminEmails.length?adminEmails.map(x=>`<div class="community-member-row"><div class="community-member-meta"><div class="community-member-name">${esc(x)}</div><div class="community-member-sub">registro antigo por e-mail</div></div></div>`).join(''):'<p style="color:#6B7A99">Nenhum administrador adicional registrado.</p>')}
-     </div>
-
-     <div class="community-admin-actions">
-       <button class="btn btn-small" type="button" onclick="adminAddCommunityMember('${esc(id)}')">+ Incluir membro</button>
-       <button class="btn btn-small" type="button" onclick="adminAddCommunityAdmin('${esc(id)}')">+ Incluir administrador</button>
-     </div>
-
-     <h4 style="margin-top:20px">Membros</h4>
-     <div>${rows.join('')||'<p style="color:#6B7A99">Nenhum membro registrado.</p>'}</div>
+     <p><b>Tema:</b> ${esc(c.theme||'—')}</p>
+     <p><b>Criador:</b> ${esc(c.createdBy||c.createdByUid||'—')}</p>
+     <p><b>Membros:</b> ${members.length}</p>
+     <p><b>Administradores da comunidade:</b> ${admins.length}</p>
+     <p style="color:#6B7A99;font-size:12px;margin-top:12px">
+       A administração geral pode consultar estas informações, mas não recebe automaticamente
+       as permissões de administrador desta comunidade.
+     </p>
    </div>`;
  }catch(e){box.innerHTML=`<div class="error">${esc(e.message)}</div>`}
-};
+};;
 
 window.adminAddCommunityMember=async function(communityId){
  const value=prompt('Digite o UID do usuário que deseja incluir na comunidade:');
@@ -4349,9 +4333,73 @@ window.adminRemoveCommunityAdmin=async function(communityId,uid){
 };
 
 ;
-window.adminShowContents=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">📚 Conteúdos</h2><p>Carregando...</p>';const rows=[];for(const [type,info] of Object.entries(contentTypes||{})){try{const s=await getDocs(collection(db,info.collection));s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(info.title||type)}</td><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.category||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','${esc(type)}')">Excluir</button></td></tr>`)})}catch(e){console.warn(type,e)}}w.innerHTML=`<h2 class="card-title">📚 Conteúdos</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Tipo</th><th>Título</th><th>Categoria</th><th></th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum conteúdo.</td></tr>'}</table></div>`};
-window.adminShowStore=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">🛒 Loja</h2><p>Carregando produtos...</p>';try{const s=await getDocs(collection(db,'products'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.price||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','products')">Excluir</button></td></tr>`)});w.innerHTML=`<h2 class="card-title">🛒 Loja</h2><p class="store-form-note">Produtos são itens para compra. Livros permanecem na Biblioteca.</p><div style="overflow:auto"><table class="admin-table"><tr><th>Produto</th><th>Preço</th><th></th></tr>${rows.join('')||'<tr><td colspan="3">Nenhum produto.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
-async function loadAdmin(){await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager()}
+window.adminDeleteContent=async function(type,id){
+ if(!isAdmin)return alert('Apenas o administrador geral pode excluir conteúdos.');
+ if(!type||!id)return;
+ if(!confirm('Excluir este conteúdo permanentemente?'))return;
+ try{
+   await deleteDoc(doc(db,contentTypes[type].collection,id));
+   await adminShowContents();
+   await loadHome();
+ }catch(e){alert('Erro ao excluir: '+e.message)}
+};
+
+window.adminShowContents=async function(){
+ const w=adminWorkspace();if(!w)return;
+ w.innerHTML='<h2 class="card-title">📚 Conteúdos</h2><p>Carregando...</p>';
+ try{
+   const rows=[];
+   for(const [type,info] of Object.entries(contentTypes||{})){
+     const s=await getDocs(collection(db,info.collection));
+     s.forEach(d=>{
+       const x=d.data()||{};
+       rows.push(`<tr>
+         <td>${esc(info.title||type)}</td>
+         <td>${esc(x.title||x.name||'—')}</td>
+         <td>${esc(x.category||'—')}</td>
+         <td><button class="btn btn-danger btn-small" type="button" onclick="adminDeleteContent('${esc(type)}','${esc(d.id)}')">Excluir</button></td>
+       </tr>`);
+     });
+   }
+   w.innerHTML=`<h2 class="card-title">📚 Conteúdos</h2>
+     <p style="color:#6B7A99;font-size:13px">Administração geral dos conteúdos do SHALOM.</p>
+     <div style="overflow:auto"><table class="admin-table">
+       <tr><th>Tipo</th><th>Título</th><th>Categoria</th><th></th></tr>
+       ${rows.join('')||'<tr><td colspan="4">Nenhum conteúdo.</td></tr>'}
+     </table></div>`;
+ }catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}
+};;
+window.adminShowStore=async function(){
+ const w=adminWorkspace();if(!w)return;
+ w.innerHTML='<h2 class="card-title">🛒 Loja</h2><p>Carregando produtos...</p>';
+ try{
+   const s=await getDocs(collection(db,'products'));const rows=[];
+   s.forEach(d=>{
+     const x=d.data()||{};
+     rows.push(`<tr>
+       <td>${esc(x.title||x.name||'—')}</td>
+       <td>${esc(x.price||'—')}</td>
+       <td>${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">Abrir ↗</a>`:'—'}</td>
+       <td><button class="btn btn-danger btn-small" type="button" onclick="adminDeleteContent('products','${esc(d.id)}')">Excluir</button></td>
+     </tr>`);
+   });
+   w.innerHTML=`<h2 class="card-title">🛒 Loja</h2>
+     <p class="store-form-note">Produtos são itens para compra por link externo. Livros permanecem na Biblioteca.</p>
+     <div style="overflow:auto"><table class="admin-table">
+       <tr><th>Produto</th><th>Preço</th><th>Link</th><th></th></tr>
+       ${rows.join('')||'<tr><td colspan="4">Nenhum produto.</td></tr>'}
+     </table></div>`;
+ }catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}
+};;
+async function loadAdmin(){
+ if(!isAdmin){
+   const target=$('page-admin');
+   if(target)target.innerHTML='<div class="error">Acesso restrito ao administrador geral.</div>';
+   return;
+ }
+ const w=adminWorkspace();
+ if(w)w.innerHTML='<h2 class="card-title">Painel administrativo</h2><p style="color:#6B7A99">Escolha uma das áreas acima para consultar o SHALOM.</p>';
+}
 window.loadAdmin=loadAdmin;
 
 function bindHomeAddButtons(){
