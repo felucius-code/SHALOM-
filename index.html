@@ -2975,17 +2975,66 @@ select option {
             <label>Interesses que você acompanha</label>
             <p style="color:#6B7A99;font-size:13px;margin-bottom:8px;">Escolha os temas que deseja priorizar na Home.</p>
             <div class="interest-grid">
-                <label class="interest-option">
+<div class="interest-core-note">Temas principais do SHALOM</div>
+<label class="interest-option">
+      <input type="checkbox" value="biblia">
+      <span>Bíblia</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="hebraico">
+      <span>Hebraico</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="aramaico">
+      <span>Aramaico</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="grego">
+      <span>Grego</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="torah">
+      <span>Torah</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="tanakh">
+      <span>Tanakh</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="midrash">
+      <span>Midrash</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="tanya">
+      <span>Tanya</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="talmud">
+      <span>Talmud</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="targum">
+      <span>Targum</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="zohar">
+      <span>Zohar</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="peshitta">
+      <span>Peshitta</span>
+    </label>
+<label class="interest-option">
+      <input type="checkbox" value="septuaginta">
+      <span>Septuaginta</span>
+    </label>
+<label class="interest-option">
       <input type="checkbox" value="historia">
       <span>História</span>
     </label>
 <label class="interest-option">
       <input type="checkbox" value="arqueologia">
       <span>Arqueologia</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="biblia">
-      <span>Bíblia</span>
     </label>
 <label class="interest-option">
       <input type="checkbox" value="ciencia">
@@ -3047,63 +3096,16 @@ select option {
       <input type="checkbox" value="geografia">
       <span>Geografia</span>
     </label>
-            </div>
+</div>
 
             <div class="custom-interests-box">
                 <strong>Interesses personalizados</strong>
                 <p style="color:#6B7A99;font-size:13px;margin:5px 0 10px;">
                     Esta área será usada para seus interesses próprios. Você poderá acrescentar até 5 palavras, uma por vez.
                 </p>
-                <div class="custom-interest-input-row">
-                    <label class="interest-option">
-      <input type="checkbox" value="hebraico">
-      <span>Hebraico</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="aramaico">
-      <span>Aramaico</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="grego">
-      <span>Grego</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="torah">
-      <span>Torah</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="tanakh">
-      <span>Tanakh</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="midrash">
-      <span>Midrash</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="tanya">
-      <span>Tanya</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="talmud">
-      <span>Talmud</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="targum">
-      <span>Targum</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="zohar">
-      <span>Zohar</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="peshitta">
-      <span>Peshitta</span>
-    </label>
-<label class="interest-option">
-      <input type="checkbox" value="septuaginta">
-      <span>Septuaginta</span>
-    </label>
-<input id="customInterestInputPreview" type="text" maxlength="30"
+                <p class="interest-section-note" style="margin-top:6px;">Use esta área somente para adicionar um interesse que não aparece na lista geral acima.</p>
+        <div class="custom-interest-input-row">
+                    <input id="customInterestInputPreview" type="text" maxlength="30"
                            placeholder="Ex.: Egiptologia">
                     <button id="customInterestAddBtn" class="btn btn-small" type="button" onclick="addCustomInterest()">Adicionar</button>
                 </div>
@@ -3633,94 +3635,36 @@ async function communityIsAdmin(id,data=null){
   return data.createdByUid===u.uid ||
     (Array.isArray(data.communityAdminUids)&&data.communityAdminUids.includes(u.uid));
 }
-async function loadCommunitiesBar(){
-  const list=$('homeCommunitiesList');
-  if(!list)return;
-  const u=user();
-  if(!u){
-    list.innerHTML='';
-    return;
-  }
-
-  const snap=await getDocs(collection(db,'communities'));
-  const arr=snap.docs.map(x=>({id:x.id,...x.data()}));
-
-  // Home carousel = only communities of which the user is a member.
-  // General SHALOM admin does NOT bypass this membership rule.
-  const mine=arr.filter(c=>
-    c.createdByUid===u.uid||
-    (Array.isArray(c.memberUids)&&c.memberUids.includes(u.uid))||
-    (Array.isArray(c.members)&&c.members.includes(u.email))
-  );
-
-  list.innerHTML=mine.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')">
-    <div class="community-circle-image">
-      ${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}
-    </div>
-    <span class="community-circle-name">${esc(c.name)}</span>
-  </button>`).join('')||
-  '<div class="community-empty">Você ainda não participa de nenhuma comunidade.</div>';
-}
+async function loadCommunitiesBar(){const list=$('homeCommunitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const u=user();const arr=snap.docs.map(x=>({id:x.id,...x.data()}));list.innerHTML=arr.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Nenhuma comunidade.</div>'}
 async function loadCommunities(){
+  await loadCommunitiesBar();
   const list=$('communitiesList');
   if(!list)return;
 
   const snap=await getDocs(collection(db,'communities'));
   const arr=snap.docs.map(x=>({id:x.id,...x.data()}));
-  const u=user();
 
-  // Communities already joined are not suggestions; they remain in the Home carousel.
-  const memberIds=new Set(
-    arr.filter(c=>
-      u&&(
-        c.createdByUid===u.uid||
-        (Array.isArray(c.memberUids)&&c.memberUids.includes(u.uid))||
-        (Array.isArray(c.members)&&c.members.includes(u.email))
-      )
-    ).map(c=>c.id)
-  );
-
-  const p=profileCache||await getProfile(u?.uid);
+  const p=profileCache||await getProfile();
   const interests=[
     ...((p?.interests)||[]),
     ...((p?.customInterests)||[])
   ].map(x=>String(x||'').trim()).filter(Boolean);
 
-  const norm=s=>String(s||'').toLocaleLowerCase('pt-BR')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  const norm=s=>String(s||'').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const interestNorm=interests.map(norm);
 
-  const interestNorm=[...new Set(interests.map(norm).filter(Boolean))];
-
-  const scored=arr.filter(c=>!memberIds.has(c.id)).map(c=>{
-    const theme=norm(c.theme);
-    const themeWords=String(c.theme||'').split(/[,;/|]+/).map(norm).filter(Boolean);
-    const name=norm(c.name);
-    const description=norm(c.description);
-
-    const matched=interestNorm.filter(i=>
-      theme===i || themeWords.includes(i)
-    );
-
-    // Secondary relevance: name/description can suggest a match, but
-    // category/theme matches receive the strongest score.
-    const contextual=interestNorm.filter(i=>
-      !matched.includes(i) && (name.includes(i)||description.includes(i))
-    );
-
-    const score=(matched.length*10)+contextual.length;
-    return {...c,communityScore:score,matchedInterests:[...matched,...contextual]};
+  const scored=arr.map(c=>{
+    const fields=[c.theme,c.themeLower,c.name,c.description].map(norm).join(' ');
+    const matched=interestNorm.filter(i=>i&&fields.includes(i));
+    return {...c,communityScore:matched.length,matchedInterests:matched};
   });
 
   const suggested=scored
     .filter(c=>c.communityScore>0)
     .sort((a,b)=>b.communityScore-a.communityScore);
 
-  const rest=scored
-    .filter(c=>c.communityScore===0)
-    .sort((a,b)=>{
-      const ad=a.createdAt?.seconds||0, bd=b.createdAt?.seconds||0;
-      return bd-ad;
-    });
+  const suggestedIds=new Set(suggested.map(c=>c.id));
+  const rest=scored.filter(c=>!suggestedIds.has(c.id));
 
   const card=c=>`<div class="community-card">
     <div style="display:flex;align-items:center;gap:10px">
@@ -3742,20 +3686,18 @@ async function loadCommunities(){
   if(suggested.length){
     html+=`<div class="card" style="margin-bottom:14px">
       <h2 class="card-title">✨ Comunidades para você</h2>
-      <p style="color:#6B7A99;font-size:13px">Sugestões baseadas nas mesmas categorias de interesse do seu perfil.</p>
+      <p style="color:#6B7A99;font-size:13px">Comunidades relacionadas aos interesses escolhidos no seu perfil.</p>
       <div class="community-grid">${suggested.map(card).join('')}</div>
     </div>`;
   }
 
   html+=`<div class="card" style="margin-bottom:14px">
-    <h2 class="card-title">🌐 Descobrir comunidades</h2>
-    <p style="color:#6B7A99;font-size:13px">Explore comunidades das quais você ainda não participa.</p>
-    <div class="community-grid">${rest.map(card).join('')||'<p>Nenhuma nova comunidade disponível.</p>'}</div>
+    <h2 class="card-title">🌐 Todas as comunidades</h2>
+    <div class="community-grid">${rest.map(card).join('')||'<p>Nenhuma comunidade.</p>'}</div>
   </div>`;
 
   list.innerHTML=html;
 }
-window.loadCommunities=loadCommunities;
 window.loadCommunities=loadCommunities;
 
 window.loadCommunities=loadCommunities;
