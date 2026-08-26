@@ -1514,6 +1514,20 @@ select option {
 .admin-users-table{min-width:900px}
 .admin-interest-wrap{display:flex;flex-wrap:wrap;gap:4px;max-width:270px}
 .admin-interest-chip{display:inline-block;border:1px solid #3b4263;border-radius:999px;padding:3px 7px;font-size:10px;color:#dbe2ff;background:rgba(255,255,255,.03)}
+
+.admin-communities-table{min-width:980px}
+.admin-community-detail-card{border:1px solid #303654;border-radius:14px;padding:16px;background:var(--panel)}
+.admin-community-detail-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.admin-community-detail-head img,.admin-community-detail-placeholder{width:58px;height:58px;border-radius:50%;object-fit:cover}
+.admin-community-detail-placeholder{display:grid;place-items:center;background:var(--panel2);font-size:25px}
+.admin-community-detail-head h3{margin:0 0 3px}
+.admin-community-detail-head span{font-size:12px;color:#6B7A99}
+.admin-community-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.admin-community-stat-grid>div{border:1px solid #303654;border-radius:10px;padding:10px}
+.admin-community-stat-grid strong{display:block;font-size:13px;word-break:break-all}
+.admin-community-stat-grid small{display:block;color:#6B7A99;margin-top:4px}
+.admin-community-permission-note{font-size:12px;color:#6B7A99;border-top:1px solid #303654;margin-top:14px;padding-top:12px}
+@media(max-width:600px){.admin-community-stat-grid{grid-template-columns:1fr}}
 </style>
 <!-- COMMUNITY_MEMBERSHIP_NO_GENERAL_ADMIN_BYPASS: general admin does not bypass membership. -->
 <!-- COMMUNITY_ADMIN_ONLY_RULE: general admin is not a community admin unless explicitly assigned to that community. -->
@@ -4356,21 +4370,127 @@ window.adminShowUsers=async function(){
   }
 };;;
 window.adminShowCommunities=async function(){
- const w=adminWorkspace();if(!w)return;
- w.innerHTML='<h2 class="card-title">🏘️ Comunidades</h2><p>Carregando comunidades...</p>';
- try{
-   const s=await getDocs(collection(db,'communities'));
-   let opts='';
-   s.forEach(d=>{const x=d.data();opts+=`<option value="${esc(d.id)}">${esc(x.name||d.id)}</option>`});
-   w.innerHTML=`<h2 class="card-title">🏘️ Comunidades</h2>
-     <label>Selecione uma comunidade</label>
-     <select id="adminCommunitySelect" class="admin-select">
-       <option value="">Selecione uma comunidade</option>${opts}
-     </select>
-     <div id="adminCommunityDetails" style="margin-top:14px"></div>`;
-   $('adminCommunitySelect')?.addEventListener('change',e=>adminLoadCommunityDetails(e.target.value));
- }catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}
-};
+  const w=adminWorkspace();if(!w)return;
+  w.innerHTML='<h2 class="card-title">🏘️ Comunidades</h2><p>Carregando comunidades...</p>';
+  try{
+    const s=await getDocs(collection(db,'communities'));
+    window.adminCommunitiesCache=[];
+    s.forEach(d=>{
+      const c=d.data()||{};
+      const members=Array.isArray(c.memberUids)?c.memberUids:[];
+      const legacyMembers=Array.isArray(c.members)?c.members:[];
+      const admins=Array.isArray(c.communityAdminUids)?c.communityAdminUids:[];
+      window.adminCommunitiesCache.push({
+        id:d.id,
+        name:c.name||'Sem nome',
+        theme:c.theme||'—',
+        description:c.description||'',
+        image:c.imageURL||c.image||'',
+        creator:c.createdBy||c.createdByUid||'—',
+        creatorUid:c.createdByUid||'—',
+        memberCount:members.length||legacyMembers.length,
+        adminCount:admins.length,
+        adminUids:admins,
+        createdAt:c.createdAt||null
+      });
+    });
+
+    window.renderAdminCommunities=function(){
+      const q=(($('adminCommunitySearch')?.value)||'').trim().toLocaleLowerCase('pt-BR');
+      const list=window.adminCommunitiesCache.filter(c=>
+        !q || [c.name,c.theme,c.description,c.creator,c.creatorUid].some(v=>
+          String(v||'').toLocaleLowerCase('pt-BR').includes(q))
+      ).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+
+      const rows=list.map(c=>{
+        const image=c.image
+          ? `<img src="${esc(c.image)}" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover">`
+          : `<div style="width:38px;height:38px;border-radius:50%;background:var(--panel2);display:grid;place-items:center">👥</div>`;
+        const created=c.createdAt?.toDate
+          ? c.createdAt.toDate().toLocaleDateString('pt-BR')
+          : (c.createdAt?.seconds ? new Date(c.createdAt.seconds*1000).toLocaleDateString('pt-BR') : '—');
+
+        return `<tr>
+          <td><div style="display:flex;align-items:center;gap:9px">${image}<strong>${esc(c.name)}</strong></div></td>
+          <td>${esc(c.theme)}</td>
+          <td>${c.memberCount}</td>
+          <td>${c.adminCount}</td>
+          <td>${esc(c.creator)}</td>
+          <td>${created}</td>
+          <td><button class="btn btn-small" type="button" onclick="adminOpenCommunityDetails('${esc(c.id)}')">Detalhes</button></td>
+        </tr>`;
+      }).join('');
+
+      const area=$('adminCommunitiesResults');
+      if(area)area.innerHTML=`
+        <div class="admin-users-summary">${list.length} de ${window.adminCommunitiesCache.length} comunidade${window.adminCommunitiesCache.length===1?'':'s'}</div>
+        <div style="overflow:auto">
+          <table class="admin-table admin-communities-table">
+            <thead><tr><th>Comunidade</th><th>Tema</th><th>Membros</th><th>Admins</th><th>Criador</th><th>Criação</th><th></th></tr></thead>
+            <tbody>${rows||'<tr><td colspan="7">Nenhuma comunidade encontrada.</td></tr>'}</tbody>
+          </table>
+        </div>`;
+    };
+
+    window.adminOpenCommunityDetails=async function(id){
+      const c=window.adminCommunitiesCache.find(x=>x.id===id);
+      if(!c)return;
+      const detail=$('adminCommunityDetails');
+      if(!detail)return;
+      detail.innerHTML='<p>Carregando detalhes...</p>';
+      try{
+        const snap=await getDoc(doc(db,'communities',id));
+        if(!snap.exists()){detail.innerHTML='<div class="error">Comunidade não encontrada.</div>';return;}
+        const data=snap.data()||{};
+        const admins=Array.isArray(data.communityAdminUids)?data.communityAdminUids:[];
+        const members=Array.isArray(data.memberUids)?data.memberUids:[];
+        const legacy=Array.isArray(data.members)?data.members:[];
+        detail.innerHTML=`
+          <div class="admin-community-detail-card">
+            <div class="admin-community-detail-head">
+              ${c.image?`<img src="${esc(c.image)}" alt="">`:`<div class="admin-community-detail-placeholder">👥</div>`}
+              <div><h3>${esc(c.name)}</h3><span>Tema: ${esc(c.theme)}</span></div>
+            </div>
+            <p>${esc(c.description||'Sem descrição.')}</p>
+            <div class="admin-community-stat-grid">
+              <div><strong>${members.length||legacy.length}</strong><small>Membros</small></div>
+              <div><strong>${admins.length}</strong><small>Administradores</small></div>
+              <div><strong>${esc(c.creatorUid)}</strong><small>UID do criador</small></div>
+            </div>
+            <p class="admin-community-permission-note">
+              🔐 A Administração Geral pode consultar estas informações, mas não recebe automaticamente
+              permissões para aceitar membros, editar ou administrar esta comunidade.
+            </p>
+          </div>`;
+        detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+      }catch(e){detail.innerHTML=`<div class="error">${esc(e.message||e)}</div>`}
+    };
+
+    w.innerHTML=`
+      <div class="admin-module-title-row">
+        <div>
+          <h2 class="card-title" style="margin-bottom:3px">🏘️ Comunidades</h2>
+          <p style="color:#6B7A99;font-size:13px;margin:0">Consulta administrativa. As permissões de cada comunidade continuam separadas.</p>
+        </div>
+      </div>
+      <div class="admin-user-search">
+        <input id="adminCommunitySearch" type="search" placeholder="Pesquisar por comunidade, tema, descrição ou criador...">
+        <button class="btn btn-small" type="button" id="adminClearCommunitySearch">Limpar</button>
+      </div>
+      <div id="adminCommunitiesResults"></div>
+      <div id="adminCommunityDetails" style="margin-top:16px"></div>`;
+
+    $('adminCommunitySearch')?.addEventListener('input',window.renderAdminCommunities);
+    $('adminClearCommunitySearch')?.addEventListener('click',()=>{
+      const input=$('adminCommunitySearch');if(input)input.value='';
+      window.renderAdminCommunities();input?.focus();
+    });
+    window.renderAdminCommunities();
+  }catch(e){
+    console.error(e);
+    w.innerHTML=`<div class="error">Não foi possível carregar as comunidades: ${esc(e.message||e)}</div>`;
+  }
+};;
 
 window.adminLoadCommunityDetails=async function(id){
  const box=$('adminCommunityDetails');if(!box)return;
