@@ -1528,6 +1528,18 @@ select option {
 .admin-community-stat-grid small{display:block;color:#6B7A99;margin-top:4px}
 .admin-community-permission-note{font-size:12px;color:#6B7A99;border-top:1px solid #303654;margin-top:14px;padding-top:12px}
 @media(max-width:600px){.admin-community-stat-grid{grid-template-columns:1fr}}
+
+.admin-content-filters{display:grid;grid-template-columns:1fr 220px auto;gap:8px;margin:14px 0}
+.admin-content-filters input,.admin-content-filters select{min-width:0;padding:10px 12px;border-radius:8px;border:1px solid #303654;background:var(--panel2);color:#fff}
+.admin-contents-table{min-width:900px}
+.admin-content-detail-card{border:1px solid #303654;border-radius:14px;padding:16px;background:var(--panel)}
+.admin-content-detail-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.admin-content-detail-head img,.admin-content-detail-placeholder{width:78px;height:54px;border-radius:8px;object-fit:cover}
+.admin-content-detail-placeholder{display:grid;place-items:center;background:var(--panel2);font-size:25px}
+.admin-content-detail-head h3{margin:0 0 3px}
+.admin-content-detail-head span{font-size:12px;color:#6B7A99}
+.admin-content-meta{display:flex;gap:12px;flex-wrap:wrap;border-top:1px solid #303654;padding-top:12px;font-size:12px;color:#6B7A99}
+@media(max-width:650px){.admin-content-filters{grid-template-columns:1fr}.admin-content-filters .btn{width:100%}}
 </style>
 <!-- COMMUNITY_MEMBERSHIP_NO_GENERAL_ADMIN_BYPASS: general admin does not bypass membership. -->
 <!-- COMMUNITY_ADMIN_ONLY_RULE: general admin is not a community admin unless explicitly assigned to that community. -->
@@ -4587,41 +4599,144 @@ window.adminRemoveCommunityAdmin=async function(communityId,uid){
 
 ;
 window.adminDeleteContent=async function(type,id){
- if(!isAdmin)return alert('Apenas o administrador geral pode excluir conteúdos.');
- if(!type||!id)return;
- if(!confirm('Excluir este conteúdo permanentemente?'))return;
- try{
-   await deleteDoc(doc(db,contentTypes[type].collection,id));
-   await adminShowContents();
-   await loadHome();
- }catch(e){alert('Erro ao excluir: '+e.message)}
-};
+  if(!isAdmin)return alert('Apenas o administrador geral pode excluir conteúdos.');
+  const info=contentTypes?.[type];
+  if(!info||!id)return;
+  const c=(window.adminContentsCache||[]).find(x=>x.type===type&&x.id===id);
+  const title=c?.title||'este conteúdo';
+  if(!confirm(`Excluir "${title}" permanentemente?`))return;
+  try{
+    await deleteDoc(doc(db,info.collection,id));
+    alert('Conteúdo excluído com sucesso.');
+    await adminShowContents();
+    await loadHome();
+  }catch(e){
+    console.error(e);
+    alert('Erro ao excluir o conteúdo: '+e.message);
+  }
+};;
 
 window.adminShowContents=async function(){
- const w=adminWorkspace();if(!w)return;
- w.innerHTML='<h2 class="card-title">📚 Conteúdos</h2><p>Carregando...</p>';
- try{
-   const rows=[];
-   for(const [type,info] of Object.entries(contentTypes||{})){
-     const s=await getDocs(collection(db,info.collection));
-     s.forEach(d=>{
-       const x=d.data()||{};
-       rows.push(`<tr>
-         <td>${esc(info.title||type)}</td>
-         <td>${esc(x.title||x.name||'—')}</td>
-         <td>${esc(x.category||'—')}</td>
-         <td><button class="btn btn-danger btn-small" type="button" onclick="adminDeleteContent('${esc(type)}','${esc(d.id)}')">Excluir</button></td>
-       </tr>`);
-     });
-   }
-   w.innerHTML=`<h2 class="card-title">📚 Conteúdos</h2>
-     <p style="color:#6B7A99;font-size:13px">Administração geral dos conteúdos do SHALOM.</p>
-     <div style="overflow:auto"><table class="admin-table">
-       <tr><th>Tipo</th><th>Título</th><th>Categoria</th><th></th></tr>
-       ${rows.join('')||'<tr><td colspan="4">Nenhum conteúdo.</td></tr>'}
-     </table></div>`;
- }catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}
-};;
+  const w=adminWorkspace();if(!w)return;
+  w.innerHTML='<h2 class="card-title">📚 Conteúdos</h2><p>Carregando conteúdos...</p>';
+  try{
+    const types=Object.entries(contentTypes||{});
+    window.adminContentsCache=[];
+
+    for(const [type,info] of types){
+      const s=await getDocs(collection(db,info.collection));
+      s.forEach(d=>{
+        const x=d.data()||{};
+        const ts=x.createdAt?.toDate
+          ? x.createdAt.toDate()
+          : (x.createdAt?.seconds ? new Date(x.createdAt.seconds*1000) : null);
+        window.adminContentsCache.push({
+          id:d.id,type,
+          typeLabel:info.title||type,
+          title:x.title||x.name||'Sem título',
+          category:x.category||'—',
+          year:x.year||x.releaseYear||'—',
+          duration:x.duration||'',
+          description:x.description||'',
+          image:x.imageURL||x.image||x.cover||'',
+          url:x.url||x.videoUrl||'',
+          createdAt:ts
+        });
+      });
+    }
+
+    window.renderAdminContents=function(){
+      const q=(($('adminContentSearch')?.value)||'').trim().toLocaleLowerCase('pt-BR');
+      const typeFilter=$('adminContentType')?.value||'all';
+
+      const list=window.adminContentsCache.filter(c=>{
+        const matchesType=typeFilter==='all'||c.type===typeFilter;
+        const hay=[c.title,c.category,c.description,c.year,c.typeLabel].join(' ')
+          .toLocaleLowerCase('pt-BR');
+        return matchesType&&(!q||hay.includes(q));
+      }).sort((a,b)=>(b.createdAt?.getTime()||0)-(a.createdAt?.getTime()||0));
+
+      const rows=list.map(c=>{
+        const image=c.image
+          ? `<img src="${esc(c.image)}" alt="" style="width:48px;height:32px;border-radius:6px;object-fit:cover">`
+          : `<div style="width:48px;height:32px;border-radius:6px;background:var(--panel2);display:grid;place-items:center">🎬</div>`;
+        const date=c.createdAt?c.createdAt.toLocaleDateString('pt-BR'):'—';
+
+        return `<tr>
+          <td><div style="display:flex;align-items:center;gap:8px">${image}<strong>${esc(c.title)}</strong></div></td>
+          <td>${esc(c.typeLabel)}</td>
+          <td>${esc(c.category)}</td>
+          <td>${esc(String(c.year))}</td>
+          <td>${date}</td>
+          <td>
+            <button class="btn btn-small" type="button" onclick="adminPreviewContent('${esc(c.type)}','${esc(c.id)}')">Ver</button>
+            <button class="btn btn-danger btn-small" type="button" onclick="adminDeleteContent('${esc(c.type)}','${esc(c.id)}')">Excluir</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      const area=$('adminContentsResults');
+      if(area)area.innerHTML=`
+        <div class="admin-users-summary">${list.length} de ${window.adminContentsCache.length} conteúdo${window.adminContentsCache.length===1?'':'s'}</div>
+        <div style="overflow:auto">
+          <table class="admin-table admin-contents-table">
+            <thead><tr><th>Conteúdo</th><th>Tipo</th><th>Categoria</th><th>Ano</th><th>Adicionado</th><th></th></tr></thead>
+            <tbody>${rows||'<tr><td colspan="6">Nenhum conteúdo encontrado.</td></tr>'}</tbody>
+          </table>
+        </div>`;
+    };
+
+    window.adminPreviewContent=function(type,id){
+      const c=window.adminContentsCache.find(x=>x.type===type&&x.id===id);
+      const detail=$('adminContentDetails');
+      if(!c||!detail)return;
+      detail.innerHTML=`
+        <div class="admin-content-detail-card">
+          <div class="admin-content-detail-head">
+            ${c.image?`<img src="${esc(c.image)}" alt="">`:`<div class="admin-content-detail-placeholder">🎬</div>`}
+            <div><h3>${esc(c.title)}</h3><span>${esc(c.typeLabel)} • ${esc(c.category)}</span></div>
+          </div>
+          <p>${esc(c.description||'Sem descrição.')}</p>
+          <div class="admin-content-meta">
+            <span><b>Ano:</b> ${esc(String(c.year))}</span>
+            ${c.duration?`<span><b>Duração:</b> ${esc(String(c.duration))}</span>`:''}
+            ${c.url?`<span><b>Link:</b> <a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">abrir ↗</a></span>`:''}
+          </div>
+        </div>`;
+      detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+    };
+
+    w.innerHTML=`
+      <div class="admin-module-title-row">
+        <div>
+          <h2 class="card-title" style="margin-bottom:3px">📚 Conteúdos</h2>
+          <p style="color:#6B7A99;font-size:13px;margin:0">Consulte, visualize e exclua conteúdos do SHALOM.</p>
+        </div>
+      </div>
+      <div class="admin-content-filters">
+        <input id="adminContentSearch" type="search" placeholder="Pesquisar por título, categoria, descrição ou ano...">
+        <select id="adminContentType">
+          <option value="all">Todos os tipos</option>
+          ${types.map(([k,v])=>`<option value="${esc(k)}">${esc(v.title||k)}</option>`).join('')}
+        </select>
+        <button class="btn btn-small" type="button" id="adminClearContentSearch">Limpar</button>
+      </div>
+      <div id="adminContentsResults"></div>
+      <div id="adminContentDetails" style="margin-top:16px"></div>`;
+
+    $('adminContentSearch')?.addEventListener('input',window.renderAdminContents);
+    $('adminContentType')?.addEventListener('change',window.renderAdminContents);
+    $('adminClearContentSearch')?.addEventListener('click',()=>{
+      const input=$('adminContentSearch');if(input)input.value='';
+      const select=$('adminContentType');if(select)select.value='all';
+      window.renderAdminContents();input?.focus();
+    });
+    window.renderAdminContents();
+  }catch(e){
+    console.error(e);
+    w.innerHTML=`<div class="error">Não foi possível carregar os conteúdos: ${esc(e.message||e)}</div>`;
+  }
+};;;
 window.adminShowStore=async function(){
  const w=adminWorkspace();if(!w)return;
  w.innerHTML='<h2 class="card-title">🛒 Loja</h2><p>Carregando produtos...</p>';
