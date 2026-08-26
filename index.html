@@ -1507,6 +1507,13 @@ select option {
 .admin-workspace-empty h2{color:#fff;margin:10px 0 5px}
 @media(max-width:850px){.admin-dashboard-modern{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.admin-header-modern{display:block}.admin-security-badge{display:inline-block;margin-top:10px}.admin-dashboard-modern{grid-template-columns:1fr}}
+
+.admin-user-search{display:flex;gap:8px;margin:14px 0;max-width:760px}
+.admin-user-search input{flex:1;min-width:0;padding:10px 12px;border-radius:8px;border:1px solid #303654;background:var(--panel2);color:#fff}
+.admin-users-summary{font-size:12px;color:#6B7A99;margin:8px 0}
+.admin-users-table{min-width:900px}
+.admin-interest-wrap{display:flex;flex-wrap:wrap;gap:4px;max-width:270px}
+.admin-interest-chip{display:inline-block;border:1px solid #3b4263;border-radius:999px;padding:3px 7px;font-size:10px;color:#dbe2ff;background:rgba(255,255,255,.03)}
 </style>
 <!-- COMMUNITY_MEMBERSHIP_NO_GENERAL_ADMIN_BYPASS: general admin does not bypass membership. -->
 <!-- COMMUNITY_ADMIN_ONLY_RULE: general admin is not a community admin unless explicitly assigned to that community. -->
@@ -4247,30 +4254,107 @@ window.loadNotifications=async function(){
 
 function adminWorkspace(){return $('adminWorkspace');}
 window.adminShowUsers=async function(){
- const w=adminWorkspace();if(!w)return;
- w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando...</p>';
- try{
-   const s=await getDocs(collection(db,'users'));
-   const rows=[];
-   s.forEach(d=>{
-     const x=d.data()||{};
-     const interests=[...(x.interests||[]),...(x.customInterests||[])].filter(Boolean);
-     rows.push(`<tr>
-       <td>${esc(x.name||x.displayName||'—')}</td>
-       <td>${esc(x.email||'—')}</td>
-       <td><code>${esc(x.uid||d.id)}</code></td>
-       <td>${interests.length}</td>
-     </tr>`);
-   });
-   rows.sort((a,b)=>a.localeCompare(b));
-   w.innerHTML=`<h2 class="card-title">👥 Usuários</h2>
-     <p style="color:#6B7A99;font-size:13px">Consulta administrativa. Nenhum usuário é alterado nesta primeira etapa.</p>
-     <div style="overflow:auto"><table class="admin-table">
-       <tr><th>Nome</th><th>E-mail</th><th>UID</th><th>Interesses</th></tr>
-       ${rows.join('')||'<tr><td colspan="4">Nenhum usuário.</td></tr>'}
-     </table></div>`;
- }catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}
-};;
+  const w=adminWorkspace();if(!w)return;
+  w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando usuários...</p>';
+  try{
+    const s=await getDocs(collection(db,'users'));
+    window.adminUsersCache=[];
+    s.forEach(d=>{
+      const x=d.data()||{};
+      const interests=[...(Array.isArray(x.interests)?x.interests:[]),
+                       ...(Array.isArray(x.customInterests)?x.customInterests:[])].filter(Boolean);
+      window.adminUsersCache.push({
+        id:d.id,
+        uid:x.uid||d.id,
+        name:x.name||x.displayName||'Sem nome',
+        email:x.email||'—',
+        photo:x.photoURL||x.photo||x.avatar||'',
+        interests,
+        createdAt:x.createdAt||null
+      });
+    });
+
+    // Count community memberships without changing any community data.
+    try{
+      const cs=await getDocs(collection(db,'communities'));
+      const counts={};
+      cs.forEach(d=>{
+        const c=d.data()||{};
+        const ids=Array.isArray(c.memberUids)?c.memberUids:[];
+        ids.forEach(uid=>{counts[uid]=(counts[uid]||0)+1});
+      });
+      window.adminUsersCache.forEach(u=>u.communityCount=counts[u.uid]||0);
+    }catch(e){
+      console.warn('Não foi possível calcular comunidades por usuário:',e);
+      window.adminUsersCache.forEach(u=>u.communityCount=0);
+    }
+
+    window.renderAdminUsers=function(){
+      const query=(($('adminUserSearch')?.value)||'').trim().toLocaleLowerCase('pt-BR');
+      const users=window.adminUsersCache.filter(u=>{
+        if(!query)return true;
+        return [u.name,u.email,u.uid,...u.interests].some(v=>String(v||'').toLocaleLowerCase('pt-BR').includes(query));
+      }).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+
+      const rows=users.map(u=>{
+        const photo=u.photo
+          ? `<img src="${esc(u.photo)}" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover">`
+          : `<div style="width:34px;height:34px;border-radius:50%;background:var(--panel2);display:grid;place-items:center">👤</div>`;
+        const interests=u.interests.length
+          ? u.interests.map(i=>`<span class="admin-interest-chip">${esc(i)}</span>`).join('')
+          : '<span style="color:#6B7A99">Nenhum</span>';
+        const created=u.createdAt?.toDate
+          ? u.createdAt.toDate().toLocaleDateString('pt-BR')
+          : (u.createdAt?.seconds ? new Date(u.createdAt.seconds*1000).toLocaleDateString('pt-BR') : '—');
+
+        return `<tr>
+          <td><div style="display:flex;align-items:center;gap:8px">${photo}<strong>${esc(u.name)}</strong></div></td>
+          <td>${esc(u.email)}</td>
+          <td><code style="font-size:10px">${esc(u.uid)}</code></td>
+          <td><div class="admin-interest-wrap">${interests}</div></td>
+          <td>${u.communityCount}</td>
+          <td>${created}</td>
+        </tr>`;
+      }).join('');
+
+      const total=window.adminUsersCache.length;
+      const shown=users.length;
+      const area=$('adminUsersResults');
+      if(area)area.innerHTML=`
+        <div class="admin-users-summary">${shown} de ${total} usuário${total===1?'':'s'}</div>
+        <div style="overflow:auto">
+          <table class="admin-table admin-users-table">
+            <thead><tr><th>Usuário</th><th>E-mail</th><th>UID</th><th>Interesses</th><th>Comunidades</th><th>Cadastro</th></tr></thead>
+            <tbody>${rows||'<tr><td colspan="6">Nenhum usuário encontrado.</td></tr>'}</tbody>
+          </table>
+        </div>`;
+    };
+
+    w.innerHTML=`
+      <div class="admin-module-title-row">
+        <div>
+          <h2 class="card-title" style="margin-bottom:3px">👥 Usuários</h2>
+          <p style="color:#6B7A99;font-size:13px;margin:0">Consulta administrativa. Nenhum usuário pode ser alterado nesta etapa.</p>
+        </div>
+      </div>
+      <div class="admin-user-search">
+        <input id="adminUserSearch" type="search" placeholder="Pesquisar por nome, e-mail, UID ou interesse...">
+        <button class="btn btn-small" type="button" id="adminClearUserSearch">Limpar</button>
+      </div>
+      <div id="adminUsersResults"></div>`;
+
+    $('adminUserSearch')?.addEventListener('input',window.renderAdminUsers);
+    $('adminClearUserSearch')?.addEventListener('click',()=>{
+      const input=$('adminUserSearch');if(input)input.value='';
+      window.renderAdminUsers();
+      input?.focus();
+    });
+    window.renderAdminUsers();
+  }catch(e){
+    console.error(e);
+    w.innerHTML=`<div class="error">Não foi possível carregar os usuários: ${esc(e.message||e)}</div>`;
+  }
+};;;
 window.adminShowCommunities=async function(){
  const w=adminWorkspace();if(!w)return;
  w.innerHTML='<h2 class="card-title">🏘️ Comunidades</h2><p>Carregando comunidades...</p>';
