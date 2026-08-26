@@ -5025,13 +5025,15 @@ function bindHomeAddButtons(){
 }
 
 onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=await isGeneralAdminUser(u);Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);
+try{await loadCommunitiesBar();}catch(e){console.warn('Atualização inicial das comunidades não concluída:',e)}
 if(isAdmin && profileCache?.role!=='admin'){
   try{
     await setDoc(doc(db,'users',u.uid),{role:'admin',updatedAt:serverTimestamp()},{merge:true});
     profileCache={...(profileCache||{}),role:'admin'};
   }catch(e){console.warn('Não foi possível registrar role admin:',e)}
 }
-authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
+authScreen?.classList.add('hidden');
+try{await loadCommunitiesBar();}catch(e){console.warn('Atualização final das comunidades não concluída:',e)}appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
