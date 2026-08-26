@@ -1491,6 +1491,7 @@ select option {
   }
 }
 </style>
+<!-- COMMUNITY_MEMBERSHIP_NO_GENERAL_ADMIN_BYPASS: general admin does not bypass membership. -->
 <!-- COMMUNITY_ADMIN_ONLY_RULE: general admin is not a community admin unless explicitly assigned to that community. -->
 </head>
 
@@ -3558,6 +3559,19 @@ async function loadHome(){for(const type of Object.keys(contentTypes)){const hos
 }
 window.loadHome=loadHome;
 
+async function communityIsMember(id,data=null){
+  const u=user();
+  if(!u||!id)return false;
+  if(!data){
+    const snap=await getDoc(doc(db,'communities',id));
+    if(!snap.exists())return false;
+    data=snap.data()||{};
+  }
+  return data.createdByUid===u.uid||
+    (Array.isArray(data.memberUids)&&data.memberUids.includes(u.uid))||
+    (Array.isArray(data.members)&&data.members.includes(u.email));
+}
+
 async function communityIsAdmin(id,data=null){
   const u=user();
   if(!u||!id)return false;
@@ -3691,10 +3705,9 @@ window.openCommunity=async function(id){
   const c={id,...snap.data()},u=user();
   if(!u)return;
 
-  const member=isAdmin||
-    c.createdByUid===u.uid||
-    (c.memberUids||[]).includes(u.uid)||
-    (c.members||[]).includes(u.email);
+  // IMPORTANT: the general SHALOM administrator does NOT bypass
+  // community membership. Only an actual member can access private content.
+  const member=await communityIsMember(id,c);
 
   const currentPending=(c.pendingMemberUids||[]).includes(u.uid)||
     (c.pendingMembers||[]).includes(u.email);
