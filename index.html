@@ -1491,6 +1491,7 @@ select option {
   }
 }
 </style>
+<!-- COMMUNITY_ADMIN_ONLY_RULE: general admin is not a community admin unless explicitly assigned to that community. -->
 </head>
 
 <body>
@@ -3559,9 +3560,16 @@ window.loadHome=loadHome;
 
 async function communityIsAdmin(id,data=null){
   const u=user();
-  if(!u)return false;
-  data=data||((await getDoc(doc(db,'communities',id))).data()||{});
-  return data.createdByUid===u.uid||(data.communityAdminUids||[]).includes(u.uid);
+  if(!u||!id)return false;
+  if(!data){
+    const snap=await getDoc(doc(db,'communities',id));
+    if(!snap.exists())return false;
+    data=snap.data()||{};
+  }
+  // The general SHALOM administrator does not receive community permissions
+  // unless also assigned to this specific community.
+  return data.createdByUid===u.uid ||
+    (Array.isArray(data.communityAdminUids)&&data.communityAdminUids.includes(u.uid));
 }
 async function loadCommunitiesBar(){const list=$('homeCommunitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const u=user();const arr=snap.docs.map(x=>({id:x.id,...x.data()}));list.innerHTML=arr.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Nenhuma comunidade.</div>'}
 async function loadCommunities(){
@@ -3876,6 +3884,8 @@ window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');i
 window.approveCommunityMember=async function(communityId,uid,email){
   if(!confirm('Aceitar este usuário na comunidade?'))return;
   try{
+    const permissionSnap=await getDoc(doc(db,'communities',communityId));
+    if(!permissionSnap.exists()||!(await communityIsAdmin(communityId,permissionSnap.data())))throw new Error('Somente um administrador desta comunidade pode realizar esta ação.');
     const ref=doc(db,'communities',communityId);
     const snap=await getDoc(ref);
     if(!snap.exists())throw new Error('Comunidade não encontrada.');
@@ -3899,6 +3909,8 @@ window.approveCommunityMember=async function(communityId,uid,email){
 window.rejectCommunityMember=async function(communityId,uid,email){
   if(!confirm('Recusar esta solicitação de entrada?'))return;
   try{
+    const permissionSnap=await getDoc(doc(db,'communities',communityId));
+    if(!permissionSnap.exists()||!(await communityIsAdmin(communityId,permissionSnap.data())))throw new Error('Somente um administrador desta comunidade pode realizar esta ação.');
     const ref=doc(db,'communities',communityId);
     await updateDoc(ref,{
       pendingMemberUids: uid?arrayRemove(uid):arrayRemove(),
