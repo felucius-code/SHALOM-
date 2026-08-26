@@ -1540,6 +1540,17 @@ select option {
 .admin-content-detail-head span{font-size:12px;color:#6B7A99}
 .admin-content-meta{display:flex;gap:12px;flex-wrap:wrap;border-top:1px solid #303654;padding-top:12px;font-size:12px;color:#6B7A99}
 @media(max-width:650px){.admin-content-filters{grid-template-columns:1fr}.admin-content-filters .btn{width:100%}}
+
+.admin-store-table{min-width:920px}
+.admin-store-notice{display:flex;flex-direction:column;gap:3px;border:1px solid #303654;border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.025);margin:14px 0;font-size:12px}
+.admin-store-notice span{color:#6B7A99}
+.admin-store-detail-card{border:1px solid #303654;border-radius:14px;padding:16px;background:var(--panel)}
+.admin-store-detail-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.admin-store-detail-head img,.admin-store-detail-placeholder{width:78px;height:78px;border-radius:9px;object-fit:cover}
+.admin-store-detail-placeholder{display:grid;place-items:center;background:var(--panel2);font-size:30px}
+.admin-store-detail-head h3{margin:0 0 3px}
+.admin-store-detail-head span{font-size:12px;color:#6B7A99}
+.admin-store-meta{display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid #303654;padding-top:12px;font-size:12px;color:#6B7A99}
 </style>
 <!-- COMMUNITY_MEMBERSHIP_NO_GENERAL_ADMIN_BYPASS: general admin does not bypass membership. -->
 <!-- COMMUNITY_ADMIN_ONLY_RULE: general admin is not a community admin unless explicitly assigned to that community. -->
@@ -4738,27 +4749,132 @@ window.adminShowContents=async function(){
   }
 };;;
 window.adminShowStore=async function(){
- const w=adminWorkspace();if(!w)return;
- w.innerHTML='<h2 class="card-title">🛒 Loja</h2><p>Carregando produtos...</p>';
- try{
-   const s=await getDocs(collection(db,'products'));const rows=[];
-   s.forEach(d=>{
-     const x=d.data()||{};
-     rows.push(`<tr>
-       <td>${esc(x.title||x.name||'—')}</td>
-       <td>${esc(x.price||'—')}</td>
-       <td>${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">Abrir ↗</a>`:'—'}</td>
-       <td><button class="btn btn-danger btn-small" type="button" onclick="adminDeleteContent('products','${esc(d.id)}')">Excluir</button></td>
-     </tr>`);
-   });
-   w.innerHTML=`<h2 class="card-title">🛒 Loja</h2>
-     <p class="store-form-note">Produtos são itens para compra por link externo. Livros permanecem na Biblioteca.</p>
-     <div style="overflow:auto"><table class="admin-table">
-       <tr><th>Produto</th><th>Preço</th><th>Link</th><th></th></tr>
-       ${rows.join('')||'<tr><td colspan="4">Nenhum produto.</td></tr>'}
-     </table></div>`;
- }catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}
-};;
+  const w=adminWorkspace();if(!w)return;
+  w.innerHTML='<h2 class="card-title">🛒 Loja</h2><p>Carregando produtos...</p>';
+  try{
+    const s=await getDocs(collection(db,'products'));
+    window.adminStoreCache=[];
+    s.forEach(d=>{
+      const x=d.data()||{};
+      const ts=x.createdAt?.toDate
+        ? x.createdAt.toDate()
+        : (x.createdAt?.seconds ? new Date(x.createdAt.seconds*1000) : null);
+      window.adminStoreCache.push({
+        id:d.id,
+        title:x.title||x.name||'Sem título',
+        description:x.description||'',
+        category:x.category||'—',
+        price:x.price||'—',
+        image:x.imageURL||x.image||x.cover||'',
+        url:x.url||x.externalUrl||x.purchaseUrl||'',
+        createdAt:ts
+      });
+    });
+
+    window.renderAdminStore=function(){
+      const q=(($('adminStoreSearch')?.value)||'').trim().toLocaleLowerCase('pt-BR');
+      const list=window.adminStoreCache.filter(p=>{
+        const hay=[p.title,p.description,p.category,p.price].join(' ').toLocaleLowerCase('pt-BR');
+        return !q||hay.includes(q);
+      }).sort((a,b)=>(b.createdAt?.getTime()||0)-(a.createdAt?.getTime()||0));
+
+      const rows=list.map(p=>{
+        const image=p.image
+          ? `<img src="${esc(p.image)}" alt="" style="width:48px;height:48px;border-radius:7px;object-fit:cover">`
+          : `<div style="width:48px;height:48px;border-radius:7px;background:var(--panel2);display:grid;place-items:center">🛒</div>`;
+        const date=p.createdAt?p.createdAt.toLocaleDateString('pt-BR'):'—';
+        const link=p.url
+          ? `<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">Abrir ↗</a>`
+          : '<span style="color:#6B7A99">Sem link</span>';
+
+        return `<tr>
+          <td><div style="display:flex;align-items:center;gap:8px">${image}<strong>${esc(p.title)}</strong></div></td>
+          <td>${esc(p.category)}</td>
+          <td>${esc(String(p.price))}</td>
+          <td>${link}</td>
+          <td>${date}</td>
+          <td>
+            <button class="btn btn-small" type="button" onclick="adminPreviewProduct('${esc(p.id)}')">Ver</button>
+            <button class="btn btn-danger btn-small" type="button" onclick="adminDeleteProduct('${esc(p.id)}')">Excluir</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      const area=$('adminStoreResults');
+      if(area)area.innerHTML=`
+        <div class="admin-users-summary">${list.length} de ${window.adminStoreCache.length} produto${window.adminStoreCache.length===1?'':'s'}</div>
+        <div style="overflow:auto">
+          <table class="admin-table admin-store-table">
+            <thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Link externo</th><th>Adicionado</th><th></th></tr></thead>
+            <tbody>${rows||'<tr><td colspan="6">Nenhum produto encontrado.</td></tr>'}</tbody>
+          </table>
+        </div>`;
+    };
+
+    window.adminPreviewProduct=function(id){
+      const p=window.adminStoreCache.find(x=>x.id===id);
+      const detail=$('adminStoreDetails');
+      if(!p||!detail)return;
+      detail.innerHTML=`
+        <div class="admin-store-detail-card">
+          <div class="admin-store-detail-head">
+            ${p.image?`<img src="${esc(p.image)}" alt="">`:`<div class="admin-store-detail-placeholder">🛒</div>`}
+            <div><h3>${esc(p.title)}</h3><span>${esc(p.category)} • ${esc(String(p.price))}</span></div>
+          </div>
+          <p>${esc(p.description||'Sem descrição.')}</p>
+          <div class="admin-store-meta">
+            ${p.url?`<span><b>Compra:</b> <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">Abrir link externo ↗</a></span>`:'<span><b>Compra:</b> nenhum link externo cadastrado</span>'}
+            <span><b>Adicionado:</b> ${p.createdAt?p.createdAt.toLocaleDateString('pt-BR'):'—'}</span>
+          </div>
+        </div>`;
+      detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+    };
+
+    window.adminDeleteProduct=async function(id){
+      if(!isAdmin)return alert('Apenas o administrador geral pode excluir produtos.');
+      const p=window.adminStoreCache.find(x=>x.id===id);
+      if(!p)return;
+      if(!confirm(`Excluir "${p.title}" permanentemente?`))return;
+      try{
+        await deleteDoc(doc(db,'products',id));
+        alert('Produto excluído com sucesso.');
+        await adminShowStore();
+        await loadHome();
+      }catch(e){
+        console.error(e);
+        alert('Erro ao excluir o produto: '+e.message);
+      }
+    };
+
+    w.innerHTML=`
+      <div class="admin-module-title-row">
+        <div>
+          <h2 class="card-title" style="margin-bottom:3px">🛒 Loja</h2>
+          <p style="color:#6B7A99;font-size:13px;margin:0">Consulte produtos e seus links externos de compra.</p>
+        </div>
+      </div>
+      <div class="admin-store-notice">
+        <strong>ℹ️ Modelo atual da Loja</strong>
+        <span>O SHALOM não hospeda a venda do produto. O botão de compra leva o usuário ao link externo cadastrado.</span>
+      </div>
+      <div class="admin-content-filters">
+        <input id="adminStoreSearch" type="search" placeholder="Pesquisar por produto, categoria ou preço...">
+        <button class="btn btn-small" type="button" id="adminClearStoreSearch">Limpar</button>
+      </div>
+      <div id="adminStoreResults"></div>
+      <div id="adminStoreDetails" style="margin-top:16px"></div>`;
+
+    $('adminStoreSearch')?.addEventListener('input',window.renderAdminStore);
+    $('adminClearStoreSearch')?.addEventListener('click',()=>{
+      const input=$('adminStoreSearch');if(input)input.value='';
+      window.renderAdminStore();input?.focus();
+    });
+    window.renderAdminStore();
+  }catch(e){
+    console.error(e);
+    w.innerHTML=`<div class="error">Não foi possível carregar a Loja: ${esc(e.message||e)}</div>`;
+  }
+};;;
 async function loadAdmin(){
   if(!isAdmin){
     const target=$('page-admin');
