@@ -3331,6 +3331,20 @@ function applyIdentity(p){
  const top=$('userEmail');if(top)top.textContent=name;
  document.querySelectorAll('.public-user-name').forEach(x=>x.textContent=name);
 }
+
+async function isGeneralAdminUser(u){
+  if(!u)return false;
+  // Keep the existing email check as a compatibility fallback for now.
+  if(u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase())return true;
+  try{
+    const snap=await getDoc(doc(db,'users',u.uid));
+    return snap.exists() && snap.data()?.role==='admin';
+  }catch(e){
+    console.warn('Não foi possível verificar role administrativo:',e);
+    return false;
+  }
+}
+
 async function getProfile(uid=user()?.uid){if(!uid)return null;const s=await getDoc(doc(db,'users',uid));return s.exists()?{id:s.id,...s.data()}:null}
 
 let customInterestsCache=[];
@@ -3383,7 +3397,7 @@ window.saveProfile=async function(){
   if(file){
    photoURL=await uploadImageToCloudinary(file,'O upload da foto do perfil');
   }
-  const data={uid:u.uid,name,email:u.email,photoURL,interests,customInterests,updatedAt:serverTimestamp()};
+  const data={uid:u.uid,name,email:u.email,photoURL,interests,customInterests,updatedAt:serverTimestamp()}; if(u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase())data.role='admin';
   await withTimeout(setDoc(doc(db,'users',u.uid),data,{merge:true}),15000,'O salvamento do perfil no Firestore');
   // A atualização do Auth é secundária; não pode bloquear o salvamento do perfil.
   try{await withTimeout(updateProfile(u,{displayName:name,photoURL}),10000,'A atualização da conta Firebase Authentication')}catch(authErr){console.warn('Perfil salvo no Firestore, mas Auth não foi atualizado:',authErr)}
@@ -4992,7 +5006,14 @@ function bindHomeAddButtons(){
  });
 }
 
-onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
+onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=await isGeneralAdminUser(u);Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);
+if(isAdmin && profileCache?.role!=='admin'){
+  try{
+    await setDoc(doc(db,'users',u.uid),{role:'admin',updatedAt:serverTimestamp()},{merge:true});
+    profileCache={...(profileCache||{}),role:'admin'};
+  }catch(e){console.warn('Não foi possível registrar role admin:',e)}
+}
+authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
