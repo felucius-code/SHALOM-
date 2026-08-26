@@ -3729,7 +3729,18 @@ async function communityIsAdmin(id,data=null){
   return data.createdByUid===u.uid ||
     (Array.isArray(data.communityAdminUids)&&data.communityAdminUids.includes(u.uid));
 }
-async function loadCommunitiesBar(){const list=$('homeCommunitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const u=user();const arr=snap.docs.map(x=>({id:x.id,...x.data()}));list.innerHTML=arr.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Nenhuma comunidade.</div>'}
+async function loadCommunitiesBar(){
+ const list=$('homeCommunitiesList');if(!list)return;
+ const u=user();if(!u){list.innerHTML='';return;}
+ const snap=await getDocs(collection(db,'communities'));
+ const arr=snap.docs.map(x=>({id:x.id,...x.data()}));
+ const mine=arr.filter(c=>
+   c.createdByUid===u.uid||
+   (Array.isArray(c.memberUids)&&c.memberUids.includes(u.uid))||
+   (Array.isArray(c.members)&&c.members.includes(u.email))
+ );
+ list.innerHTML=mine.map(c=>`<button class="community-circle" onclick="openCommunity('${esc(c.id)}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Você ainda não participa de nenhuma comunidade.</div>';
+}
 async function loadCommunities(){
   await loadCommunitiesBar();
   const list=$('communitiesList');
@@ -3968,8 +3979,24 @@ window.deleteCurrentCommunity=async function(){
  }catch(e){console.error(e);alert('Erro ao deletar comunidade: '+e.message)}
 };
 window.backToCommunities=async()=>{currentCommunityId=null;$('communityArea')?.classList.add('hidden');$('communitiesList')?.classList.remove('hidden');await loadCommunities()};
-async function loadCommunityMessages(id){const box=$('communityMessages');if(!box)return;const snap=await getDocs(collection(db,'communities',id,'messages'));const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';box.scrollTop=box.scrollHeight}
-window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){const u=user(),text=$('messageInput')?.value.trim();if(!u||!currentCommunityId||!text)return;await addDoc(collection(db,'communities',currentCommunityId,'messages'),{text,authorUid:u.uid,authorName:publicName(profileCache),createdAt:serverTimestamp()});$('messageInput').value='';await loadCommunityMessages(currentCommunityId)};
+async function loadCommunityMessages(id){
+ const box=$('communityMessages');if(!box)return;
+ const snap=await getDoc(doc(db,'communities',id));
+ if(!snap.exists()||!(await communityIsMember(id,snap.data()))){box.innerHTML='<p style="color:#6B7A99">Conteúdo disponível apenas para membros.</p>';return;}
+ const sub=await getDocs(collection(db,'communities',id,'messages'));
+ const arr=sub.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));
+ box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';
+ box.scrollTop=box.scrollHeight;
+}
+window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){
+ const u=user(),textValue=$('messageInput')?.value.trim();
+ if(!u||!currentCommunityId||!textValue)return;
+ const snap=await getDoc(doc(db,'communities',currentCommunityId));
+ if(!snap.exists())return alert('Comunidade não encontrada.');
+ if(!(await communityIsMember(currentCommunityId,snap.data())))return alert('Você precisa ser membro desta comunidade.');
+ await addDoc(collection(db,'communities',currentCommunityId,'messages'),{text:textValue,authorUid:u.uid,authorName:publicName(profileCache),createdAt:serverTimestamp()});
+ $('messageInput').value='';await loadCommunityMessages(currentCommunityId);
+};;
 
 window.showStudyVideoForm=function(){
   if(!currentCommunityIsAdmin){
@@ -4024,17 +4051,48 @@ window.saveStudyVideo=async function(){
   }
 };
 
-async function loadCommunityStudyVideos(id){const list=$('studyVideosList');if(!list)return;const snap=await getDocs(collection(db,'communities',id,'studyVideos'));const arr=snap.docs.map(x=>x.data());list.innerHTML=arr.map(v=>{
-  const url=v.url||'';
-  return getYouTubeVideoId(url)
-    ? `<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(url)}','${esc(v.title||'Vídeo')}')">▶ ${esc(v.title||'Vídeo')}</button>`
-    : `<a class="btn btn-small" target="_blank" rel="noopener" href="${esc(url)}">${esc(v.title||'Vídeo')}</a>`;
-}).join('')||'<p style="color:#6B7A99">Nenhum vídeo de estudo.</p>'}
+async function loadCommunityStudyVideos(id){
+ const list=$('studyVideosList');if(!list)return;
+ const snap=await getDoc(doc(db,'communities',id));
+ if(!snap.exists()||!(await communityIsMember(id,snap.data()))){list.innerHTML='<p style="color:#6B7A99">Conteúdo disponível apenas para membros.</p>';return;}
+ const sub=await getDocs(collection(db,'communities',id,'studyVideos'));
+ const arr=sub.docs.map(x=>x.data());
+ list.innerHTML=arr.map(v=>{
+   const url=v.url||'';
+   return getYouTubeVideoId(url)
+     ? `<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(url)}','${esc(v.title||'Vídeo')}')">▶ ${esc(v.title||'Vídeo')}</button>`
+     : `<a class="btn btn-small" target="_blank" rel="noopener" href="${esc(url)}">${esc(v.title||'Vídeo')}</a>`;
+ }).join('')||'<p style="color:#6B7A99">Nenhum vídeo de estudo.</p>';
+}
 window.loadCommunityStudyVideos=loadCommunityStudyVideos;
 
-async function visibleAdminCommunities(){const snap=await getDocs(collection(db,'communities'));return snap.docs.map(x=>({id:x.id,...x.data()})).filter(c=>isAdmin||c.createdByUid===user()?.uid)}
+async function visibleAdminCommunities(){
+ const snap=await getDocs(collection(db,'communities'));
+ const arr=snap.docs.map(x=>({id:x.id,...x.data()}));
+ const u=user();
+ if(!u)return [];
+ return arr.filter(c=>
+   c.createdByUid===u.uid||
+   (Array.isArray(c.communityAdminUids)&&c.communityAdminUids.includes(u.uid))
+ );
+}
 window.loadAdminCommunities=async function(){const sel=$('adminCommunitySelect');if(!sel)return;const arr=await visibleAdminCommunities();sel.innerHTML='<option value="">Selecione uma comunidade</option>'+arr.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')};
-window.assignCommunityAdmin=async function(){const id=$('adminCommunitySelect')?.value,email=$('communityAdminEmail')?.value.trim();if(!id||!email)return alert('Selecione a comunidade e informe o e-mail.');try{const q=query(collection(db,'users'),where('email','==',email));const s=await getDocs(q);if(s.empty)return alert('Usuário não encontrado.');const p={id:s.docs[0].id,...s.docs[0].data()};const r=doc(db,'communities',id);await updateDoc(r,{communityAdminUids:arrayUnion(p.uid||p.id),communityAdmins:arrayUnion(email)});await loadCommunityAdmins();alert('Administrador definido.')}catch(e){alert('Erro: '+e.message)}};
+window.assignCommunityAdmin=async function(){
+ const id=$('adminCommunitySelect')?.value,email=$('communityAdminEmail')?.value.trim();
+ if(!id||!email)return alert('Selecione a comunidade e informe o e-mail.');
+ try{
+   const communitySnap=await getDoc(doc(db,'communities',id));
+   if(!communitySnap.exists())throw new Error('Comunidade não encontrada.');
+   if(!(await communityIsAdmin(id,communitySnap.data())))throw new Error('Somente um administrador desta comunidade pode definir outro administrador.');
+   const q=query(collection(db,'users'),where('email','==',email));
+   const s=await getDocs(q);
+   if(s.empty)return alert('Usuário não encontrado.');
+   const p={id:s.docs[0].id,...s.docs[0].data()};
+   const r=doc(db,'communities',id);
+   await updateDoc(r,{communityAdminUids:arrayUnion(p.uid||p.id),communityAdmins:arrayUnion(email)});
+   await loadCommunityAdmins();alert('Administrador definido.');
+ }catch(e){console.error(e);alert('Erro: '+e.message)}
+};;
 window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');if(!box)return;const snap=await getDocs(collection(db,'communityAdmins'));box.innerHTML=snap.docs.map(x=>{const d=x.data();return `<div style="padding:7px 0;border-bottom:1px solid #303654">${esc(d.userName||d.userEmail||d.userUid||'Administrador')}</div>`}).join('')||'<p style="color:#6B7A99">Nenhum administrador adicional.</p>'};
 
 
@@ -4179,9 +4237,29 @@ window.viewRequests=async function(communityId){
     alert('Não foi possível carregar as solicitações: '+(e.message||e));
   }
 };;
-window.approveJoin=async function(id,uid,email){const r=doc(db,'communities',id),s=await getDoc(r);if(!s.exists())return;const c=s.data(),data={memberUids:uid?arrayUnion(uid):arrayUnion(),members:email?arrayUnion(email):arrayUnion(),pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
-window.rejectJoin=async function(id,uid,email){const r=doc(db,'communities',id),data={pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
-window.requestJoin=async function(id){const u=user();if(!u)return;await updateDoc(doc(db,'communities',id),{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});alert('Solicitação enviada.');await loadCommunities()}
+window.approveJoin=async function(id,uid,email){
+ const snap=await getDoc(doc(db,'communities',id));
+ if(!snap.exists())return;
+ if(!(await communityIsAdmin(id,snap.data())))return alert('Somente o administrador desta comunidade pode aceitar membros.');
+ return approveCommunityMember(id,uid,email);
+};;
+window.rejectJoin=async function(id,uid,email){
+ const snap=await getDoc(doc(db,'communities',id));
+ if(!snap.exists())return;
+ if(!(await communityIsAdmin(id,snap.data())))return alert('Somente o administrador desta comunidade pode recusar membros.');
+ return rejectCommunityMember(id,uid,email);
+};;
+window.requestJoin=async function(id){
+ const u=user();if(!u)return;
+ const ref=doc(db,'communities',id),snap=await getDoc(ref);
+ if(!snap.exists())return alert('Comunidade não encontrada.');
+ const c=snap.data();
+ if(await communityIsMember(id,c))return alert('Você já participa desta comunidade.');
+ if((c.pendingMemberUids||[]).includes(u.uid)||(c.pendingMembers||[]).includes(u.email))return alert('Sua solicitação já está pendente.');
+ await updateDoc(ref,{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});
+ alert('Solicitação enviada.');
+ await loadCommunities();
+};
 window.requestCurrentCommunityJoin=async function(){
   const id=currentCommunityId;
   if(!id)return;
@@ -4921,6 +4999,7 @@ window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((
 </script>
 
 
+<!-- SECURITY_AUDIT_PHASE_1: client-side community permission hardening -->
 <!-- PLAYER DE VÍDEO -->
 <div id="videoPlayerModal" class="hidden" style="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.94);align-items:center;justify-content:center;padding:24px;">
   <div style="position:relative;width:min(1100px,96vw);aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,.7);">
