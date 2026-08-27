@@ -4116,11 +4116,10 @@ window.assignCommunityAdmin=async function(){
    if(s.empty)return alert('Usuário não encontrado.');
    const p={id:s.docs[0].id,...s.docs[0].data()};
    const r=doc(db,'communities',id);
-   await updateDoc(r,{communityAdminUids:arrayUnion(p.uid||p.id),communityAdmins:arrayUnion(email)});
-   await loadCommunityAdmins();alert('Administrador definido.');
+   await updateDoc(r,{communityAdminUids:arrayUnion(p.uid||p.id),communityAdmins:arrayUnion(email)});alert('Administrador definido.');
  }catch(e){console.error(e);alert('Erro: '+e.message)}
 };;
-window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');if(!box)return;const snap=await getDocs(collection(db,'communityAdmins'));box.innerHTML=snap.docs.map(x=>{const d=x.data();return `<div style="padding:7px 0;border-bottom:1px solid #303654">${esc(d.userName||d.userEmail||d.userUid||'Administrador')}</div>`}).join('')||'<p style="color:#6B7A99">Nenhum administrador adicional.</p>'};
+;
 
 
 window.approveCommunityMember=async function(communityId,uid,email){
