@@ -1431,6 +1431,66 @@ select option {
 .community-danger{border-color:#8b3a3a!important;color:#ffb0b0!important}
 .notification-item{background:var(--panel2);border:1px solid #303654;border-left:4px solid var(--gold);padding:14px;border-radius:8px;margin-bottom:10px}
 
+
+/* =====================================================
+   RECOMENDADOS PARA VOCÊ — CARROSSEL HORIZONTAL
+===================================================== */
+
+#recommendationsSection{
+    width:100%;
+    box-sizing:border-box;
+}
+
+#recommendationsGrid{
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:stretch;
+    gap:16px;
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding:4px 4px 14px;
+    box-sizing:border-box;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
+}
+
+#recommendationsGrid::-webkit-scrollbar{
+    height:7px;
+}
+
+#recommendationsGrid > .recommendation-item,
+#recommendationsGrid > article,
+#recommendationsGrid > div{
+    flex:0 0 270px !important;
+    width:270px !important;
+    min-width:270px !important;
+    max-width:270px !important;
+    box-sizing:border-box;
+    scroll-snap-align:start;
+}
+
+/* O estado vazio não deve virar um card estreito. */
+#recommendationsGrid > .recommendation-empty{
+    flex:1 1 auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+}
+
+/* Em telas pequenas, cards ligeiramente menores. */
+@media (max-width:700px){
+    #recommendationsGrid > .recommendation-item,
+    #recommendationsGrid > article,
+    #recommendationsGrid > div:not(.recommendation-empty){
+        flex-basis:235px !important;
+        width:235px !important;
+        min-width:235px !important;
+        max-width:235px !important;
+    }
+}
+
 </style>
 </head>
 
