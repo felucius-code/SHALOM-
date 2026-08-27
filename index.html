@@ -3292,6 +3292,116 @@ async function loadRecommendations(){
   grid.innerHTML=top.map(x=>recommendationCard(x,x.matched)).join('');
 }
 
+
+/* =====================================================
+   PLAYER DE VÍDEOS — COMUNIDADES E CATÁLOGO
+===================================================== */
+function normalizeVideoUrl(rawUrl){
+    const raw=String(rawUrl||'').trim();
+    if(!raw)return '';
+
+    try{
+        const u=new URL(raw);
+
+        /* YouTube: watch?v=, youtu.be/, shorts/ e embed/ */
+        if(
+            u.hostname.includes('youtube.com') ||
+            u.hostname.includes('youtu.be')
+        ){
+            let id='';
+
+            if(u.hostname.includes('youtu.be')){
+                id=u.pathname.replace(/^\/+/,'').split('/')[0];
+            }else{
+                id=
+                    u.searchParams.get('v') ||
+                    (u.pathname.match(/\/(?:shorts|embed)\/([^/?]+)/)||[])[1] ||
+                    '';
+            }
+
+            if(id){
+                return `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
+            }
+        }
+
+        /* Vimeo */
+        if(u.hostname.includes('vimeo.com')){
+            const id=(u.pathname.match(/\/(\d+)(?:\/)?$/)||[])[1];
+            if(id){
+                return `https://player.vimeo.com/video/${id}?autoplay=1`;
+            }
+        }
+
+        /* URL direta de vídeo: deixar o navegador/player remoto tratar. */
+        return raw;
+
+    }catch(e){
+        return rawUrl;
+    }
+}
+
+window.openVideoPlayer=function(rawUrl,title='Vídeo'){
+
+    const modal=document.getElementById('videoPlayerModal');
+    const frame=document.getElementById('youtubePlayerFrame');
+
+    if(!modal||!frame){
+        console.error('Player de vídeo não encontrado no DOM.');
+        alert('Não foi possível abrir o vídeo.');
+        return;
+    }
+
+    const src=normalizeVideoUrl(rawUrl);
+
+    if(!src){
+        alert('Este vídeo não possui um link válido.');
+        return;
+    }
+
+    frame.src=src;
+
+    modal.classList.remove('hidden');
+    modal.style.display='flex';
+
+    /*
+     * Esc fecha o player.
+     */
+    modal.setAttribute('aria-label',title||'Vídeo');
+
+    document.body.style.overflow='hidden';
+};
+
+window.closeVideoPlayer=function(){
+
+    const modal=document.getElementById('videoPlayerModal');
+    const frame=document.getElementById('youtubePlayerFrame');
+
+    if(frame){
+        frame.src='';
+    }
+
+    if(modal){
+        modal.classList.add('hidden');
+        modal.style.display='none';
+    }
+
+    document.body.style.overflow='';
+};
+
+/* Fechar clicando fora do quadro do vídeo. */
+document.addEventListener('click',function(e){
+    const modal=document.getElementById('videoPlayerModal');
+    if(modal && e.target===modal){
+        window.closeVideoPlayer();
+    }
+});
+
+document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){
+        window.closeVideoPlayer();
+    }
+});
+
 async function loadHome(){for(const type of Object.keys(contentTypes)){const host=$(contentTypes[type].home);if(!host)continue;const items=await fetchContent(type);host.innerHTML=items.slice(0,10).map(x=>renderContentCard(type,x.id,x)).join('')||'<p style="color:#6B7A99">Nenhum conteúdo.</p>'}await loadCommunitiesBar()
   await loadHomeCommunityVideos()
   try{await loadRecommendations()}catch(e){console.warn('Recomendações:',e)}
@@ -3485,12 +3595,7 @@ async function loadHomeCommunityVideos(){
 
      const snap=
        await getDocs(
-         collection(
-           db,
-           'communities',
-           community.id,
-           'studyVideos'
-         )
+         collection(db,'communities',community.id,'studyVideos')
        );
 
      snap.docs.forEach(d=>{
@@ -3503,81 +3608,75 @@ async function loadHomeCommunityVideos(){
      });
    }
 
-   /*
-    * Remove somente a faixa criada anteriormente por esta função.
-    * Nunca substitui os vídeos gerais da Home.
-    */
    host
      .querySelectorAll('.community-exclusive-video')
      .forEach(el=>el.remove());
 
    if(!exclusiveVideos.length)return;
 
-   const section=document.createElement('div');
-   section.className='community-exclusive-video';
-
-   section.style.cssText=
-     'flex:0 0 300px;min-width:300px;max-width:300px;';
-
-   /*
-    * Os vídeos exclusivos são cards dentro do MESMO carrossel
-    * de Vídeos da Home — não uma comunidade na Home.
-    */
    exclusiveVideos.forEach(video=>{
+
+     const wrapper=document.createElement('div');
+     wrapper.className='community-exclusive-video';
+
+     wrapper.style.cssText=
+       'flex:0 0 260px;min-width:260px;max-width:260px;';
 
      const card=document.createElement('article');
 
-     card.className=
-       'content-card community-exclusive-video-card';
+     card.className='content-card';
+     card.style.cssText='height:100%;box-sizing:border-box;';
 
-     card.style.cssText=
-       'height:100%;box-sizing:border-box;';
+     const safeUrl=esc(video.url||'');
+     const safeTitle=esc(video.title||'Vídeo exclusivo');
 
      card.innerHTML=`
+       <div class="content-cover" style="
+         display:flex;
+         align-items:center;
+         justify-content:center;
+         font-size:34px;
+       ">
+         🔒
+       </div>
+
        <div class="content-body">
 
          <small style="color:var(--gold);display:block;margin-bottom:6px;">
-           🔒 ${esc(video.communityName)}
+           ${esc(video.communityName)}
          </small>
 
-         <h3>${esc(video.title||'Vídeo exclusivo')}</h3>
+         <h3>${safeTitle}</h3>
 
          <p>${esc(video.description||'')}</p>
 
          <div style="margin-top:8px;">
-           ${
-             video.url
-             ? `<button
-                  class="btn btn-small"
-                  type="button"
-                  onclick="openVideoPlayer('${esc(video.url)}','${esc(video.title||'Vídeo')}')">
-                  ▶ Assistir
-                </button>`
-             : ''
-           }
+           <button
+             class="btn btn-small"
+             type="button"
+             data-video-url="${safeUrl}"
+             data-video-title="${safeTitle}">
+             ▶ Assistir
+           </button>
          </div>
 
        </div>
      `;
 
-     section.appendChild(card);
+     const btn=card.querySelector('button[data-video-url]');
+
+     if(btn){
+       btn.addEventListener('click',function(){
+         window.openVideoPlayer(
+           btn.dataset.videoUrl,
+           btn.dataset.videoTitle||'Vídeo exclusivo'
+         );
+       });
+     }
+
+     wrapper.appendChild(card);
+     host.appendChild(wrapper);
    });
-
-   /*
-    * Cada vídeo recebe seu próprio item no carrossel.
-    */
-   const items=[...section.children];
-   section.replaceChildren();
-
-   items.forEach(item=>{
-     const wrapper=document.createElement('div');
-     wrapper.style.cssText=
-       'flex:0 0 260px;min-width:260px;max-width:260px;';
-     wrapper.appendChild(item);
-     section.appendChild(wrapper);
-   });
-
-   host.appendChild(section);
 
  }catch(e){
    console.error(
