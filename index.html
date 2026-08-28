@@ -2395,6 +2395,18 @@ select option {
                 id="communityDescription"
                 placeholder="Descrição da comunidade">
             </textarea>
+        <div class="form-group" style="margin-top:14px;">
+            <label for="communityImage">Imagem da comunidade</label>
+            <input
+                id="communityImage"
+                type="file"
+                accept="image/*">
+            <small style="display:block;color:#6B7A99;margin-top:5px;">
+                Escolha uma imagem para representar a comunidade no carrossel.
+            </small>
+        </div>
+
+
 
         </div>
 
@@ -3646,6 +3658,7 @@ window.addCommunity=async function(){
  const description=$('communityDescription')?.value.trim();
  const select=$('communityCategory');
  const custom=$('communityCustomCategory');
+ const imageFile=$('communityImage')?.files?.[0];
 
  let category=select?.value||'';
  if(category==='__custom__') category=custom?.value.trim()||'';
@@ -3654,36 +3667,66 @@ window.addCommunity=async function(){
  if(!category)return alert('Selecione uma categoria para a comunidade.');
 
  try{
-   await addDoc(collection(db,'communities'),{
-     name,
-     description,
-     category,
-     categoryNormalized:normalizeCommunityCategory(category),
-     createdByUid:u.uid,
-     createdBy:publicName(profileCache),
-     memberUids:[u.uid],
-     members:[u.email],
-     communityAdminUids:[u.uid],
-     communityAdmins:[u.email],
-     pendingMemberUids:[],
-     pendingMembers:[],
-     createdAt:serverTimestamp()
-   });
+
+   let imageURL='';
+
+   if(imageFile){
+     imageURL=await uploadImageToCloudinary(
+       imageFile,
+       'O upload da imagem da comunidade'
+     );
+   }
+
+   await addDoc(
+     collection(db,'communities'),
+     {
+       name,
+       description,
+       category,
+       categoryNormalized:normalizeCommunityCategory(category),
+
+       imageURL,
+
+       createdByUid:u.uid,
+       createdBy:publicName(profileCache),
+
+       memberUids:[u.uid],
+       members:[u.email],
+
+       communityAdminUids:[u.uid],
+       communityAdmins:[u.email],
+
+       pendingMemberUids:[],
+       pendingMembers:[],
+
+       createdAt:serverTimestamp()
+     }
+   );
 
    $('communityName').value='';
    $('communityDescription').value='';
+
+   const imageInput=$('communityImage');
+   if(imageInput)imageInput.value='';
+
    if(select)select.value='';
    if(custom)custom.value='';
+
    $('customCommunityCategoryBox')?.classList.add('hidden');
    $('createCommunityBox')?.classList.add('hidden');
 
    await loadCommunities();
    await loadCommunitiesBar();
 
+   alert('Comunidade criada com sucesso.');
+
  }catch(e){
+
+   console.error('addCommunity:',e);
+
    alert('Erro ao criar comunidade: '+e.message);
  }
-};;
+};;;
 
 window.openCommunity=async function(id){
  const snap=await getDoc(doc(db,'communities',id));
