@@ -3618,15 +3618,8 @@ async function loadCommunities(){
 
    let items=snap.docs.map(d=>({id:d.id,...d.data()}));
 
-   /*
-    * Administrador geral:
-    * visualiza todas as comunidades para acompanhar a formação da rede.
-    */
    if(u && !isAdmin){
 
-     /*
-      * Garante que o perfil esteja disponível antes do filtro.
-      */
      let profile=profileCache;
 
      if(!profile || !Array.isArray(profile.interests)){
@@ -3634,42 +3627,44 @@ async function loadCommunities(){
        if(profile)profileCache=profile;
      }
 
-     const profileInterests=
-       Array.isArray(profile?.interests)
-       ? profile.interests
-       : [];
-
-     const customInterests=
-       Array.isArray(profile?.customInterests)
-       ? profile.customInterests
-       : [];
-
-     const allInterests=[
-       ...profileInterests,
-       ...customInterests
+     const interests=[
+       ...(Array.isArray(profile?.interests)?profile.interests:[]),
+       ...(Array.isArray(profile?.customInterests)?profile.customInterests:[])
      ]
-       .map(normalizeCommunityCategory)
-       .filter(Boolean);
+     .map(normalizeCommunityCategory)
+     .filter(Boolean);
 
      items=items.filter(c=>{
 
-       const isMember=
+       const member=
          c.createdByUid===u.uid ||
          (c.memberUids||[]).includes(u.uid) ||
          (c.members||[]).includes(u.email);
 
-       if(isMember)return true;
+       if(member)return true;
 
        const category=
          c.categoryNormalized ||
          normalizeCommunityCategory(c.category);
 
-       return !!category &&
-              allInterests.includes(category);
+       return !!category && interests.includes(category);
      });
    }
 
    host.innerHTML=items.map(c=>{
+
+     const member=
+       isAdmin ||
+       c.createdByUid===u?.uid ||
+       (c.memberUids||[]).includes(u?.uid) ||
+       (c.members||[]).includes(u?.email);
+
+     const pending=
+       !member &&
+       (
+         (c.pendingMemberUids||[]).includes(u?.uid) ||
+         (c.pendingMembers||[]).includes(u?.email)
+       );
 
      const count=
        (c.memberUids||c.members||[]).length;
@@ -3678,27 +3673,58 @@ async function loadCommunities(){
        ? '<img src="'+esc(c.imageURL)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;flex:0 0 58px;">'
        : '<div style="width:58px;height:58px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:23px;flex:0 0 58px;">👥</div>';
 
+     let action='';
+
+     if(member){
+
+       action=
+         '<button class="btn btn-small" type="button" '+
+         'onclick="openCommunity(\''+esc(c.id)+'\')">'+
+         'Abrir'+
+         '</button>';
+
+     }else if(pending){
+
+       action=
+         '<button class="btn btn-small" type="button" disabled>'+
+         'Solicitação enviada'+
+         '</button>';
+
+     }else{
+
+       action=
+         '<button class="btn btn-small" type="button" '+
+         'onclick="requestJoin(\''+esc(c.id)+'\')">'+
+         'Solicitar entrada'+
+         '</button>';
+     }
+
      return `
        <article class="card community-card">
+
          <div style="display:flex;align-items:center;gap:12px;">
+
            ${image}
+
            <div style="min-width:0;flex:1;">
+
              <h3 class="card-title" style="margin:0 0 4px;">
                ${esc(c.name||'Comunidade')}
              </h3>
+
              <div style="font-size:.82rem;color:#6B7A99;">
                ${esc(c.category||'')} · ${count} membros
              </div>
+
            </div>
-           <button
-             class="btn btn-small"
-             type="button"
-             onclick="openCommunity('${esc(c.id)}')">
-             Abrir
-           </button>
+
+           ${action}
+
          </div>
+
        </article>
      `;
+
    }).join('') ||
    '<p>Nenhuma comunidade encontrada para seus interesses.</p>';
 
@@ -3710,6 +3736,8 @@ async function loadCommunities(){
      '<p>Não foi possível carregar as comunidades.</p>';
  }
 }
+
+window.loadCommunities=loadCommunities;
 
 window.loadCommunities=loadCommunities;
 
