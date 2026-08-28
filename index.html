@@ -2561,6 +2561,34 @@ select option {
 
         </div>
 
+        <!-- ENTRADA NA COMUNIDADE — USUÁRIO NÃO MEMBRO -->
+        <div
+            id="communityJoinArea"
+            class="card hidden"
+            style="
+                margin-bottom:16px;
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                gap:12px;
+                flex-wrap:wrap;
+            ">
+            <div>
+                <strong>Esta comunidade é compatível com seus interesses.</strong>
+                <div style="color:#6B7A99;margin-top:4px;">
+                    Solicite sua entrada para participar do bate-papo.
+                </div>
+            </div>
+
+            <button
+                id="communityJoinBtn"
+                class="btn"
+                type="button"
+                onclick="requestJoin(currentCommunityId)">
+                Solicitar entrada
+            </button>
+        </div>
+
         <!-- CONFIGURAÇÕES — ADMINISTRADOR -->
         <div
             id="communityToolsPanel"
@@ -3784,27 +3812,56 @@ window.addCommunity=async function(){
 };;;
 
 window.openCommunity=async function(id){
- const snap=await getDoc(doc(db,'communities',id));
- if(!snap.exists())return alert('Comunidade não encontrada.');
 
- const c={id,...snap.data()},u=user();
+ const snap=await getDoc(doc(db,'communities',id));
+
+ if(!snap.exists())
+   return alert('Comunidade não encontrada.');
+
+ const c={id,...snap.data()};
+ const u=user();
+
+ if(!u)
+   return alert('Você precisa estar conectado.');
 
  const member=
    isAdmin ||
-   c.createdByUid===u?.uid ||
-   (c.memberUids||[]).includes(u?.uid) ||
-   (c.members||[]).includes(u?.email);
+   c.createdByUid===u.uid ||
+   (c.memberUids||[]).includes(u.uid) ||
+   (c.members||[]).includes(u.email);
 
- if(!member)return alert('Você não é membro desta comunidade.');
+ /*
+  * Um não-membro só pode abrir uma comunidade se a categoria
+  * corresponder a um interesse do seu perfil.
+  */
+ if(!member && !isAdmin){
+
+   let profile=profileCache;
+
+   if(!profile || !Array.isArray(profile.interests)){
+     profile=await getProfile(u.uid);
+     if(profile)profileCache=profile;
+   }
+
+   const interests=[
+     ...(Array.isArray(profile?.interests)?profile.interests:[]),
+     ...(Array.isArray(profile?.customInterests)?profile.customInterests:[])
+   ]
+   .map(normalizeCommunityCategory)
+   .filter(Boolean);
+
+   const category=
+     c.categoryNormalized ||
+     normalizeCommunityCategory(c.category);
+
+   if(!category || !interests.includes(category)){
+     return alert('Esta comunidade não está disponível para os interesses do seu perfil.');
+   }
+ }
 
  currentCommunityId=id;
  currentCommunityIsAdmin=await communityIsAdmin(id,c);
 
- /*
-  * IMPORTANTE:
-  * A comunidade continua sendo uma página própria.
-  * Não deve ser renderizada dentro da Home.
-  */
  setPage(
    'communities',
    document.querySelector('.nav-item[onclick*="communities"]')
@@ -3848,16 +3905,38 @@ window.openCommunity=async function(id){
  if($('editCommunityImage'))
    $('editCommunityImage').value='';
 
- $('studyVideoTitle') && ($('studyVideoTitle').value='');
- $('studyVideoDescription') && ($('studyVideoDescription').value='');
- $('studyVideoUrl') && ($('studyVideoUrl').value='');
-
  /*
-  * A página aberta mostra APENAS o chat.
-  * Vídeos exclusivos são consumidos na Home.
+  * Área de entrada:
+  * - membro/admin: oculta
+  * - não membro: mostra Solicitar entrada
   */
- await loadCommunityMessages(id);
-};;
+ const joinArea=$('communityJoinArea');
+ const joinBtn=$('communityJoinBtn');
+
+ const pending=
+   (c.pendingMemberUids||[]).includes(u.uid) ||
+   (c.pendingMembers||[]).includes(u.email);
+
+ if(joinArea){
+   joinArea.classList.toggle('hidden',member);
+
+   if(joinBtn){
+     joinBtn.disabled=pending;
+     joinBtn.textContent=
+       pending
+       ? 'Solicitação enviada'
+       : 'Solicitar entrada';
+   }
+ }
+
+ $('communityMessages')?.classList.toggle('hidden',!member);
+ $('messageInput')?.closest('.card')?.classList.toggle('hidden',!member);
+
+ if(member){
+   await loadCommunityMessages(id);
+ }
+
+};;;
 
 window.toggleCommunityTools=function(force){
  const panel=$('communityToolsPanel'); if(!panel)return;
@@ -4125,7 +4204,96 @@ window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');i
 window.viewRequests=async function(communityId){const cSnap=await getDoc(doc(db,'communities',communityId));if(!cSnap.exists())return;const c={id:communityId,...cSnap.data()};if(!(await communityIsAdmin(communityId,c)))return alert('Sem permissão.');const ids=c.pendingMemberUids||[],emails=c.pendingMembers||[];const requests=[];for(const uid of ids){const p=await getProfile(uid);if(p)requests.push({uid,email:p.email,name:p.name||p.email})}for(const email of emails){if(requests.some(r=>r.email===email))continue;const q=query(collection(db,'users'),where('email','==',email)),s=await getDocs(q);if(!s.empty){const p={id:s.docs[0].id,...s.docs[0].data()};requests.push({uid:p.uid||p.id,email,name:p.name||email})}else requests.push({email,name:email})}const card=$('page-notifications');setPage('notifications',document.querySelector('.nav-item[onclick*="notifications"]'));card.querySelector('.card').innerHTML=`<div style="display:flex;justify-content:space-between"><h2 class="card-title">Solicitações — ${esc(c.name)}</h2><button class="btn btn-secondary btn-small" onclick="loadNotifications()">Voltar</button></div>${requests.length?requests.map(r=>`<div class="card" style="margin-top:10px"><strong>${esc(r.name)}</strong><div style="color:#6B7A99">${esc(r.email||'')}</div><button class="btn btn-small" onclick="approveJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Aprovar</button><button class="btn btn-danger btn-small" onclick="rejectJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Recusar</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma solicitação.</p>'}`};
 window.approveJoin=async function(id,uid,email){const r=doc(db,'communities',id),s=await getDoc(r);if(!s.exists())return;const c=s.data(),data={memberUids:uid?arrayUnion(uid):arrayUnion(),members:email?arrayUnion(email):arrayUnion(),pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
 window.rejectJoin=async function(id,uid,email){const r=doc(db,'communities',id),data={pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
-window.requestJoin=async function(id){const u=user();if(!u)return;await updateDoc(doc(db,'communities',id),{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});alert('Solicitação enviada.');await loadCommunities()};
+window.requestJoin=async function(id){
+
+ const u=user();
+
+ if(!u || !id)return;
+
+ try{
+
+   const ref=doc(db,'communities',id);
+   const snap=await getDoc(ref);
+
+   if(!snap.exists())
+     return alert('Comunidade não encontrada.');
+
+   const c=snap.data();
+
+   const member=
+     c.createdByUid===u.uid ||
+     (c.memberUids||[]).includes(u.uid) ||
+     (c.members||[]).includes(u.email);
+
+   if(member){
+     return openCommunity(id);
+   }
+
+   const pending=
+     (c.pendingMemberUids||[]).includes(u.uid) ||
+     (c.pendingMembers||[]).includes(u.email);
+
+   if(pending){
+     const btn=$('communityJoinBtn');
+     if(btn){
+       btn.disabled=true;
+       btn.textContent='Solicitação enviada';
+     }
+     return;
+   }
+
+   /*
+    * O pedido só pode ser enviado para uma comunidade cuja categoria
+    * corresponde ao interesse do usuário.
+    */
+   let profile=profileCache;
+
+   if(!profile || !Array.isArray(profile.interests)){
+     profile=await getProfile(u.uid);
+     if(profile)profileCache=profile;
+   }
+
+   const interests=[
+     ...(Array.isArray(profile?.interests)?profile.interests:[]),
+     ...(Array.isArray(profile?.customInterests)?profile.customInterests:[])
+   ]
+   .map(normalizeCommunityCategory)
+   .filter(Boolean);
+
+   const category=
+     c.categoryNormalized ||
+     normalizeCommunityCategory(c.category);
+
+   if(!category || !interests.includes(category)){
+     return alert('Esta comunidade não está disponível para os interesses do seu perfil.');
+   }
+
+   await updateDoc(ref,{
+     pendingMemberUids:arrayUnion(u.uid),
+     pendingMembers:arrayUnion(u.email)
+   });
+
+   const btn=$('communityJoinBtn');
+
+   if(btn){
+     btn.disabled=true;
+     btn.textContent='Solicitação enviada';
+   }
+
+   alert('Solicitação enviada. Aguarde a aprovação do administrador.');
+
+   await loadCommunities();
+
+ }catch(e){
+
+   console.error('requestJoin:',e);
+
+   alert(
+     'Não foi possível enviar a solicitação.\n\n'+
+     e.message
+   );
+ }
+};;
 
 window.loadNotifications=async function(){const box=$('page-notifications')?.querySelector('.card');if(!box)return;const arr=await visibleAdminCommunities();const pending=arr.filter(c=>(c.pendingMemberUids||[]).length||(c.pendingMembers||[]).length);box.innerHTML=pending.length?pending.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #303654"><div><strong>${esc(c.name)}</strong><div style="color:#6B7A99">${(c.pendingMemberUids||c.pendingMembers||[]).length} solicitação(ões)</div></div><button class="btn btn-small" onclick="viewRequests('${c.id}')">Ver solicitações</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma notificação no momento.</p>'};
 
