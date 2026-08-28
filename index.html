@@ -4238,13 +4238,29 @@ window.requestJoin=async function(id){
 
  if(!u || !id)return;
 
+ const btn=$('communityJoinBtn');
+
+ if(btn){
+   btn.disabled=true;
+   btn.textContent='Enviando...';
+ }
+
  try{
 
    const ref=doc(db,'communities',id);
-   const snap=await getDoc(ref);
+
+   /*
+    * Ler novamente a comunidade no momento do pedido.
+    * Isso evita usar uma cópia antiga da lista.
+    */
+   const snap=await withTimeout(
+     getDoc(ref),
+     10000,
+     'A leitura da comunidade'
+   );
 
    if(!snap.exists())
-     return alert('Comunidade não encontrada.');
+     throw new Error('Comunidade não encontrada.');
 
    const c=snap.data();
 
@@ -4257,12 +4273,18 @@ window.requestJoin=async function(id){
      return openCommunity(id);
    }
 
-   const pending=
-     (c.pendingMemberUids||[]).includes(u.uid) ||
-     (c.pendingMembers||[]).includes(u.email);
+   const pendingUids=Array.isArray(c.pendingMemberUids)
+     ? [...c.pendingMemberUids]
+     : [];
 
-   if(pending){
-     const btn=$('communityJoinBtn');
+   const pendingEmails=Array.isArray(c.pendingMembers)
+     ? [...c.pendingMembers]
+     : [];
+
+   if(
+     pendingUids.includes(u.uid) ||
+     pendingEmails.includes(u.email)
+   ){
      if(btn){
        btn.disabled=true;
        btn.textContent='Solicitação enviada';
@@ -4271,8 +4293,7 @@ window.requestJoin=async function(id){
    }
 
    /*
-    * O pedido só pode ser enviado para uma comunidade cuja categoria
-    * corresponde ao interesse do usuário.
+    * Confirmar a categoria usando os interesses atuais do perfil.
     */
    let profile=profileCache;
 
@@ -4282,8 +4303,12 @@ window.requestJoin=async function(id){
    }
 
    const interests=[
-     ...(Array.isArray(profile?.interests)?profile.interests:[]),
-     ...(Array.isArray(profile?.customInterests)?profile.customInterests:[])
+     ...(Array.isArray(profile?.interests)
+       ? profile.interests
+       : []),
+     ...(Array.isArray(profile?.customInterests)
+       ? profile.customInterests
+       : [])
    ]
    .map(normalizeCommunityCategory)
    .filter(Boolean);
@@ -4293,35 +4318,60 @@ window.requestJoin=async function(id){
      normalizeCommunityCategory(c.category);
 
    if(!category || !interests.includes(category)){
-     return alert('Esta comunidade não está disponível para os interesses do seu perfil.');
+     throw new Error(
+       'Esta comunidade não está disponível para os interesses do seu perfil.'
+     );
    }
 
-   await updateDoc(ref,{
-     pendingMemberUids:arrayUnion(u.uid),
-     pendingMembers:arrayUnion(u.email)
-   });
+   /*
+    * Mantém os pedidos anteriores e acrescenta este usuário.
+    * updateDoc com arrays completos é compatível com a estrutura atual
+    * das comunidades e não depende de arrayUnion estar importado.
+    */
+   if(!pendingUids.includes(u.uid))
+     pendingUids.push(u.uid);
 
-   const btn=$('communityJoinBtn');
+   if(u.email && !pendingEmails.includes(u.email))
+     pendingEmails.push(u.email);
+
+   await withTimeout(
+     updateDoc(ref,{
+       pendingMemberUids:pendingUids,
+       pendingMembers:pendingEmails
+     }),
+     15000,
+     'O envio da solicitação de entrada'
+   );
 
    if(btn){
      btn.disabled=true;
      btn.textContent='Solicitação enviada';
    }
 
-   alert('Solicitação enviada. Aguarde a aprovação do administrador.');
+   alert(
+     'Solicitação enviada. Aguarde a aprovação do administrador.'
+   );
 
+   /*
+    * Atualiza a lista para que o estado do botão permaneça correto.
+    */
    await loadCommunities();
 
  }catch(e){
 
    console.error('requestJoin:',e);
 
+   if(btn){
+     btn.disabled=false;
+     btn.textContent='Solicitar entrada';
+   }
+
    alert(
      'Não foi possível enviar a solicitação.\n\n'+
      e.message
    );
  }
-};;
+};;;
 
 window.loadNotifications=async function(){const box=$('page-notifications')?.querySelector('.card');if(!box)return;const arr=await visibleAdminCommunities();const pending=arr.filter(c=>(c.pendingMemberUids||[]).length||(c.pendingMembers||[]).length);box.innerHTML=pending.length?pending.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #303654"><div><strong>${esc(c.name)}</strong><div style="color:#6B7A99">${(c.pendingMemberUids||c.pendingMembers||[]).length} solicitação(ões)</div></div><button class="btn btn-small" onclick="viewRequests('${c.id}')">Ver solicitações</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma notificação no momento.</p>'};
 
