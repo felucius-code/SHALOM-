@@ -3537,7 +3537,46 @@ async function loadHome(){for(const type of Object.keys(contentTypes)){const hos
 window.loadHome=loadHome;
 
 async function communityIsAdmin(id,data=null){if(isAdmin)return true;const u=user();if(!u)return false;data=data||((await getDoc(doc(db,'communities',id))).data()||{});return data.createdByUid===u.uid||(data.memberUids||[]).includes(u.uid)&&(data.communityAdminUids||[]).includes(u.uid)}
-async function loadCommunitiesBar(){const list=$('homeCommunitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const u=user();const arr=snap.docs.map(x=>({id:x.id,...x.data()})).filter(c=>!u||c.public!==false||[...(c.memberUids||[])].includes(u.uid));list.innerHTML=arr.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Nenhuma comunidade.</div>'}
+async function loadCommunitiesBar(){
+ const list=$('homeCommunitiesList');
+ if(!list)return;
+
+ const u=user();
+
+ try{
+   const snap=await getDocs(collection(db,'communities'));
+   const all=snap.docs.map(x=>({id:x.id,...x.data()}));
+
+   /*
+    * HOME: somente comunidades das quais o usuário participa.
+    * Sugestões ficam na aba Comunidades.
+    */
+   const arr=u
+     ? all.filter(c=>
+         c.createdByUid===u.uid ||
+         (c.memberUids||[]).includes(u.uid) ||
+         (c.members||[]).includes(u.email)
+       )
+     : [];
+
+   list.innerHTML=arr.map(c=>{
+     const imageHtml=c.imageURL
+       ? '<img src="'+esc(c.imageURL)+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">'
+       : '👥';
+
+     return '<button class="community-circle" onclick="openCommunity(\''+
+       esc(c.id)+
+       '\')">'+
+       '<div class="community-circle-image">'+imageHtml+'</div>'+
+       '<span class="community-circle-name">'+esc(c.name)+'</span>'+
+       '</button>';
+   }).join('') ||
+   '<div class="community-empty">Nenhuma comunidade.</div>';
+
+ }catch(e){
+   console.error('loadCommunitiesBar:',e);
+ }
+}
 async function loadCommunities(){
 
  const host=$('communitiesList');
@@ -3549,27 +3588,38 @@ async function loadCommunities(){
 
    const snap=await getDocs(collection(db,'communities'));
 
-   /*
-    * ETAPA B:
-    * Usuários comuns descobrem somente comunidades cuja categoria
-    * corresponde exatamente a um interesse do perfil.
-    *
-    * O criador/admin da comunidade e membros existentes continuam
-    * tendo acesso à própria comunidade mesmo que os interesses mudem.
-    */
    let items=snap.docs.map(d=>({id:d.id,...d.data()}));
 
+   /*
+    * Administrador geral:
+    * visualiza todas as comunidades para acompanhar a formação da rede.
+    */
    if(u && !isAdmin){
 
-     const profileInterests=Array.isArray(profileCache?.interests)
-       ? profileCache.interests
+     /*
+      * Garante que o perfil esteja disponível antes do filtro.
+      */
+     let profile=profileCache;
+
+     if(!profile || !Array.isArray(profile.interests)){
+       profile=await getProfile(u.uid);
+       if(profile)profileCache=profile;
+     }
+
+     const profileInterests=
+       Array.isArray(profile?.interests)
+       ? profile.interests
        : [];
 
-     const customInterests=Array.isArray(profileCache?.customInterests)
-       ? profileCache.customInterests
+     const customInterests=
+       Array.isArray(profile?.customInterests)
+       ? profile.customInterests
        : [];
 
-     const allInterests=[...profileInterests,...customInterests]
+     const allInterests=[
+       ...profileInterests,
+       ...customInterests
+     ]
        .map(normalizeCommunityCategory)
        .filter(Boolean);
 
@@ -3586,19 +3636,19 @@ async function loadCommunities(){
          c.categoryNormalized ||
          normalizeCommunityCategory(c.category);
 
-       return !!category && allInterests.includes(category);
+       return !!category &&
+              allInterests.includes(category);
      });
    }
 
    host.innerHTML=items.map(c=>{
 
-     const count=(c.memberUids||c.members||[]).length;
+     const count=
+       (c.memberUids||c.members||[]).length;
 
      const image=c.imageURL
-       ? `<img src="${esc(c.imageURL)}"
-               alt=""
-               style="width:58px;height:58px;border-radius:50%;object-fit:cover;flex:0 0 58px;">`
-       : `<div style="width:58px;height:58px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:23px;flex:0 0 58px;">👥</div>`;
+       ? '<img src="'+esc(c.imageURL)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;flex:0 0 58px;">'
+       : '<div style="width:58px;height:58px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:23px;flex:0 0 58px;">👥</div>';
 
      return `
        <article class="card community-card">
@@ -3621,14 +3671,19 @@ async function loadCommunities(){
          </div>
        </article>
      `;
-   }).join('') || '<p>Nenhuma comunidade encontrada para seus interesses.</p>';
+   }).join('') ||
+   '<p>Nenhuma comunidade encontrada para seus interesses.</p>';
 
  }catch(e){
 
    console.error('loadCommunities:',e);
-   host.innerHTML='<p>Não foi possível carregar as comunidades.</p>';
+
+   host.innerHTML=
+     '<p>Não foi possível carregar as comunidades.</p>';
  }
 }
+
+window.loadCommunities=loadCommunities;
 
 window.loadCommunities=loadCommunities;
 window.loadCommunities=loadCommunities;
