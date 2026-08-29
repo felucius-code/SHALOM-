@@ -3617,10 +3617,30 @@ async function loadCommunities(){
 
  const render=c=>{
    const member=isMember(c);
+   const pending=
+     (c.pendingMemberUids||[]).includes(u.uid) ||
+     (c.pendingMembers||[]).includes(u.email);
+
    const image=c.imageURL
      ? `<img src="${esc(c.imageURL)}" alt="${esc(c.name||'Comunidade')}"
           style="width:100%;height:100%;border-radius:50%;object-fit:cover">`
      : '👥';
+
+   let action='';
+
+   if(member){
+     action=`<button class="btn btn-small" type="button"
+       onclick="openCommunity('${c.id}')">Abrir</button>`;
+   }else if(pending){
+     action=`<button class="btn btn-small btn-secondary" type="button"
+       disabled>Solicitação enviada</button>`;
+   }else{
+     action=`<button class="btn btn-small" type="button"
+       data-community-request="${esc(c.id)}"
+       onclick="requestCommunityJoin('${c.id}')">
+       Solicitar entrada
+     </button>`;
+   }
 
    return `<div class="community-card">
      <div style="width:58px;height:58px;border-radius:50%;overflow:hidden;
@@ -3629,10 +3649,7 @@ async function loadCommunities(){
      <h3>${esc(c.name||'Comunidade')}</h3>
      <p>${esc(c.description||'')}</p>
      <span class="badge">${(c.memberUids||c.members||[]).length} membros</span>
-     <button class="btn btn-small"
-       onclick="${member?`openCommunity('${c.id}')`:`requestCommunityJoin('${c.id}')`}">
-       ${member?'Abrir':'Solicitar entrada'}
-     </button>
+     ${action}
    </div>`;
  };
 
@@ -4074,7 +4091,79 @@ window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');i
 window.viewRequests=async function(communityId){const cSnap=await getDoc(doc(db,'communities',communityId));if(!cSnap.exists())return;const c={id:communityId,...cSnap.data()};if(!(await communityIsAdmin(communityId,c)))return alert('Sem permissão.');const ids=c.pendingMemberUids||[],emails=c.pendingMembers||[];const requests=[];for(const uid of ids){const p=await getProfile(uid);if(p)requests.push({uid,email:p.email,name:p.name||p.email})}for(const email of emails){if(requests.some(r=>r.email===email))continue;const q=query(collection(db,'users'),where('email','==',email)),s=await getDocs(q);if(!s.empty){const p={id:s.docs[0].id,...s.docs[0].data()};requests.push({uid:p.uid||p.id,email,name:p.name||email})}else requests.push({email,name:email})}const card=$('page-notifications');setPage('notifications',document.querySelector('.nav-item[onclick*="notifications"]'));card.querySelector('.card').innerHTML=`<div style="display:flex;justify-content:space-between"><h2 class="card-title">Solicitações — ${esc(c.name)}</h2><button class="btn btn-secondary btn-small" onclick="loadNotifications()">Voltar</button></div>${requests.length?requests.map(r=>`<div class="card" style="margin-top:10px"><strong>${esc(r.name)}</strong><div style="color:#6B7A99">${esc(r.email||'')}</div><button class="btn btn-small" onclick="approveJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Aprovar</button><button class="btn btn-danger btn-small" onclick="rejectJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Recusar</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma solicitação.</p>'}`};
 window.approveJoin=async function(id,uid,email){const r=doc(db,'communities',id),s=await getDoc(r);if(!s.exists())return;const c=s.data(),data={memberUids:uid?arrayUnion(uid):arrayUnion(),members:email?arrayUnion(email):arrayUnion(),pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await refreshNotificationBadge();await loadNotifications()};
 window.rejectJoin=async function(id,uid,email){const r=doc(db,'communities',id),data={pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await refreshNotificationBadge();await loadNotifications()};
-window.requestJoin=async function(id){const u=user();if(!u)return;await updateDoc(doc(db,'communities',id),{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});alert('Solicitação enviada.');await refreshNotificationBadge();await loadCommunities()};
+window.requestCommunityJoin=async function(id){
+
+ const u=user();
+ if(!u)return;
+
+ const btn=document.querySelector(
+   `button[data-community-request="${CSS.escape(id)}"]`
+ );
+
+ if(btn){
+   btn.disabled=true;
+   btn.textContent='Enviando...';
+ }
+
+ try{
+
+   const ref=doc(db,'communities',id);
+   const snap=await getDoc(ref);
+
+   if(!snap.exists()){
+     throw new Error('Comunidade não encontrada.');
+   }
+
+   const c=snap.data();
+
+   const alreadyMember=
+     (c.memberUids||[]).includes(u.uid) ||
+     (c.members||[]).includes(u.email);
+
+   if(alreadyMember){
+     if(btn){
+       btn.disabled=false;
+       btn.textContent='Abrir';
+       btn.onclick=()=>openCommunity(id);
+     }
+     return;
+   }
+
+   const alreadyPending=
+     (c.pendingMemberUids||[]).includes(u.uid) ||
+     (c.pendingMembers||[]).includes(u.email);
+
+   if(!alreadyPending){
+
+     await updateDoc(ref,{
+       pendingMemberUids:arrayUnion(u.uid),
+       pendingMembers:arrayUnion(u.email)
+     });
+   }
+
+   if(btn){
+     btn.disabled=true;
+     btn.textContent='Solicitação enviada';
+     btn.classList.add('btn-secondary');
+   }
+
+   await refreshNotificationBadge();
+
+ }catch(e){
+
+   console.error('requestCommunityJoin:',e);
+
+   if(btn){
+     btn.disabled=false;
+     btn.textContent='Solicitar entrada';
+   }
+
+   alert('Não foi possível enviar a solicitação: '+e.message);
+ }
+};
+
+/* Compatibilidade com chamadas antigas. */
+window.requestJoin=window.requestCommunityJoin;
 
 let notificationUnsubscribe=null;
 
