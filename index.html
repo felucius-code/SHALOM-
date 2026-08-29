@@ -3379,22 +3379,45 @@ function isYouTubeUrl(rawUrl){
 function renderContentCard(type,id,d){
  const info=contentTypes[type];
  const cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;
- const isVideo=type==='videos';
- const action=d.url?(
- isYouTubeUrl(d.url)
-   ?`<button class="btn btn-small" type="button"
-       onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Conteúdo')}')">
+
+ const mediaTypes=['films','series','documentaries','videos'];
+ const isMedia=mediaTypes.includes(type);
+
+ let action='';
+
+ if(d.url){
+   if(isMedia || isYouTubeUrl(d.url)){
+     action=`<button class="btn btn-small shalom-watch-btn"
+       type="button"
+       data-video-url="${esc(d.url)}"
+       data-video-title="${esc(d.title||'Conteúdo')}">
        ▶ Assistir
-     </button>`
-   :isVideo
-     ?`<button class="btn btn-small" type="button"
-         onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">
-         ▶ Assistir
-       </button>`
-     :`<a class="btn btn-small" href="${esc(d.url)}"
-         target="_blank" rel="noopener noreferrer">Abrir</a>`
-):'';
- return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`;
+     </button>`;
+   }else{
+     action=`<a class="btn btn-small"
+       href="${esc(d.url)}"
+       target="_blank"
+       rel="noopener noreferrer">
+       Abrir
+     </a>`;
+   }
+ }
+
+ return `<article class="content-card">
+   <div class="content-cover">${cover}</div>
+   <div class="content-body">
+     <h3>${esc(d.title||'Sem título')}</h3>
+     <p>${esc(d.description||'')}</p>
+     ${d.category?`<small>${esc(d.category)}</small>`:''}
+     ${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}
+     ${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}
+     <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">
+       ${action}
+       ${isAdmin?`<button class="btn btn-danger btn-small"
+         onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}
+     </div>
+   </div>
+ </article>`;
 }
 async function fetchContent(type){const snap=await getDocs(collection(db,contentTypes[type].collection));return snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(b.createdAt)-ts(a.createdAt))}
 window.loadContent=async function(type){const info=contentTypes[type],grid=$(info.grid);if(!grid)return;const adminBox=$(info.admin);if(adminBox)adminBox.classList.toggle('hidden',!isAdmin);grid.innerHTML='<p style="color:#6B7A99">Carregando...</p>';try{const items=await fetchContent(type);grid.innerHTML=items.length?items.map(x=>renderContentCard(type,x.id,x)).join(''):'<p style="color:#6B7A99">Nenhum conteúdo cadastrado.</p>';}catch(e){console.error(e);grid.innerHTML=`<div class="error">Erro ao carregar ${esc(info.title)}: ${esc(e.message)}</div>`}};
@@ -3510,79 +3533,87 @@ function normalizeVideoUrl(rawUrl){
  if(!raw)return null;
 
  try{
-  const u=new URL(raw);
-  const host=u.hostname.toLowerCase();
+   const u=new URL(raw);
+   const h=u.hostname.toLowerCase();
 
-  if(host==='youtube.com'||host.endsWith('.youtube.com')||
-     host==='youtu.be'||host.endsWith('.youtu.be')){
+   if(h==='youtube.com'||h.endsWith('.youtube.com')||
+      h==='youtu.be'||h.endsWith('.youtu.be')){
 
-   let id='';
+     let id='';
 
-   if(host==='youtu.be'||host.endsWith('.youtu.be')){
-     id=u.pathname.replace(/^\/+/,'').split('/')[0];
-   }else{
-     id=u.searchParams.get('v')||
-       (u.pathname.match(/\/(?:shorts|embed|live)\/([^/?]+)/)||[])[1]||'';
-   }
+     if(h==='youtu.be'||h.endsWith('.youtu.be')){
+       id=u.pathname.replace(/^\/+/,'').split('/')[0];
+     }else{
+       id=u.searchParams.get('v')||
+          (u.pathname.match(/\/(?:shorts|embed|live)\/([^/?]+)/)||[])[1]||'';
+     }
 
-   if(id){
+     if(!id)return null;
+
      return {
        type:'youtube',
-       src:`https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&modestbranding=1`
+       src:
+        'https://www.youtube-nocookie.com/embed/' +
+        encodeURIComponent(id) +
+        '?autoplay=1&rel=0&modestbranding=1'
      };
    }
-  }
 
-  if(host==='vimeo.com'||host.endsWith('.vimeo.com')){
-   const id=(u.pathname.match(/\/(\d+)(?:\/)?$/)||[])[1];
-   if(id){
-     return {
-       type:'vimeo',
-       src:`https://player.vimeo.com/video/${id}?autoplay=1`
-     };
+   if(h==='vimeo.com'||h.endsWith('.vimeo.com')){
+     const id=(u.pathname.match(/\/(\d+)(?:\/)?$/)||[])[1];
+     if(id){
+       return {
+         type:'vimeo',
+         src:`https://player.vimeo.com/video/${id}?autoplay=1`
+       };
+     }
    }
-  }
 
-  return {type:'direct',src:raw};
+   return {type:'direct',src:raw};
 
  }catch(e){
-  return null;
+   console.warn('URL de vídeo inválida:',rawUrl,e);
+   return null;
  }
 }
 
 window.openVideoPlayer=function(rawUrl,title='Vídeo'){
 
- const modal=$('videoPlayerModal');
- const frame=$('youtubePlayerFrame');
+ const modal=document.getElementById('videoPlayerModal');
+ const frame=document.getElementById('youtubePlayerFrame');
 
  if(!modal||!frame){
-   alert('Player interno não encontrado.');
+   console.error('Estrutura do player interno ausente.');
    return;
  }
 
  const media=normalizeVideoUrl(rawUrl);
 
- if(!media||!media.src){
-   alert('Este vídeo não possui um link válido.');
+ if(!media){
+   alert('Este conteúdo não possui uma URL de vídeo válida.');
    return;
  }
 
+ /*
+  * CRÍTICO:
+  * Nunca colocamos a URL original do YouTube no iframe.
+  * O iframe recebe exclusivamente a URL /embed/.
+  */
+ frame.removeAttribute('src');
  frame.src=media.src;
- frame.title=title||'Vídeo';
- frame.setAttribute('allowfullscreen','');
+ frame.title=String(title||'Vídeo');
  frame.style.display='block';
 
  modal.classList.remove('hidden');
  modal.style.display='flex';
- modal.setAttribute('aria-label',title||'Vídeo');
 
  document.body.style.overflow='hidden';
 };
 
 window.closeVideoPlayer=function(){
 
- const modal=$('videoPlayerModal');
- const frame=$('youtubePlayerFrame');
+ const modal=document.getElementById('videoPlayerModal');
+ const frame=document.getElementById('youtubePlayerFrame');
 
  if(frame){
    frame.src='about:blank';
@@ -4623,22 +4654,39 @@ window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((
 
 
 <script>
-/* Regra global do SHALOM:
-   links do YouTube em conteúdos sempre usam o player interno. */
+/* =====================================================
+   PLAYER INTERNO — TODOS OS CONTEÚDOS DE MÍDIA
+===================================================== */
 document.addEventListener('click',function(e){
-  const a=e.target.closest?.('a[href]');
-  if(!a)return;
 
-  const href=a.getAttribute('href')||'';
-  if(!isYouTubeUrl(href))return;
+ const btn=e.target.closest?.('.shalom-watch-btn');
 
-  e.preventDefault();
-  e.stopPropagation();
+ if(btn){
+   e.preventDefault();
+   e.stopPropagation();
 
-  const card=a.closest('.content-card');
-  const title=card?.querySelector('h3')?.textContent?.trim()||'Conteúdo';
+   const url=btn.getAttribute('data-video-url')||'';
+   const title=btn.getAttribute('data-video-title')||'Conteúdo';
 
-  openVideoPlayer(href,title);
+   window.openVideoPlayer(url,title);
+   return;
+ }
+
+ const a=e.target.closest?.('a[href]');
+ if(!a)return;
+
+ const href=a.getAttribute('href')||'';
+
+ if(isYouTubeUrl(href)){
+   e.preventDefault();
+   e.stopPropagation();
+
+   const card=a.closest('.content-card');
+   const title=
+     card?.querySelector('h3')?.textContent?.trim()||'Conteúdo';
+
+   window.openVideoPlayer(href,title);
+ }
 },true);
 </script>
 
