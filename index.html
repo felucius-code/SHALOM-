@@ -3365,11 +3365,35 @@ window.saveContent=async function(type){
   if(btn){btn.disabled=false;btn.textContent=`💾 Salvar ${info.singular}`}
  }
 };
+function isYouTubeUrl(rawUrl){
+ try{
+   const u=new URL(String(rawUrl||'').trim());
+   const h=u.hostname.toLowerCase();
+   return h==='youtube.com'||h.endsWith('.youtube.com')||
+          h==='youtu.be'||h.endsWith('.youtu.be');
+ }catch(e){
+   return false;
+ }
+}
+
 function renderContentCard(type,id,d){
  const info=contentTypes[type];
  const cover=d.image?`<img src="${esc(d.image)}" alt="">`:info.icon;
  const isVideo=type==='videos';
- const action=d.url?(isVideo?`<button class="btn btn-small" type="button" onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">▶ Assistir</button>`:`<a class="btn btn-small" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Abrir</a>`):'';
+ const action=d.url?(
+ isYouTubeUrl(d.url)
+   ?`<button class="btn btn-small" type="button"
+       onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Conteúdo')}')">
+       ▶ Assistir
+     </button>`
+   :isVideo
+     ?`<button class="btn btn-small" type="button"
+         onclick="openVideoPlayer('${esc(d.url)}','${esc(d.title||'Vídeo')}')">
+         ▶ Assistir
+       </button>`
+     :`<a class="btn btn-small" href="${esc(d.url)}"
+         target="_blank" rel="noopener noreferrer">Abrir</a>`
+):'';
  return `<article class="content-card"><div class="content-cover">${cover}</div><div class="content-body"><h3>${esc(d.title||'Sem título')}</h3><p>${esc(d.description||'')}</p>${d.category?`<small>${esc(d.category)}</small>`:''}${d.year?`<small style="margin-left:8px">${esc(d.year)}</small>`:''}${d.duration?`<small style="margin-left:8px">${esc(d.duration)}</small>`:''}<div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">${action}${isAdmin?`<button class="btn btn-danger btn-small" onclick="deleteContent('${type}','${id}')">Excluir</button>`:''}</div></div></article>`;
 }
 async function fetchContent(type){const snap=await getDocs(collection(db,contentTypes[type].collection));return snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(b.createdAt)-ts(a.createdAt))}
@@ -4595,6 +4619,27 @@ window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((
     if(el)el.classList.remove('is-pressed');
   });
 })();
+</script>
+
+
+<script>
+/* Regra global do SHALOM:
+   links do YouTube em conteúdos sempre usam o player interno. */
+document.addEventListener('click',function(e){
+  const a=e.target.closest?.('a[href]');
+  if(!a)return;
+
+  const href=a.getAttribute('href')||'';
+  if(!isYouTubeUrl(href))return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const card=a.closest('.content-card');
+  const title=card?.querySelector('h3')?.textContent?.trim()||'Conteúdo';
+
+  openVideoPlayer(href,title);
+},true);
 </script>
 
 </body>
