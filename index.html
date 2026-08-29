@@ -2353,8 +2353,7 @@ select option {
 
     <!-- SOMENTE ADMINISTRADOR GERAL -->
 
-    <div id="adminCommunityButton"
-         class="hidden card">
+    <div id="adminCommunityButton" class="card">
 
         <button
             class="btn"
@@ -2402,6 +2401,15 @@ select option {
             </textarea>
 
         </div>
+          <div class="form-group">
+              <label>Categorias da comunidade</label>
+              <select id="communityCategories" multiple size="6"
+                      style="width:100%;min-height:140px;"></select>
+              <small style="display:block;color:#6B7A99;margin-top:6px;">
+                Escolha uma ou mais categorias para que esta comunidade seja
+                sugerida a usuários com esses interesses no perfil.
+              </small>
+          </div>
 
 
         <button
@@ -2527,6 +2535,11 @@ select option {
             <div class="form-group">
                 <label>Descrição</label>
                 <textarea id="editCommunityDescription" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Categorias da comunidade</label>
+                <select id="editCommunityCategories" multiple size="6"
+                        style="width:100%;min-height:140px;"></select>
             </div>
 
             <div class="form-group">
@@ -3568,179 +3581,142 @@ async function loadCommunities(){
  if(!list)return;
 
  const u=user();
-
  if(!u){
    list.innerHTML='<p>Nenhuma comunidade.</p>';
    return;
  }
 
- const snap=await getDocs(
-   collection(db,'communities')
- );
+ const snap=await getDocs(collection(db,'communities'));
+ const all=snap.docs.map(d=>({id:d.id,...d.data()}));
 
- const all=snap.docs.map(x=>({
-   id:x.id,
-   ...x.data()
- }));
+ const p=profileCache||await getProfile(u.uid);
+ const interests=Array.isArray(p?.interests)?p.interests:[];
 
- const interests=await getCurrentUserInterests();
+ const norm=s=>String(s||'').trim().toLocaleLowerCase()
+   .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 
- const normalize=s=>
-   String(s||'')
-     .trim()
-     .toLocaleLowerCase()
-     .normalize('NFD')
-     .replace(/[\u0300-\u036f]/g,'');
+ const selected=new Set(interests.map(norm));
 
- const interestSet=new Set(
-   interests.map(normalize)
- );
-
- const memberCommunities=all.filter(c=>
+ const isMember=c=>
    (c.memberUids||[]).includes(u.uid) ||
-   (c.members||[]).includes(u.email)
- );
+   (c.members||[]).includes(u.email);
 
- const suggestedCommunities=all.filter(c=>{
+ const mine=all.filter(isMember);
 
-   const member=
-     (c.memberUids||[]).includes(u.uid) ||
-     (c.members||[]).includes(u.email);
+ const suggestions=all.filter(c=>{
+   if(isMember(c))return false;
 
-   if(member)return false;
-
-   /*
-    * Suportamos os nomes mais comuns que já podem existir
-    * nos documentos das comunidades.
-    */
    const categories=
-     Array.isArray(c.categories)
-       ? c.categories
-       : Array.isArray(c.interests)
-         ? c.interests
-         : Array.isArray(c.category)
-           ? c.category
-           : c.category
-             ? [c.category]
-             : [];
+     Array.isArray(c.categories)?c.categories:
+     Array.isArray(c.interests)?c.interests:
+     Array.isArray(c.category)?c.category:
+     c.category?[c.category]:[];
 
-   if(!categories.length)return false;
-
-   return categories.some(category=>
-     interestSet.has(normalize(category))
-   );
+   return categories.some(cat=>selected.has(norm(cat)));
  });
 
- const renderCommunity=c=>{
-
-   const member=
-     (c.memberUids||[]).includes(u.uid) ||
-     (c.members||[]).includes(u.email);
-
+ const render=c=>{
+   const member=isMember(c);
    const image=c.imageURL
-     ? `<img
-          src="${esc(c.imageURL)}"
-          alt="${esc(c.name||'Comunidade')}"
-          style="
-            width:100%;
-            height:100%;
-            border-radius:50%;
-            object-fit:cover;
-          ">`
+     ? `<img src="${esc(c.imageURL)}" alt="${esc(c.name||'Comunidade')}"
+          style="width:100%;height:100%;border-radius:50%;object-fit:cover">`
      : '👥';
 
-   return `
-     <div class="community-card">
-
-       <div
-         class="community-card-image"
-         style="
-           width:58px;
-           height:58px;
-           border-radius:50%;
-           overflow:hidden;
-           display:flex;
-           align-items:center;
-           justify-content:center;
-           margin-bottom:10px;
-           background:var(--panel2);
-         ">
-         ${image}
-       </div>
-
-       <h3>${esc(c.name||'Comunidade')}</h3>
-
-       <p>${esc(c.description||'')}</p>
-
-       <span class="badge">
-         ${(c.memberUids||c.members||[]).length} membros
-       </span>
-
-       ${
-         member
-         ? `<button
-              class="btn btn-small"
-              onclick="openCommunity('${c.id}')">
-              Abrir
-            </button>`
-         : `<button
-              class="btn btn-small"
-              onclick="requestCommunityJoin('${c.id}')">
-              Solicitar entrada
-            </button>`
-       }
-
-     </div>
-   `;
+   return `<div class="community-card">
+     <div style="width:58px;height:58px;border-radius:50%;overflow:hidden;
+                 display:flex;align-items:center;justify-content:center;
+                 margin-bottom:10px;background:var(--panel2);">${image}</div>
+     <h3>${esc(c.name||'Comunidade')}</h3>
+     <p>${esc(c.description||'')}</p>
+     <span class="badge">${(c.memberUids||c.members||[]).length} membros</span>
+     <button class="btn btn-small"
+       onclick="${member?`openCommunity('${c.id}')`:`requestCommunityJoin('${c.id}')`}">
+       ${member?'Abrir':'Solicitar entrada'}
+     </button>
+   </div>`;
  };
 
  let html='';
 
- if(memberCommunities.length){
-   html+=`
-     <div style="width:100%;margin-bottom:14px;">
-       <h2 class="card-title" style="margin-bottom:12px;">
-         Minhas comunidades
-       </h2>
-       <div class="communities-grid">
-         ${memberCommunities.map(renderCommunity).join('')}
-       </div>
-     </div>
-   `;
+ if(mine.length){
+   html+=`<div style="width:100%;margin-bottom:18px;">
+     <h2 class="card-title">Minhas comunidades</h2>
+     <div class="communities-grid">${mine.map(render).join('')}</div>
+   </div>`;
  }
 
- if(suggestedCommunities.length){
-   html+=`
-     <div style="width:100%;margin-top:12px;">
-       <h2 class="card-title" style="margin-bottom:12px;">
-         Comunidades sugeridas para você
-       </h2>
-
-       <p style="color:#6B7A99;margin-bottom:14px;">
-         Sugestões baseadas nos interesses selecionados no seu perfil.
-       </p>
-
-       <div class="communities-grid">
-         ${suggestedCommunities.map(renderCommunity).join('')}
-       </div>
-     </div>
-   `;
- }
-
- if(!html){
-   html=`
-     <p style="color:#6B7A99;">
-       Nenhuma comunidade compatível com seus interesses foi encontrada.
+ if(suggestions.length){
+   html+=`<div style="width:100%;margin-top:10px;">
+     <h2 class="card-title">Comunidades sugeridas para você</h2>
+     <p style="color:#6B7A99;margin-bottom:14px;">
+       Sugestões baseadas nos interesses selecionados no seu perfil.
      </p>
-   `;
+     <div class="communities-grid">${suggestions.map(render).join('')}</div>
+   </div>`;
  }
 
- list.innerHTML=html;
+ list.innerHTML=html||`<p style="color:#6B7A99;">
+   Nenhuma comunidade compatível com seus interesses foi encontrada.
+ </p>`;
 }
 
 window.loadCommunities=loadCommunities;
-window.showCreateCommunity=()=>{$('createCommunityBox')?.classList.toggle('hidden')};
-window.addCommunity=async function(){if(!user())return;const name=$('communityName')?.value.trim(),description=$('communityDescription')?.value.trim();if(!name)return alert('Informe o nome.');try{await addDoc(collection(db,'communities'),{name,description,createdByUid:user().uid,createdBy:publicName(profileCache),memberUids:[user().uid],members:[user().email],communityAdminUids:[user().uid],communityAdmins:[user().email],pendingMemberUids:[],pendingMembers:[],createdAt:serverTimestamp()});$('communityName').value='';$('communityDescription').value='';$('createCommunityBox')?.classList.add('hidden');await loadCommunities();await loadCommunitiesBar()}catch(e){alert('Erro ao criar comunidade: '+e.message)}};
+function getCommunityCategoryOptions(){
+ const inputs=[...document.querySelectorAll('#page-profile .interest-option input')];
+ return inputs.map(i=>({value:i.value,label:i.parentElement?.textContent?.trim()||i.value}));
+}
+function populateCommunityCategorySelects(){
+ const options=getCommunityCategoryOptions();
+ ['communityCategories','editCommunityCategories'].forEach(id=>{
+   const s=$(id); if(!s)return;
+   const selected=[...s.selectedOptions].map(o=>o.value);
+   s.innerHTML=options.map(o=>`<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('');
+   [...s.options].forEach(o=>o.selected=selected.includes(o.value));
+ });
+}
+
+window.showCreateCommunity=()=>{
+ populateCommunityCategorySelects();
+ $('createCommunityBox')?.classList.toggle('hidden');
+};
+
+window.addCommunity=async function(){
+ if(!user())return;
+
+ const name=$('communityName')?.value.trim();
+ const description=$('communityDescription')?.value.trim()||'';
+ const categories=[...($('communityCategories')?.selectedOptions||[])].map(o=>o.value);
+
+ if(!name)return alert('Informe o nome.');
+ if(!categories.length)return alert('Escolha pelo menos uma categoria.');
+
+ try{
+  await addDoc(collection(db,'communities'),{
+   name,description,
+   categories,interests:categories,
+   createdByUid:user().uid,
+   createdBy:publicName(profileCache),
+   memberUids:[user().uid],
+   members:[user().email],
+   communityAdminUids:[user().uid],
+   communityAdmins:[user().email],
+   pendingMemberUids:[],
+   pendingMembers:[],
+   createdAt:serverTimestamp()
+  });
+
+  $('communityName').value='';
+  $('communityDescription').value='';
+  [...($('communityCategories')?.options||[])].forEach(o=>o.selected=false);
+  $('createCommunityBox')?.classList.add('hidden');
+
+  await loadCommunities();
+  await loadCommunitiesBar();
+
+ }catch(e){
+  alert('Erro ao criar comunidade: '+e.message);
+ }
+};
 
 window.openCommunity=async function(id){
  const snap=await getDoc(doc(db,'communities',id));
@@ -3804,6 +3780,15 @@ window.openCommunity=async function(id){
  if($('editCommunityDescription'))
    $('editCommunityDescription').value=c.description||'';
 
+ populateCommunityCategorySelects();
+
+ if($('editCommunityCategories')){
+   const cats=Array.isArray(c.categories)?c.categories:
+     Array.isArray(c.interests)?c.interests:(c.category?[c.category]:[]);
+   [...$('editCommunityCategories').options]
+     .forEach(o=>o.selected=cats.includes(o.value));
+ }
+
  if($('editCommunityImage'))
    $('editCommunityImage').value='';
 
@@ -3837,13 +3822,18 @@ window.saveCommunitySettings=async function(){
   if(!(await communityIsAdmin(id,c)))throw new Error('Você não tem permissão para editar esta comunidade.');
   const name=$('editCommunityName')?.value.trim();
   const description=$('editCommunityDescription')?.value.trim()||'';
+  const categories=[...($('editCommunityCategories')?.selectedOptions||[])].map(o=>o.value);
   if(!name)throw new Error('Informe o nome da comunidade.');
+  if(!categories.length)throw new Error('Escolha pelo menos uma categoria.');
   let imageURL=c.imageURL||'';
   const file=$('editCommunityImage')?.files?.[0];
   if(file){
     imageURL=await uploadImageToCloudinary(file,'O upload da imagem da comunidade');
   }
-  await withTimeout(updateDoc(refCommunity,{name,description,imageURL,updatedAt:serverTimestamp(),updatedByUid:u.uid}),15000,'O salvamento da comunidade no Firestore');
+  await withTimeout(updateDoc(refCommunity,{
+    name,description,categories,interests:categories,imageURL,
+    updatedAt:serverTimestamp(),updatedByUid:u.uid
+  }),15000,'O salvamento da comunidade no Firestore');
   $('communityAreaTitle').textContent=name;
   $('communityAreaDescription').textContent=description;
   await loadCommunities();
@@ -4257,7 +4247,7 @@ function bindHomeAddButtons(){
  });
 }
 
-onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
+onAuthStateChanged(auth,async u=>{currentUser=u;const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);populateCommunityCategorySelects();authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
