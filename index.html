@@ -3091,63 +3091,12 @@ function publicName(p,u=user()){return p?.name||u?.displayName||u?.email?.split(
 function initials(n){return publicName({name:n}).split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'👤'}
 function showError(id,msg){const e=$(id);if(e){e.textContent=msg;e.classList.remove('hidden')}}
 function hideError(id){$(id)?.classList.add('hidden')}
-function setPage(page,button){
-
-  /*
-   * A comunidade é uma subvisão da aba Comunidades.
-   * Ao sair da aba, ela deve ser desmontada visualmente.
-   */
-  const communityArea=$('communityArea');
-  const communitiesList=$('communitiesList');
-  const createCommunityBox=$('createCommunityBox');
-  const communityToolsPanel=$('communityToolsPanel');
-
-  if(page!=='communities'){
-
-    communityArea?.classList.add('hidden');
-    communitiesList?.classList.remove('hidden');
-    createCommunityBox?.classList.add('hidden');
-    communityToolsPanel?.classList.add('hidden');
-
-    currentCommunityId=null;
-    currentCommunityIsAdmin=false;
-  }
-
-  document.querySelectorAll('.page').forEach(p=>{
-    const on=p.id==='page-'+page;
-    p.classList.toggle('hidden',!on);
-    p.style.display=on?'':'none';
-  });
-
-  document.querySelectorAll('.nav-item')
-    .forEach(b=>b.classList.remove('active'));
-
-  if(button)button.classList.add('active');
-
-  const bar=$('communitiesBar');
-
-  if(bar)
-    bar.style.display=page==='home'?'':'none';
-}
+function setPage(page,button){document.querySelectorAll('.page').forEach(p=>{const on=p.id==='page-'+page;p.classList.toggle('hidden',!on);p.style.display=on?'':'none'});document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));if(button)button.classList.add('active');const bar=$('communitiesBar');if(bar)bar.style.display=page==='home'?'':'none';}
 
 window.openPage=async function(page,button){
  if(!user())return;
  if(page==='admin'&&!isAdmin){alert('Acesso restrito ao administrador.');return}
  setPage(page,button);
-
- if(page==='communities'){
-   /*
-    * Ao entrar novamente na aba Comunidades, sempre começamos
-    * pela lista de comunidades. A página de uma comunidade só
-    * aparece depois que o usuário escolhe uma.
-    */
-   $('communityArea')?.classList.add('hidden');
-   $('communityToolsPanel')?.classList.add('hidden');
-   $('communitiesList')?.classList.remove('hidden');
-   $('createCommunityBox')?.classList.add('hidden');
-   currentCommunityId=null;
-   currentCommunityIsAdmin=false;
- }
  try{
   if(page==='home')await loadHome();
   else if(page==='communities')await loadCommunities();
@@ -3533,8 +3482,262 @@ async function loadHome(){for(const type of Object.keys(contentTypes)){const hos
 window.loadHome=loadHome;
 
 async function communityIsAdmin(id,data=null){if(isAdmin)return true;const u=user();if(!u)return false;data=data||((await getDoc(doc(db,'communities',id))).data()||{});return data.createdByUid===u.uid||(data.memberUids||[]).includes(u.uid)&&(data.communityAdminUids||[]).includes(u.uid)}
-async function loadCommunitiesBar(){const list=$('homeCommunitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const u=user();const arr=snap.docs.map(x=>({id:x.id,...x.data()})).filter(c=>!u||c.public!==false||[...(c.memberUids||[])].includes(u.uid));list.innerHTML=arr.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Nenhuma comunidade.</div>'}
-async function loadCommunities(){await loadCommunitiesBar();const list=$('communitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const arr=snap.docs.map(x=>({id:x.id,...x.data()}));list.innerHTML=arr.map(c=>`<div class="community-card"><h3>${esc(c.name)}</h3><p>${esc(c.description||'')}</p><span class="badge">${(c.memberUids||c.members||[]).length} membros</span><button class="btn btn-small" onclick="openCommunity('${c.id}')">Abrir</button></div>`).join('')||'<p>Nenhuma comunidade.</p>';}
+async function getCurrentUserInterests(){
+
+ const u=user();
+ if(!u)return [];
+
+ try{
+   const p=await getProfile(u.uid);
+   return Array.isArray(p?.interests)?p.interests:[];
+ }catch(e){
+   console.warn('Não foi possível carregar interesses do usuário:',e);
+   return [];
+ }
+}
+
+/*
+ * HOME:
+ * O carrossel superior mostra SOMENTE comunidades das quais
+ * o usuário participa.
+ */
+async function loadCommunitiesBar(){
+
+ const list=$('homeCommunitiesList');
+ if(!list)return;
+
+ const u=user();
+
+ if(!u){
+   list.innerHTML='';
+   return;
+ }
+
+ const snap=await getDocs(
+   collection(db,'communities')
+ );
+
+ const arr=snap.docs
+   .map(x=>({id:x.id,...x.data()}))
+   .filter(c=>
+      (c.memberUids||[]).includes(u.uid) ||
+      (c.members||[]).includes(u.email)
+   );
+
+ list.innerHTML=arr.map(c=>`
+   <button
+      class="community-circle"
+      onclick="openCommunity('${c.id}')">
+
+      <div class="community-circle-image">
+        ${
+          c.imageURL
+          ? `<img
+               src="${esc(c.imageURL)}"
+               alt="${esc(c.name||'Comunidade')}"
+               style="
+                 width:100%;
+                 height:100%;
+                 border-radius:50%;
+                 object-fit:cover;
+               ">`
+          : '👥'
+        }
+      </div>
+
+      <span class="community-circle-name">
+        ${esc(c.name||'Comunidade')}
+      </span>
+
+   </button>
+ `).join('') ||
+ '<div class="community-empty">Você ainda não participa de nenhuma comunidade.</div>';
+}
+
+/*
+ * ABA COMUNIDADES:
+ * 1. comunidades das quais o usuário já participa;
+ * 2. sugestões compatíveis com os interesses gerais escolhidos
+ *    no perfil.
+ *
+ * Comunidades fora dos interesses do usuário não entram nas sugestões.
+ */
+async function loadCommunities(){
+
+ const list=$('communitiesList');
+ if(!list)return;
+
+ const u=user();
+
+ if(!u){
+   list.innerHTML='<p>Nenhuma comunidade.</p>';
+   return;
+ }
+
+ const snap=await getDocs(
+   collection(db,'communities')
+ );
+
+ const all=snap.docs.map(x=>({
+   id:x.id,
+   ...x.data()
+ }));
+
+ const interests=await getCurrentUserInterests();
+
+ const normalize=s=>
+   String(s||'')
+     .trim()
+     .toLocaleLowerCase()
+     .normalize('NFD')
+     .replace(/[\u0300-\u036f]/g,'');
+
+ const interestSet=new Set(
+   interests.map(normalize)
+ );
+
+ const memberCommunities=all.filter(c=>
+   (c.memberUids||[]).includes(u.uid) ||
+   (c.members||[]).includes(u.email)
+ );
+
+ const suggestedCommunities=all.filter(c=>{
+
+   const member=
+     (c.memberUids||[]).includes(u.uid) ||
+     (c.members||[]).includes(u.email);
+
+   if(member)return false;
+
+   /*
+    * Suportamos os nomes mais comuns que já podem existir
+    * nos documentos das comunidades.
+    */
+   const categories=
+     Array.isArray(c.categories)
+       ? c.categories
+       : Array.isArray(c.interests)
+         ? c.interests
+         : Array.isArray(c.category)
+           ? c.category
+           : c.category
+             ? [c.category]
+             : [];
+
+   if(!categories.length)return false;
+
+   return categories.some(category=>
+     interestSet.has(normalize(category))
+   );
+ });
+
+ const renderCommunity=c=>{
+
+   const member=
+     (c.memberUids||[]).includes(u.uid) ||
+     (c.members||[]).includes(u.email);
+
+   const image=c.imageURL
+     ? `<img
+          src="${esc(c.imageURL)}"
+          alt="${esc(c.name||'Comunidade')}"
+          style="
+            width:100%;
+            height:100%;
+            border-radius:50%;
+            object-fit:cover;
+          ">`
+     : '👥';
+
+   return `
+     <div class="community-card">
+
+       <div
+         class="community-card-image"
+         style="
+           width:58px;
+           height:58px;
+           border-radius:50%;
+           overflow:hidden;
+           display:flex;
+           align-items:center;
+           justify-content:center;
+           margin-bottom:10px;
+           background:var(--panel2);
+         ">
+         ${image}
+       </div>
+
+       <h3>${esc(c.name||'Comunidade')}</h3>
+
+       <p>${esc(c.description||'')}</p>
+
+       <span class="badge">
+         ${(c.memberUids||c.members||[]).length} membros
+       </span>
+
+       ${
+         member
+         ? `<button
+              class="btn btn-small"
+              onclick="openCommunity('${c.id}')">
+              Abrir
+            </button>`
+         : `<button
+              class="btn btn-small"
+              onclick="requestCommunityJoin('${c.id}')">
+              Solicitar entrada
+            </button>`
+       }
+
+     </div>
+   `;
+ };
+
+ let html='';
+
+ if(memberCommunities.length){
+   html+=`
+     <div style="width:100%;margin-bottom:14px;">
+       <h2 class="card-title" style="margin-bottom:12px;">
+         Minhas comunidades
+       </h2>
+       <div class="communities-grid">
+         ${memberCommunities.map(renderCommunity).join('')}
+       </div>
+     </div>
+   `;
+ }
+
+ if(suggestedCommunities.length){
+   html+=`
+     <div style="width:100%;margin-top:12px;">
+       <h2 class="card-title" style="margin-bottom:12px;">
+         Comunidades sugeridas para você
+       </h2>
+
+       <p style="color:#6B7A99;margin-bottom:14px;">
+         Sugestões baseadas nos interesses selecionados no seu perfil.
+       </p>
+
+       <div class="communities-grid">
+         ${suggestedCommunities.map(renderCommunity).join('')}
+       </div>
+     </div>
+   `;
+ }
+
+ if(!html){
+   html=`
+     <p style="color:#6B7A99;">
+       Nenhuma comunidade compatível com seus interesses foi encontrada.
+     </p>
+   `;
+ }
+
+ list.innerHTML=html;
+}
+
 window.loadCommunities=loadCommunities;
 window.showCreateCommunity=()=>{$('createCommunityBox')?.classList.toggle('hidden')};
 window.addCommunity=async function(){if(!user())return;const name=$('communityName')?.value.trim(),description=$('communityDescription')?.value.trim();if(!name)return alert('Informe o nome.');try{await addDoc(collection(db,'communities'),{name,description,createdByUid:user().uid,createdBy:publicName(profileCache),memberUids:[user().uid],members:[user().email],communityAdminUids:[user().uid],communityAdmins:[user().email],pendingMemberUids:[],pendingMembers:[],createdAt:serverTimestamp()});$('communityName').value='';$('communityDescription').value='';$('createCommunityBox')?.classList.add('hidden');await loadCommunities();await loadCommunitiesBar()}catch(e){alert('Erro ao criar comunidade: '+e.message)}};
@@ -3682,14 +3885,7 @@ window.deleteCurrentCommunity=async function(){
    alert('Comunidade deletada com sucesso.');
  }catch(e){console.error(e);alert('Erro ao deletar comunidade: '+e.message)}
 };
-window.backToCommunities=async()=>{
- currentCommunityId=null;
- currentCommunityIsAdmin=false;
- $('communityArea')?.classList.add('hidden');
- $('communityToolsPanel')?.classList.add('hidden');
- $('communitiesList')?.classList.remove('hidden');
- await loadCommunities();
-};
+window.backToCommunities=async()=>{currentCommunityId=null;$('communityArea')?.classList.add('hidden');$('communitiesList')?.classList.remove('hidden');await loadCommunities()};
 async function loadCommunityMessages(id){const box=$('communityMessages');if(!box)return;const snap=await getDocs(collection(db,'communities',id,'messages'));const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';box.scrollTop=box.scrollHeight}
 window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){const u=user(),text=$('messageInput')?.value.trim();if(!u||!currentCommunityId||!text)return;await addDoc(collection(db,'communities',currentCommunityId,'messages'),{text,authorUid:u.uid,authorName:publicName(profileCache),createdAt:serverTimestamp()});$('messageInput').value='';await loadCommunityMessages(currentCommunityId)};
 /*
