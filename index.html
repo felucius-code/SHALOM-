@@ -2351,14 +2351,19 @@ select option {
     </p>
 
 
-    <!-- CRIAÇÃO DE COMUNIDADE — DISPONÍVEL A TODOS OS USUÁRIOS -->
-    <div id="communityCreateButton" class="card" style="margin-bottom:16px;">
+    <!-- SOMENTE ADMINISTRADOR GERAL -->
+
+    <div id="adminCommunityButton"
+         class="hidden card">
+
         <button
             class="btn"
-            type="button"
             onclick="showCreateCommunity()">
-            ＋ Criar comunidade
+
+            ＋ Adicionar comunidade
+
         </button>
+
     </div>
 
 
@@ -2395,71 +2400,11 @@ select option {
                 id="communityDescription"
                 placeholder="Descrição da comunidade">
             </textarea>
-        <div class="form-group" style="margin-top:14px;">
-            <label for="communityImage">Imagem da comunidade</label>
-            <input
-                id="communityImage"
-                type="file"
-                accept="image/*">
-            <small style="display:block;color:#6B7A99;margin-top:5px;">
-                Escolha uma imagem para representar a comunidade no carrossel.
-            </small>
-        </div>
-
-
 
         </div>
 
 
-        
-        <div class="form-group" style="margin-top:14px;">
-            <label for="communityCategory">Categoria da comunidade</label>
-            <select id="communityCategory"
-                    onchange="toggleCustomCommunityCategory()">
-                <option value="">Selecione uma categoria</option>
-                <option value="Hebraico">Hebraico</option>
-                <option value="Torah">Torah</option>
-                <option value="Tanakh">Tanakh</option>
-                <option value="Tanya">Tanya</option>
-                <option value="Talmud">Talmud</option>
-                <option value="Aramaico">Aramaico</option>
-                <option value="Targum">Targum</option>
-                <option value="Zohar">Zohar</option>
-                <option value="Midrash">Midrash</option>
-                <option value="Grego">Grego</option>
-                <option value="Septuaginta">Septuaginta</option>
-                <option value="Bíblia">Bíblia</option>
-                <option value="História">História</option>
-                <option value="Arqueologia">Arqueologia</option>
-                <option value="Ciência">Ciência</option>
-                <option value="Espaço">Espaço</option>
-                <option value="Cultura">Cultura</option>
-                <option value="Literatura">Literatura</option>
-                <option value="Cinema">Cinema</option>
-                <option value="Filosofia">Filosofia</option>
-                <option value="Música">Música</option>
-                <option value="Arte">Arte</option>
-                <option value="Astronomia">Astronomia</option>
-                <option value="Geografia">Geografia</option>
-                <option value="Tecnologia">Tecnologia</option>
-                <option value="__custom__">＋ Outra categoria</option>
-            </select>
-        </div>
-
-        <div id="customCommunityCategoryBox"
-             class="form-group hidden"
-             style="margin-top:10px;">
-            <label for="communityCustomCategory">Categoria personalizada</label>
-            <input id="communityCustomCategory"
-                   type="text"
-                   maxlength="80"
-                   placeholder="Digite a categoria">
-            <small style="display:block;color:#6B7A99;margin-top:5px;">
-                Use uma categoria personalizada somente se o tema não estiver na lista.
-            </small>
-        </div>
-
-<button
+        <button
             class="btn"
             onclick="addCommunity()">
 
@@ -2559,34 +2504,6 @@ select option {
 
             </div>
 
-        </div>
-
-        <!-- ENTRADA NA COMUNIDADE — USUÁRIO NÃO MEMBRO -->
-        <div
-            id="communityJoinArea"
-            class="card hidden"
-            style="
-                margin-bottom:16px;
-                display:flex;
-                align-items:center;
-                justify-content:space-between;
-                gap:12px;
-                flex-wrap:wrap;
-            ">
-            <div>
-                <strong>Esta comunidade é compatível com seus interesses.</strong>
-                <div style="color:#6B7A99;margin-top:4px;">
-                    Solicite sua entrada para participar do bate-papo.
-                </div>
-            </div>
-
-            <button
-                id="communityJoinBtn"
-                class="btn"
-                type="button"
-                onclick="requestJoin(currentCommunityId)">
-                Solicitar entrada
-            </button>
         </div>
 
         <!-- CONFIGURAÇÕES — ADMINISTRADOR -->
@@ -3174,12 +3091,63 @@ function publicName(p,u=user()){return p?.name||u?.displayName||u?.email?.split(
 function initials(n){return publicName({name:n}).split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'👤'}
 function showError(id,msg){const e=$(id);if(e){e.textContent=msg;e.classList.remove('hidden')}}
 function hideError(id){$(id)?.classList.add('hidden')}
-function setPage(page,button){document.querySelectorAll('.page').forEach(p=>{const on=p.id==='page-'+page;p.classList.toggle('hidden',!on);p.style.display=on?'':'none'});document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));if(button)button.classList.add('active');const bar=$('communitiesBar');if(bar)bar.style.display=page==='home'?'':'none';}
+function setPage(page,button){
+
+  /*
+   * A comunidade é uma subvisão da aba Comunidades.
+   * Ao sair da aba, ela deve ser desmontada visualmente.
+   */
+  const communityArea=$('communityArea');
+  const communitiesList=$('communitiesList');
+  const createCommunityBox=$('createCommunityBox');
+  const communityToolsPanel=$('communityToolsPanel');
+
+  if(page!=='communities'){
+
+    communityArea?.classList.add('hidden');
+    communitiesList?.classList.remove('hidden');
+    createCommunityBox?.classList.add('hidden');
+    communityToolsPanel?.classList.add('hidden');
+
+    currentCommunityId=null;
+    currentCommunityIsAdmin=false;
+  }
+
+  document.querySelectorAll('.page').forEach(p=>{
+    const on=p.id==='page-'+page;
+    p.classList.toggle('hidden',!on);
+    p.style.display=on?'':'none';
+  });
+
+  document.querySelectorAll('.nav-item')
+    .forEach(b=>b.classList.remove('active'));
+
+  if(button)button.classList.add('active');
+
+  const bar=$('communitiesBar');
+
+  if(bar)
+    bar.style.display=page==='home'?'':'none';
+}
 
 window.openPage=async function(page,button){
  if(!user())return;
  if(page==='admin'&&!isAdmin){alert('Acesso restrito ao administrador.');return}
  setPage(page,button);
+
+ if(page==='communities'){
+   /*
+    * Ao entrar novamente na aba Comunidades, sempre começamos
+    * pela lista de comunidades. A página de uma comunidade só
+    * aparece depois que o usuário escolhe uma.
+    */
+   $('communityArea')?.classList.add('hidden');
+   $('communityToolsPanel')?.classList.add('hidden');
+   $('communitiesList')?.classList.remove('hidden');
+   $('createCommunityBox')?.classList.add('hidden');
+   currentCommunityId=null;
+   currentCommunityIsAdmin=false;
+ }
  try{
   if(page==='home')await loadHome();
   else if(page==='communities')await loadCommunities();
@@ -3565,331 +3533,34 @@ async function loadHome(){for(const type of Object.keys(contentTypes)){const hos
 window.loadHome=loadHome;
 
 async function communityIsAdmin(id,data=null){if(isAdmin)return true;const u=user();if(!u)return false;data=data||((await getDoc(doc(db,'communities',id))).data()||{});return data.createdByUid===u.uid||(data.memberUids||[]).includes(u.uid)&&(data.communityAdminUids||[]).includes(u.uid)}
-async function loadCommunitiesBar(){
- const list=$('homeCommunitiesList');
- if(!list)return;
-
- const u=user();
-
- try{
-   const snap=await getDocs(collection(db,'communities'));
-   const all=snap.docs.map(x=>({id:x.id,...x.data()}));
-
-   /*
-    * HOME: somente comunidades das quais o usuário participa.
-    * Sugestões ficam na aba Comunidades.
-    */
-   const arr=u
-     ? all.filter(c=>
-         c.createdByUid===u.uid ||
-         (c.memberUids||[]).includes(u.uid) ||
-         (c.members||[]).includes(u.email)
-       )
-     : [];
-
-   list.innerHTML=arr.map(c=>{
-     const imageHtml=c.imageURL
-       ? '<img src="'+esc(c.imageURL)+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">'
-       : '👥';
-
-     return '<button class="community-circle" onclick="openCommunity(\''+
-       esc(c.id)+
-       '\')">'+
-       '<div class="community-circle-image">'+imageHtml+'</div>'+
-       '<span class="community-circle-name">'+esc(c.name)+'</span>'+
-       '</button>';
-   }).join('') ||
-   '<div class="community-empty">Nenhuma comunidade.</div>';
-
- }catch(e){
-   console.error('loadCommunitiesBar:',e);
- }
-}
-async function loadCommunities(){
-
- const host=$('communitiesList');
- const u=user();
-
- if(!host)return;
-
- try{
-
-   const snap=await getDocs(collection(db,'communities'));
-
-   let items=snap.docs.map(d=>({id:d.id,...d.data()}));
-
-   if(u && !isAdmin){
-
-     let profile=profileCache;
-
-     if(!profile || !Array.isArray(profile.interests)){
-       profile=await getProfile(u.uid);
-       if(profile)profileCache=profile;
-     }
-
-     const interests=[
-       ...(Array.isArray(profile?.interests)?profile.interests:[]),
-       ...(Array.isArray(profile?.customInterests)?profile.customInterests:[])
-     ]
-     .map(normalizeCommunityCategory)
-     .filter(Boolean);
-
-     items=items.filter(c=>{
-
-       const member=
-         c.createdByUid===u.uid ||
-         (c.memberUids||[]).includes(u.uid) ||
-         (c.members||[]).includes(u.email);
-
-       if(member)return true;
-
-       const category=
-         c.categoryNormalized ||
-         normalizeCommunityCategory(c.category);
-
-       return !!category && interests.includes(category);
-     });
-   }
-
-   host.innerHTML=items.map(c=>{
-
-     const member=
-       isAdmin ||
-       c.createdByUid===u?.uid ||
-       (c.memberUids||[]).includes(u?.uid) ||
-       (c.members||[]).includes(u?.email);
-
-     const pending=
-       !member &&
-       (
-         (c.pendingMemberUids||[]).includes(u?.uid) ||
-         (c.pendingMembers||[]).includes(u?.email)
-       );
-
-     const count=
-       (c.memberUids||c.members||[]).length;
-
-     const image=c.imageURL
-       ? '<img src="'+esc(c.imageURL)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;flex:0 0 58px;">'
-       : '<div style="width:58px;height:58px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:23px;flex:0 0 58px;">👥</div>';
-
-     let action='';
-
-     if(member){
-
-       action=
-         '<button class="btn btn-small" type="button" '+
-         'onclick="openCommunity(\''+esc(c.id)+'\')">'+
-         'Abrir'+
-         '</button>';
-
-     }else if(pending){
-
-       action=
-         '<button class="btn btn-small" type="button" disabled>'+
-         'Solicitação enviada'+
-         '</button>';
-
-     }else{
-
-       action=
-         '<button class="btn btn-small" type="button" '+
-         'onclick="requestJoin(\''+esc(c.id)+'\')">'+
-         'Solicitar entrada'+
-         '</button>';
-     }
-
-     return `
-       <article class="card community-card">
-
-         <div style="display:flex;align-items:center;gap:12px;">
-
-           ${image}
-
-           <div style="min-width:0;flex:1;">
-
-             <h3 class="card-title" style="margin:0 0 4px;">
-               ${esc(c.name||'Comunidade')}
-             </h3>
-
-             <div style="font-size:.82rem;color:#6B7A99;">
-               ${esc(c.category||'')} · ${count} membros
-             </div>
-
-           </div>
-
-           ${action}
-
-         </div>
-
-       </article>
-     `;
-
-   }).join('') ||
-   '<p>Nenhuma comunidade encontrada para seus interesses.</p>';
-
- }catch(e){
-
-   console.error('loadCommunities:',e);
-
-   host.innerHTML=
-     '<p>Não foi possível carregar as comunidades.</p>';
- }
-}
-
-window.loadCommunities=loadCommunities;
-
-window.loadCommunities=loadCommunities;
-
-window.loadCommunities=loadCommunities;
+async function loadCommunitiesBar(){const list=$('homeCommunitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const u=user();const arr=snap.docs.map(x=>({id:x.id,...x.data()})).filter(c=>!u||c.public!==false||[...(c.memberUids||[])].includes(u.uid));list.innerHTML=arr.map(c=>`<button class="community-circle" onclick="openCommunity('${c.id}')"><div class="community-circle-image">${c.imageURL?`<img src="${esc(c.imageURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:'👥'}</div><span class="community-circle-name">${esc(c.name)}</span></button>`).join('')||'<div class="community-empty">Nenhuma comunidade.</div>'}
+async function loadCommunities(){await loadCommunitiesBar();const list=$('communitiesList');if(!list)return;const snap=await getDocs(collection(db,'communities'));const arr=snap.docs.map(x=>({id:x.id,...x.data()}));list.innerHTML=arr.map(c=>`<div class="community-card"><h3>${esc(c.name)}</h3><p>${esc(c.description||'')}</p><span class="badge">${(c.memberUids||c.members||[]).length} membros</span><button class="btn btn-small" onclick="openCommunity('${c.id}')">Abrir</button></div>`).join('')||'<p>Nenhuma comunidade.</p>';}
 window.loadCommunities=loadCommunities;
 window.showCreateCommunity=()=>{$('createCommunityBox')?.classList.toggle('hidden')};
-window.toggleCustomCommunityCategory=function(){
- const select=document.getElementById('communityCategory');
- const box=document.getElementById('customCommunityCategoryBox');
- const input=document.getElementById('communityCustomCategory');
- const custom=select?.value==='__custom__';
- box?.classList.toggle('hidden',!custom);
- if(input && !custom) input.value='';
-};
-
-function normalizeCommunityCategory(value){
- return String(value||'')
-   .trim()
-   .normalize('NFD')
-   .replace(/[\u0300-\u036f]/g,'')
-   .toLowerCase();
-}
-
-window.addCommunity=async function(){
- const u=user();
- if(!u)return;
-
- const name=$('communityName')?.value.trim();
- const description=$('communityDescription')?.value.trim();
- const select=$('communityCategory');
- const custom=$('communityCustomCategory');
- const imageFile=$('communityImage')?.files?.[0];
-
- let category=select?.value||'';
- if(category==='__custom__') category=custom?.value.trim()||'';
-
- if(!name)return alert('Informe o nome.');
- if(!category)return alert('Selecione uma categoria para a comunidade.');
-
- try{
-
-   let imageURL='';
-
-   if(imageFile){
-     imageURL=await uploadImageToCloudinary(
-       imageFile,
-       'O upload da imagem da comunidade'
-     );
-   }
-
-   await addDoc(
-     collection(db,'communities'),
-     {
-       name,
-       description,
-       category,
-       categoryNormalized:normalizeCommunityCategory(category),
-
-       imageURL,
-
-       createdByUid:u.uid,
-       createdBy:publicName(profileCache),
-
-       memberUids:[u.uid],
-       members:[u.email],
-
-       communityAdminUids:[u.uid],
-       communityAdmins:[u.email],
-
-       pendingMemberUids:[],
-       pendingMembers:[],
-
-       createdAt:serverTimestamp()
-     }
-   );
-
-   $('communityName').value='';
-   $('communityDescription').value='';
-
-   const imageInput=$('communityImage');
-   if(imageInput)imageInput.value='';
-
-   if(select)select.value='';
-   if(custom)custom.value='';
-
-   $('customCommunityCategoryBox')?.classList.add('hidden');
-   $('createCommunityBox')?.classList.add('hidden');
-
-   await loadCommunities();
-   await loadCommunitiesBar();
-
-   alert('Comunidade criada com sucesso.');
-
- }catch(e){
-
-   console.error('addCommunity:',e);
-
-   alert('Erro ao criar comunidade: '+e.message);
- }
-};;;
+window.addCommunity=async function(){if(!user())return;const name=$('communityName')?.value.trim(),description=$('communityDescription')?.value.trim();if(!name)return alert('Informe o nome.');try{await addDoc(collection(db,'communities'),{name,description,createdByUid:user().uid,createdBy:publicName(profileCache),memberUids:[user().uid],members:[user().email],communityAdminUids:[user().uid],communityAdmins:[user().email],pendingMemberUids:[],pendingMembers:[],createdAt:serverTimestamp()});$('communityName').value='';$('communityDescription').value='';$('createCommunityBox')?.classList.add('hidden');await loadCommunities();await loadCommunitiesBar()}catch(e){alert('Erro ao criar comunidade: '+e.message)}};
 
 window.openCommunity=async function(id){
-
  const snap=await getDoc(doc(db,'communities',id));
+ if(!snap.exists())return alert('Comunidade não encontrada.');
 
- if(!snap.exists())
-   return alert('Comunidade não encontrada.');
-
- const c={id,...snap.data()};
- const u=user();
-
- if(!u)
-   return alert('Você precisa estar conectado.');
+ const c={id,...snap.data()},u=user();
 
  const member=
    isAdmin ||
-   c.createdByUid===u.uid ||
-   (c.memberUids||[]).includes(u.uid) ||
-   (c.members||[]).includes(u.email);
+   c.createdByUid===u?.uid ||
+   (c.memberUids||[]).includes(u?.uid) ||
+   (c.members||[]).includes(u?.email);
 
- /*
-  * Um não-membro só pode abrir uma comunidade se a categoria
-  * corresponder a um interesse do seu perfil.
-  */
- if(!member && !isAdmin){
-
-   let profile=profileCache;
-
-   if(!profile || !Array.isArray(profile.interests)){
-     profile=await getProfile(u.uid);
-     if(profile)profileCache=profile;
-   }
-
-   const interests=[
-     ...(Array.isArray(profile?.interests)?profile.interests:[]),
-     ...(Array.isArray(profile?.customInterests)?profile.customInterests:[])
-   ]
-   .map(normalizeCommunityCategory)
-   .filter(Boolean);
-
-   const category=
-     c.categoryNormalized ||
-     normalizeCommunityCategory(c.category);
-
-   if(!category || !interests.includes(category)){
-     return alert('Esta comunidade não está disponível para os interesses do seu perfil.');
-   }
- }
+ if(!member)return alert('Você não é membro desta comunidade.');
 
  currentCommunityId=id;
  currentCommunityIsAdmin=await communityIsAdmin(id,c);
 
+ /*
+  * IMPORTANTE:
+  * A comunidade continua sendo uma página própria.
+  * Não deve ser renderizada dentro da Home.
+  */
  setPage(
    'communities',
    document.querySelector('.nav-item[onclick*="communities"]')
@@ -3933,38 +3604,16 @@ window.openCommunity=async function(id){
  if($('editCommunityImage'))
    $('editCommunityImage').value='';
 
+ $('studyVideoTitle') && ($('studyVideoTitle').value='');
+ $('studyVideoDescription') && ($('studyVideoDescription').value='');
+ $('studyVideoUrl') && ($('studyVideoUrl').value='');
+
  /*
-  * Área de entrada:
-  * - membro/admin: oculta
-  * - não membro: mostra Solicitar entrada
+  * A página aberta mostra APENAS o chat.
+  * Vídeos exclusivos são consumidos na Home.
   */
- const joinArea=$('communityJoinArea');
- const joinBtn=$('communityJoinBtn');
-
- const pending=
-   (c.pendingMemberUids||[]).includes(u.uid) ||
-   (c.pendingMembers||[]).includes(u.email);
-
- if(joinArea){
-   joinArea.classList.toggle('hidden',member);
-
-   if(joinBtn){
-     joinBtn.disabled=pending;
-     joinBtn.textContent=
-       pending
-       ? 'Solicitação enviada'
-       : 'Solicitar entrada';
-   }
- }
-
- $('communityMessages')?.classList.toggle('hidden',!member);
- $('messageInput')?.closest('.card')?.classList.toggle('hidden',!member);
-
- if(member){
-   await loadCommunityMessages(id);
- }
-
-};;;
+ await loadCommunityMessages(id);
+};;
 
 window.toggleCommunityTools=function(force){
  const panel=$('communityToolsPanel'); if(!panel)return;
@@ -4033,7 +3682,14 @@ window.deleteCurrentCommunity=async function(){
    alert('Comunidade deletada com sucesso.');
  }catch(e){console.error(e);alert('Erro ao deletar comunidade: '+e.message)}
 };
-window.backToCommunities=async()=>{currentCommunityId=null;$('communityArea')?.classList.add('hidden');$('communitiesList')?.classList.remove('hidden');await loadCommunities()};
+window.backToCommunities=async()=>{
+ currentCommunityId=null;
+ currentCommunityIsAdmin=false;
+ $('communityArea')?.classList.add('hidden');
+ $('communityToolsPanel')?.classList.add('hidden');
+ $('communitiesList')?.classList.remove('hidden');
+ await loadCommunities();
+};
 async function loadCommunityMessages(id){const box=$('communityMessages');if(!box)return;const snap=await getDocs(collection(db,'communities',id,'messages'));const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';box.scrollTop=box.scrollHeight}
 window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){const u=user(),text=$('messageInput')?.value.trim();if(!u||!currentCommunityId||!text)return;await addDoc(collection(db,'communities',currentCommunityId,'messages'),{text,authorUid:u.uid,authorName:publicName(profileCache),createdAt:serverTimestamp()});$('messageInput').value='';await loadCommunityMessages(currentCommunityId)};
 /*
@@ -4232,146 +3888,7 @@ window.loadCommunityAdmins=async function(){const box=$('communityAdminsList');i
 window.viewRequests=async function(communityId){const cSnap=await getDoc(doc(db,'communities',communityId));if(!cSnap.exists())return;const c={id:communityId,...cSnap.data()};if(!(await communityIsAdmin(communityId,c)))return alert('Sem permissão.');const ids=c.pendingMemberUids||[],emails=c.pendingMembers||[];const requests=[];for(const uid of ids){const p=await getProfile(uid);if(p)requests.push({uid,email:p.email,name:p.name||p.email})}for(const email of emails){if(requests.some(r=>r.email===email))continue;const q=query(collection(db,'users'),where('email','==',email)),s=await getDocs(q);if(!s.empty){const p={id:s.docs[0].id,...s.docs[0].data()};requests.push({uid:p.uid||p.id,email,name:p.name||email})}else requests.push({email,name:email})}const card=$('page-notifications');setPage('notifications',document.querySelector('.nav-item[onclick*="notifications"]'));card.querySelector('.card').innerHTML=`<div style="display:flex;justify-content:space-between"><h2 class="card-title">Solicitações — ${esc(c.name)}</h2><button class="btn btn-secondary btn-small" onclick="loadNotifications()">Voltar</button></div>${requests.length?requests.map(r=>`<div class="card" style="margin-top:10px"><strong>${esc(r.name)}</strong><div style="color:#6B7A99">${esc(r.email||'')}</div><button class="btn btn-small" onclick="approveJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Aprovar</button><button class="btn btn-danger btn-small" onclick="rejectJoin('${communityId}','${esc(r.uid||'')}','${esc(r.email||'')}')">Recusar</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma solicitação.</p>'}`};
 window.approveJoin=async function(id,uid,email){const r=doc(db,'communities',id),s=await getDoc(r);if(!s.exists())return;const c=s.data(),data={memberUids:uid?arrayUnion(uid):arrayUnion(),members:email?arrayUnion(email):arrayUnion(),pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
 window.rejectJoin=async function(id,uid,email){const r=doc(db,'communities',id),data={pendingMemberUids:uid?arrayRemove(uid):arrayRemove(),pendingMembers:email?arrayRemove(email):arrayRemove()};await updateDoc(r,data);await loadNotifications()};
-window.requestJoin=async function(id){
-
- const u=user();
-
- if(!u || !id)return;
-
- const btn=$('communityJoinBtn');
-
- if(btn){
-   btn.disabled=true;
-   btn.textContent='Enviando...';
- }
-
- try{
-
-   const ref=doc(db,'communities',id);
-
-   /*
-    * Ler novamente a comunidade no momento do pedido.
-    * Isso evita usar uma cópia antiga da lista.
-    */
-   const snap=await withTimeout(
-     getDoc(ref),
-     10000,
-     'A leitura da comunidade'
-   );
-
-   if(!snap.exists())
-     throw new Error('Comunidade não encontrada.');
-
-   const c=snap.data();
-
-   const member=
-     c.createdByUid===u.uid ||
-     (c.memberUids||[]).includes(u.uid) ||
-     (c.members||[]).includes(u.email);
-
-   if(member){
-     return openCommunity(id);
-   }
-
-   const pendingUids=Array.isArray(c.pendingMemberUids)
-     ? [...c.pendingMemberUids]
-     : [];
-
-   const pendingEmails=Array.isArray(c.pendingMembers)
-     ? [...c.pendingMembers]
-     : [];
-
-   if(
-     pendingUids.includes(u.uid) ||
-     pendingEmails.includes(u.email)
-   ){
-     if(btn){
-       btn.disabled=true;
-       btn.textContent='Solicitação enviada';
-     }
-     return;
-   }
-
-   /*
-    * Confirmar a categoria usando os interesses atuais do perfil.
-    */
-   let profile=profileCache;
-
-   if(!profile || !Array.isArray(profile.interests)){
-     profile=await getProfile(u.uid);
-     if(profile)profileCache=profile;
-   }
-
-   const interests=[
-     ...(Array.isArray(profile?.interests)
-       ? profile.interests
-       : []),
-     ...(Array.isArray(profile?.customInterests)
-       ? profile.customInterests
-       : [])
-   ]
-   .map(normalizeCommunityCategory)
-   .filter(Boolean);
-
-   const category=
-     c.categoryNormalized ||
-     normalizeCommunityCategory(c.category);
-
-   if(!category || !interests.includes(category)){
-     throw new Error(
-       'Esta comunidade não está disponível para os interesses do seu perfil.'
-     );
-   }
-
-   /*
-    * Mantém os pedidos anteriores e acrescenta este usuário.
-    * updateDoc com arrays completos é compatível com a estrutura atual
-    * das comunidades e não depende de arrayUnion estar importado.
-    */
-   if(!pendingUids.includes(u.uid))
-     pendingUids.push(u.uid);
-
-   if(u.email && !pendingEmails.includes(u.email))
-     pendingEmails.push(u.email);
-
-   await withTimeout(
-     updateDoc(ref,{
-       pendingMemberUids:pendingUids,
-       pendingMembers:pendingEmails
-     }),
-     15000,
-     'O envio da solicitação de entrada'
-   );
-
-   if(btn){
-     btn.disabled=true;
-     btn.textContent='Solicitação enviada';
-   }
-
-   alert(
-     'Solicitação enviada. Aguarde a aprovação do administrador.'
-   );
-
-   /*
-    * Atualiza a lista para que o estado do botão permaneça correto.
-    */
-   await loadCommunities();
-
- }catch(e){
-
-   console.error('requestJoin:',e);
-
-   if(btn){
-     btn.disabled=false;
-     btn.textContent='Solicitar entrada';
-   }
-
-   alert(
-     'Não foi possível enviar a solicitação.\n\n'+
-     e.message
-   );
- }
-};;;
+window.requestJoin=async function(id){const u=user();if(!u)return;await updateDoc(doc(db,'communities',id),{pendingMemberUids:arrayUnion(u.uid),pendingMembers:arrayUnion(u.email)});alert('Solicitação enviada.');await loadCommunities()};
 
 window.loadNotifications=async function(){const box=$('page-notifications')?.querySelector('.card');if(!box)return;const arr=await visibleAdminCommunities();const pending=arr.filter(c=>(c.pendingMemberUids||[]).length||(c.pendingMembers||[]).length);box.innerHTML=pending.length?pending.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #303654"><div><strong>${esc(c.name)}</strong><div style="color:#6B7A99">${(c.pendingMemberUids||c.pendingMembers||[]).length} solicitação(ões)</div></div><button class="btn btn-small" onclick="viewRequests('${c.id}')">Ver solicitações</button></div>`).join(''):'<p style="color:#6B7A99">Nenhuma notificação no momento.</p>'};
 
