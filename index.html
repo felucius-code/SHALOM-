@@ -3104,7 +3104,30 @@ function publicName(p,u=user()){return p?.name||u?.displayName||u?.email?.split(
 function initials(n){return publicName({name:n}).split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'👤'}
 function showError(id,msg){const e=$(id);if(e){e.textContent=msg;e.classList.remove('hidden')}}
 function hideError(id){$(id)?.classList.add('hidden')}
-function setPage(page,button){document.querySelectorAll('.page').forEach(p=>{const on=p.id==='page-'+page;p.classList.toggle('hidden',!on);p.style.display=on?'':'none'});document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));if(button)button.classList.add('active');const bar=$('communitiesBar');if(bar)bar.style.display=page==='home'?'':'none';}
+function setPage(page,button){
+  if(page!=='communities'){
+    $('communityArea')?.classList.add('hidden');
+    $('communityToolsPanel')?.classList.add('hidden');
+    $('communitiesList')?.classList.remove('hidden');
+    $('createCommunityBox')?.classList.add('hidden');
+    currentCommunityId=null;
+    currentCommunityIsAdmin=false;
+  }
+
+  document.querySelectorAll('.page').forEach(p=>{
+    const on=p.id==='page-'+page;
+    p.classList.toggle('hidden',!on);
+    p.style.display=on?'':'none';
+  });
+
+  document.querySelectorAll('.nav-item')
+    .forEach(b=>b.classList.remove('active'));
+
+  if(button)button.classList.add('active');
+
+  const bar=$('communitiesBar');
+  if(bar)bar.style.display=page==='home'?'':'none';
+}
 
 window.openPage=async function(page,button){
  if(!user())return;
@@ -3892,7 +3915,14 @@ window.deleteCurrentCommunity=async function(){
    alert('Comunidade deletada com sucesso.');
  }catch(e){console.error(e);alert('Erro ao deletar comunidade: '+e.message)}
 };
-window.backToCommunities=async()=>{currentCommunityId=null;$('communityArea')?.classList.add('hidden');$('communitiesList')?.classList.remove('hidden');await loadCommunities()};
+window.backToCommunities=async()=>{
+ currentCommunityId=null;
+ currentCommunityIsAdmin=false;
+ $('communityArea')?.classList.add('hidden');
+ $('communityToolsPanel')?.classList.add('hidden');
+ $('communitiesList')?.classList.remove('hidden');
+ await loadCommunities();
+};
 async function loadCommunityMessages(id){const box=$('communityMessages');if(!box)return;const snap=await getDocs(collection(db,'communities',id,'messages'));const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';box.scrollTop=box.scrollHeight}
 window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){const u=user(),text=$('messageInput')?.value.trim();if(!u||!currentCommunityId||!text)return;await addDoc(collection(db,'communities',currentCommunityId,'messages'),{text,authorUid:u.uid,authorName:publicName(profileCache),createdAt:serverTimestamp()});$('messageInput').value='';await loadCommunityMessages(currentCommunityId)};
 /*
