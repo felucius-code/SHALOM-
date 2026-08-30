@@ -3181,11 +3181,23 @@ function initials(n){return publicName({name:n}).split(/\s+/).slice(0,2).map(x=>
 function showError(id,msg){const e=$(id);if(e){e.textContent=msg;e.classList.remove('hidden')}}
 function hideError(id){$(id)?.classList.add('hidden')}
 function setPage(page,button){
-  if(page!=='communities'){
+
+  /*
+   * "Comunidades" é a porta de entrada da lista.
+   * Mesmo quando uma comunidade está aberta, clicar novamente
+   * na aba deve desmontar a subvisão e mostrar a lista.
+   *
+   * openCommunity() define currentCommunityId novamente DEPOIS
+   * desta função, portanto a abertura de uma comunidade continua funcionando.
+   */
+  if(true){
     $('communityArea')?.classList.add('hidden');
     $('communityToolsPanel')?.classList.add('hidden');
     $('communitiesList')?.classList.remove('hidden');
     $('createCommunityBox')?.classList.add('hidden');
+
+    if($('messageInput'))$('messageInput').value='';
+
     currentCommunityId=null;
     currentCommunityIsAdmin=false;
   }
