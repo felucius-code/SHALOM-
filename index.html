@@ -4632,8 +4632,10 @@ window.loadNotifications=async function(){
 };
 
 function adminWorkspace(){return $('adminWorkspace');}
-window.adminShowUsers=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando...</p>';try{const s=await getDocs(collection(db,'users'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.email||'—')}</td><td>${esc(x.uid||d.id)}</td><td>${(x.interests||[]).length}</td></tr>`)});w.innerHTML=`<h2 class="card-title">👥 Usuários</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Nome</th><th>E-mail</th><th>UID</th><th>Interesses</th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum usuário.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
-window.adminShowCommunities=async function(){
+window.adminShowUsers=async function(){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
+const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando...</p>';try{const s=await getDocs(collection(db,'users'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.email||'—')}</td><td>${esc(x.uid||d.id)}</td><td>${(x.interests||[]).length}</td></tr>`)});w.innerHTML=`<h2 class="card-title">👥 Usuários</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Nome</th><th>E-mail</th><th>UID</th><th>Interesses</th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum usuário.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
+window.adminShowCommunities=async function(){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
+
  const w=adminWorkspace();if(!w)return;
  w.innerHTML='<h2 class="card-title">🏘️ Comunidades</h2><p>Carregando comunidades...</p>';
  try{
@@ -4650,7 +4652,8 @@ window.adminShowCommunities=async function(){
  }catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}
 };
 
-window.adminLoadCommunityDetails=async function(id){
+window.adminLoadCommunityDetails=async function(id){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
+
  const box=$('adminCommunityDetails');if(!box)return;
  if(!id){box.innerHTML='';return}
  try{
@@ -4733,7 +4736,8 @@ window.adminAddCommunityMember=async function(communityId){
  }catch(e){alert('Não foi possível incluir o membro: '+e.message)}
 };
 
-window.adminRemoveCommunityMember=async function(communityId,identifier){
+window.adminRemoveCommunityMember=async function(communityId,identifier){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
+
  if(!confirm('Você quer mesmo excluir este membro da comunidade?'))return;
  try{
    const ref=doc(db,'communities',communityId);
@@ -4748,7 +4752,8 @@ window.adminRemoveCommunityMember=async function(communityId,identifier){
  }catch(e){alert('Não foi possível excluir o membro: '+e.message)}
 };
 
-window.adminAddCommunityAdmin=async function(communityId){
+window.adminAddCommunityAdmin=async function(communityId){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
+
  const value=prompt('Digite o UID do usuário que deseja tornar administrador:');
  if(!value?.trim())return;
  const uid=value.trim();
@@ -4768,7 +4773,8 @@ window.adminAddCommunityAdmin=async function(communityId){
  }catch(e){alert('Não foi possível incluir o administrador: '+e.message)}
 };
 
-window.adminRemoveCommunityAdmin=async function(communityId,uid){
+window.adminRemoveCommunityAdmin=async function(communityId,uid){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
+
  if(!confirm('Você quer mesmo remover este administrador?'))return;
  try{
    const ref=doc(db,'communities',communityId);
@@ -4785,9 +4791,12 @@ window.adminRemoveCommunityAdmin=async function(communityId,uid){
 };
 
 ;
-window.adminShowContents=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">📚 Conteúdos</h2><p>Carregando...</p>';const rows=[];for(const [type,info] of Object.entries(contentTypes||{})){try{const s=await getDocs(collection(db,info.collection));s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(info.title||type)}</td><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.category||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','${esc(type)}')">Excluir</button></td></tr>`)})}catch(e){console.warn(type,e)}}w.innerHTML=`<h2 class="card-title">📚 Conteúdos</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Tipo</th><th>Título</th><th>Categoria</th><th></th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum conteúdo.</td></tr>'}</table></div>`};
-window.adminShowStore=async function(){const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">🛒 Loja</h2><p>Carregando produtos...</p>';try{const s=await getDocs(collection(db,'products'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.price||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','products')">Excluir</button></td></tr>`)});w.innerHTML=`<h2 class="card-title">🛒 Loja</h2><p class="store-form-note">Produtos são itens para compra. Livros permanecem na Biblioteca.</p><div style="overflow:auto"><table class="admin-table"><tr><th>Produto</th><th>Preço</th><th></th></tr>${rows.join('')||'<tr><td colspan="3">Nenhum produto.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
-async function loadAdmin(){await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager()}
+window.adminShowContents=async function(){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
+const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">📚 Conteúdos</h2><p>Carregando...</p>';const rows=[];for(const [type,info] of Object.entries(contentTypes||{})){try{const s=await getDocs(collection(db,info.collection));s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(info.title||type)}</td><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.category||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','${esc(type)}')">Excluir</button></td></tr>`)})}catch(e){console.warn(type,e)}}w.innerHTML=`<h2 class="card-title">📚 Conteúdos</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Tipo</th><th>Título</th><th>Categoria</th><th></th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum conteúdo.</td></tr>'}</table></div>`};
+window.adminShowStore=async function(){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
+const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">🛒 Loja</h2><p>Carregando produtos...</p>';try{const s=await getDocs(collection(db,'products'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.title||x.name||'—')}</td><td>${esc(x.price||'—')}</td><td><button class="btn btn-small" type="button" onclick="deleteContent('${esc(d.id)}','products')">Excluir</button></td></tr>`)});w.innerHTML=`<h2 class="card-title">🛒 Loja</h2><p class="store-form-note">Produtos são itens para compra. Livros permanecem na Biblioteca.</p><div style="overflow:auto"><table class="admin-table"><tr><th>Produto</th><th>Preço</th><th></th></tr>${rows.join('')||'<tr><td colspan="3">Nenhum produto.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
+async function loadAdmin(){ if(!isAdmin)return;
+await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager()}
 window.loadAdmin=loadAdmin;
 
 function bindHomeAddButtons(){
