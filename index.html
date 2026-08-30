@@ -3846,11 +3846,15 @@ async function loadCommunities(){
 
  const p=profileCache||await getProfile(u.uid);
  const interests=Array.isArray(p?.interests)?p.interests:[];
+ const customInterests=Array.isArray(p?.customInterests)?p.customInterests:[];
+ const allInterests=[...new Set(
+   [...interests,...customInterests].map(x=>String(x||'').trim()).filter(Boolean)
+ )];
 
  const norm=s=>String(s||'').trim().toLocaleLowerCase()
    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 
- const selected=new Set(interests.map(norm));
+ const selected=new Set(allInterests.map(norm));
 
  const isMember=c=>
    (c.memberUids||[]).includes(u.uid) ||
