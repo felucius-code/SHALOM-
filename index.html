@@ -3290,7 +3290,29 @@ window.addCustomInterest=function(){
 };
 window.removeCustomInterest=function(i){if(i>=0&&i<customInterestsCache.length){customInterestsCache.splice(i,1);renderCustomInterests();}};
 window.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement?.id==='customInterestInputPreview'){e.preventDefault();addCustomInterest();}});
-async function loadProfilePage(){profileCache=await getProfile();const p=profileCache||{};if($('profileName'))$('profileName').value=p.name||user()?.displayName||'';document.querySelectorAll('#page-profile .interest-option input').forEach(i=>i.checked=(p.interests||[]).includes(i.value));applyIdentity(p)}
+async function loadProfilePage(){
+  profileCache=await getProfile();
+  const p=profileCache||{};
+
+  if($('profileName'))
+    $('profileName').value=p.name||user()?.displayName||'';
+
+  document
+    .querySelectorAll('#page-profile .interest-option input')
+    .forEach(i=>i.checked=(p.interests||[]).includes(i.value));
+
+  /*
+   * Restaurar os interesses personalizados salvos no perfil.
+   * O cache local não pode começar vazio quando o usuário retorna
+   * à página de Perfil.
+   */
+  customInterestsCache=Array.isArray(p.customInterests)
+    ? p.customInterests.slice(0,5)
+    : [];
+
+  renderCustomInterests();
+  applyIdentity(p);
+}
 window.saveProfile=async function(){
  const u=user();
  if(!u)return alert('Você precisa estar conectado.');
