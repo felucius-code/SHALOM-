@@ -2494,13 +2494,19 @@ button {
         </div>
           <div class="form-group">
               <label>Categorias da comunidade</label>
-              <select id="communityCategories" multiple size="6"
-                      style="width:100%;min-height:140px;"></select>
-              <small style="display:block;color:#6B7A99;margin-top:6px;">
-                Escolha uma ou mais categorias para que esta comunidade seja
-                sugerida a usuários com esses interesses no perfil.
+              <input id="communityCategory1" type="text" maxlength="60"
+                     placeholder="Categoria 1 (obrigatória)"
+                     style="margin-bottom:8px;">
+              <input id="communityCategory2" type="text" maxlength="60"
+                     placeholder="Categoria 2 (opcional)"
+                     style="margin-bottom:8px;">
+              <input id="communityCategory3" type="text" maxlength="60"
+                     placeholder="Categoria 3 (opcional)">
+              <small style="display:block;color:#6B7A99;margin-top:8px;">
+                Escreva de 1 a 3 categorias que representem os assuntos
+                abordados nesta comunidade.
               </small>
-          </div>
+            </div>
 
 
         <button
@@ -2629,8 +2635,18 @@ button {
             </div>
             <div class="form-group">
                 <label>Categorias da comunidade</label>
-                <select id="editCommunityCategories" multiple size="6"
-                        style="width:100%;min-height:140px;"></select>
+                <input id="editCommunityCategory1" type="text" maxlength="60"
+                       placeholder="Categoria 1 (obrigatória)"
+                       style="margin-bottom:8px;">
+                <input id="editCommunityCategory2" type="text" maxlength="60"
+                       placeholder="Categoria 2 (opcional)"
+                       style="margin-bottom:8px;">
+                <input id="editCommunityCategory3" type="text" maxlength="60"
+                       placeholder="Categoria 3 (opcional)">
+                <small style="display:block;color:#6B7A99;margin-top:8px;">
+                  Escreva de 1 a 3 categorias que representem os assuntos
+                  abordados nesta comunidade.
+                </small>
             </div>
 
             <div class="form-group">
@@ -3937,58 +3953,46 @@ async function loadCommunities(){
 }
 
 window.loadCommunities=loadCommunities;
-function getCommunityCategoryOptions(){
- const inputs=[...document.querySelectorAll('#page-profile .interest-option input')];
- return inputs.map(i=>({value:i.value,label:i.parentElement?.textContent?.trim()||i.value}));
+function getCommunityCategoriesFromInputs(prefix='community'){
+ return [1,2,3].map(n=>$(prefix+'Category'+n)?.value.trim()||'')
+   .filter(Boolean).slice(0,3);
 }
-function populateCommunityCategorySelects(){
- const options=getCommunityCategoryOptions();
- ['communityCategories','editCommunityCategories'].forEach(id=>{
-   const s=$(id); if(!s)return;
-   const selected=[...s.selectedOptions].map(o=>o.value);
-   s.innerHTML=options.map(o=>`<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('');
-   [...s.options].forEach(o=>o.selected=selected.includes(o.value));
+function setCommunityCategoryInputs(categories,prefix='editCommunity'){
+ const cats=Array.isArray(categories)?categories.slice(0,3):[];
+ [1,2,3].forEach((n,i)=>{
+   const el=$(prefix+'Category'+n);
+   if(el)el.value=cats[i]||'';
  });
 }
-
 window.showCreateCommunity=()=>{
- populateCommunityCategorySelects();
  $('createCommunityBox')?.classList.toggle('hidden');
 };
 
 window.addCommunity=async function(){
  if(!user())return;
-
  const name=$('communityName')?.value.trim();
  const description=$('communityDescription')?.value.trim()||'';
- const categories=[...($('communityCategories')?.selectedOptions||[])].map(o=>o.value);
+ const categories=getCommunityCategoriesFromInputs('community');
 
  if(!name)return alert('Informe o nome.');
- if(!categories.length)return alert('Escolha pelo menos uma categoria.');
+ if(!categories.length)return alert('Informe pelo menos uma categoria.');
+ if(categories.length>3)return alert('Informe no máximo 3 categorias.');
 
  try{
   await addDoc(collection(db,'communities'),{
-   name,description,
-   categories,interests:categories,
-   createdByUid:user().uid,
-   createdBy:publicName(profileCache),
-   memberUids:[user().uid],
-   members:[user().email],
-   communityAdminUids:[user().uid],
-   communityAdmins:[user().email],
-   pendingMemberUids:[],
-   pendingMembers:[],
-   createdAt:serverTimestamp()
+   name,description,categories,interests:categories,
+   createdByUid:user().uid,createdBy:publicName(profileCache),
+   memberUids:[user().uid],members:[user().email],
+   communityAdminUids:[user().uid],communityAdmins:[user().email],
+   pendingMemberUids:[],pendingMembers:[],createdAt:serverTimestamp()
   });
 
   $('communityName').value='';
   $('communityDescription').value='';
-  [...($('communityCategories')?.options||[])].forEach(o=>o.selected=false);
+  setCommunityCategoryInputs([],'community');
   $('createCommunityBox')?.classList.add('hidden');
-
   await loadCommunities();
   await loadCommunitiesBar();
-
  }catch(e){
   alert('Erro ao criar comunidade: '+e.message);
  }
@@ -4065,14 +4069,9 @@ window.openCommunity=async function(id){
  if($('editCommunityDescription'))
    $('editCommunityDescription').value=c.description||'';
 
- populateCommunityCategorySelects();
-
- if($('editCommunityCategories')){
-   const cats=Array.isArray(c.categories)?c.categories:
-     Array.isArray(c.interests)?c.interests:(c.category?[c.category]:[]);
-   [...$('editCommunityCategories').options]
-     .forEach(o=>o.selected=cats.includes(o.value));
- }
+ const cats=Array.isArray(c.categories)?c.categories:
+   Array.isArray(c.interests)?c.interests:(c.category?[c.category]:[]);
+ setCommunityCategoryInputs(cats,'editCommunity');
 
  if($('editCommunityImage'))
    $('editCommunityImage').value='';
@@ -4107,9 +4106,10 @@ window.saveCommunitySettings=async function(){
   if(!(await communityIsAdmin(id,c)))throw new Error('Você não tem permissão para editar esta comunidade.');
   const name=$('editCommunityName')?.value.trim();
   const description=$('editCommunityDescription')?.value.trim()||'';
-  const categories=[...($('editCommunityCategories')?.selectedOptions||[])].map(o=>o.value);
+  const categories=getCommunityCategoriesFromInputs('editCommunity');
   if(!name)throw new Error('Informe o nome da comunidade.');
-  if(!categories.length)throw new Error('Escolha pelo menos uma categoria.');
+  if(!categories.length)throw new Error('Informe pelo menos uma categoria.');
+  if(categories.length>3)throw new Error('Informe no máximo 3 categorias.');
   let imageURL=c.imageURL||'';
   const file=$('editCommunityImage')?.files?.[0];
   if(file){
@@ -4864,7 +4864,7 @@ function bindHomeAddButtons(){
  });
 }
 
-onAuthStateChanged(auth,async u=>{currentUser=u;if(!u){if(notificationUnsubscribe){notificationUnsubscribe();notificationUnsubscribe=null;}updateNotificationBadge(0);} const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);populateCommunityCategorySelects();startNotificationListener();refreshNotificationBadge();authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
+onAuthStateChanged(auth,async u=>{currentUser=u;if(!u){if(notificationUnsubscribe){notificationUnsubscribe();notificationUnsubscribe=null;}updateNotificationBadge(0);} const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);startNotificationListener();refreshNotificationBadge();authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
