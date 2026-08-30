@@ -2508,6 +2508,14 @@ button {
               </small>
             </div>
 
+            <div class="form-group">
+              <label>Imagem da comunidade</label>
+              <input id="communityImage" type="file" accept="image/*">
+              <small style="display:block;color:#6B7A99;margin-top:8px;">
+                Adicione a imagem que será usada como capa da comunidade.
+              </small>
+            </div>
+
 
         <button
             class="btn"
@@ -2633,22 +2641,6 @@ button {
                 <label>Descrição</label>
                 <textarea id="editCommunityDescription" rows="3"></textarea>
             </div>
-            <div class="form-group">
-                <label>Categorias da comunidade</label>
-                <input id="editCommunityCategory1" type="text" maxlength="60"
-                       placeholder="Categoria 1 (obrigatória)"
-                       style="margin-bottom:8px;">
-                <input id="editCommunityCategory2" type="text" maxlength="60"
-                       placeholder="Categoria 2 (opcional)"
-                       style="margin-bottom:8px;">
-                <input id="editCommunityCategory3" type="text" maxlength="60"
-                       placeholder="Categoria 3 (opcional)">
-                <small style="display:block;color:#6B7A99;margin-top:8px;">
-                  Escreva de 1 a 3 categorias que representem os assuntos
-                  abordados nesta comunidade.
-                </small>
-            </div>
-
             <div class="form-group">
                 <label>Imagem da comunidade</label>
                 <input id="editCommunityImage" type="file" accept="image/*">
@@ -3970,17 +3962,31 @@ window.showCreateCommunity=()=>{
 
 window.addCommunity=async function(){
  if(!user())return;
+
  const name=$('communityName')?.value.trim();
  const description=$('communityDescription')?.value.trim()||'';
  const categories=getCommunityCategoriesFromInputs('community');
+ const imageFile=$('communityImage')?.files?.[0];
 
  if(!name)return alert('Informe o nome.');
  if(!categories.length)return alert('Informe pelo menos uma categoria.');
  if(categories.length>3)return alert('Informe no máximo 3 categorias.');
 
+ const btn=document.querySelector('#createCommunityBox button[onclick="addCommunity()"]');
+ const old=btn?.textContent||'Criar comunidade';
+ if(btn){btn.disabled=true;btn.textContent='Criando comunidade...';}
+
  try{
+  let imageURL='';
+  if(imageFile){
+    imageURL=await uploadImageToCloudinary(
+      imageFile,
+      'O upload da imagem da comunidade'
+    );
+  }
+
   await addDoc(collection(db,'communities'),{
-   name,description,categories,interests:categories,
+   name,description,categories,interests:categories,imageURL,
    createdByUid:user().uid,createdBy:publicName(profileCache),
    memberUids:[user().uid],members:[user().email],
    communityAdminUids:[user().uid],communityAdmins:[user().email],
@@ -3990,11 +3996,17 @@ window.addCommunity=async function(){
   $('communityName').value='';
   $('communityDescription').value='';
   setCommunityCategoryInputs([],'community');
+  if($('communityImage'))$('communityImage').value='';
   $('createCommunityBox')?.classList.add('hidden');
+
   await loadCommunities();
   await loadCommunitiesBar();
+
  }catch(e){
+  console.error('addCommunity:',e);
   alert('Erro ao criar comunidade: '+e.message);
+ }finally{
+  if(btn){btn.disabled=false;btn.textContent=old;}
  }
 };
 
@@ -4069,9 +4081,7 @@ window.openCommunity=async function(id){
  if($('editCommunityDescription'))
    $('editCommunityDescription').value=c.description||'';
 
- const cats=Array.isArray(c.categories)?c.categories:
-   Array.isArray(c.interests)?c.interests:(c.category?[c.category]:[]);
- setCommunityCategoryInputs(cats,'editCommunity');
+ 
 
  if($('editCommunityImage'))
    $('editCommunityImage').value='';
@@ -4106,17 +4116,14 @@ window.saveCommunitySettings=async function(){
   if(!(await communityIsAdmin(id,c)))throw new Error('Você não tem permissão para editar esta comunidade.');
   const name=$('editCommunityName')?.value.trim();
   const description=$('editCommunityDescription')?.value.trim()||'';
-  const categories=getCommunityCategoriesFromInputs('editCommunity');
   if(!name)throw new Error('Informe o nome da comunidade.');
-  if(!categories.length)throw new Error('Informe pelo menos uma categoria.');
-  if(categories.length>3)throw new Error('Informe no máximo 3 categorias.');
   let imageURL=c.imageURL||'';
   const file=$('editCommunityImage')?.files?.[0];
   if(file){
     imageURL=await uploadImageToCloudinary(file,'O upload da imagem da comunidade');
   }
   await withTimeout(updateDoc(refCommunity,{
-    name,description,categories,interests:categories,imageURL,
+    name,description,imageURL,
     updatedAt:serverTimestamp(),updatedByUid:u.uid
   }),15000,'O salvamento da comunidade no Firestore');
   $('communityAreaTitle').textContent=name;
@@ -4434,7 +4441,6 @@ window.approveJoin=async function(id,uid,email){
    pendingMembers:email?arrayRemove(email):arrayRemove()
  };
  await updateDoc(r,data);
- try{await deleteDoc(doc(db,'communities',id,'joinRequests',uid));}catch(e){}
  await refreshNotificationBadge();
  await loadNotifications();
 };
@@ -4449,7 +4455,6 @@ window.rejectJoin=async function(id,uid,email){
    pendingMembers:email?arrayRemove(email):arrayRemove()
  };
  await updateDoc(r,data);
- try{await deleteDoc(doc(db,'communities',id,'joinRequests',uid));}catch(e){}
  await refreshNotificationBadge();
  await loadNotifications();
 };
@@ -4501,18 +4506,10 @@ window.requestCommunityJoin=async function(id){
 
    if(!alreadyPending){
 
-     await setDoc(
-       doc(collection(db,'communities',id,'joinRequests'),u.uid),
-       {
-         uid:u.uid,
-         email:u.email||'',
-         name:publicName(profileCache||{},u),
-         createdAt:serverTimestamp(),
-         status:'pending'
-       }
-     );
-
-     // Legacy arrays are retained so existing communities keep working.
+     // The current Firestore rules allow the member request to be recorded
+     // on the community document. Keep this write compatible with existing
+     // communities; the scalable joinRequests subcollection can be enabled
+     // later together with its dedicated security rule.
      await updateDoc(ref,{
        pendingMemberUids:arrayUnion(u.uid),
        pendingMembers:arrayUnion(u.email)
