@@ -4420,6 +4420,7 @@ window.approveJoin=async function(id,uid,email){
    pendingMembers:email?arrayRemove(email):arrayRemove()
  };
  await updateDoc(r,data);
+ try{await deleteDoc(doc(db,'communities',id,'joinRequests',uid));}catch(e){}
  await refreshNotificationBadge();
  await loadNotifications();
 };
@@ -4434,6 +4435,7 @@ window.rejectJoin=async function(id,uid,email){
    pendingMembers:email?arrayRemove(email):arrayRemove()
  };
  await updateDoc(r,data);
+ try{await deleteDoc(doc(db,'communities',id,'joinRequests',uid));}catch(e){}
  await refreshNotificationBadge();
  await loadNotifications();
 };
@@ -4462,6 +4464,10 @@ window.requestCommunityJoin=async function(id){
 
    const c=snap.data();
 
+   if(c.createdByUid===u.uid){
+     throw new Error('Você já é o criador desta comunidade.');
+   }
+
    const alreadyMember=
      (c.memberUids||[]).includes(u.uid) ||
      (c.members||[]).includes(u.email);
@@ -4481,6 +4487,18 @@ window.requestCommunityJoin=async function(id){
 
    if(!alreadyPending){
 
+     await setDoc(
+       doc(collection(db,'communities',id,'joinRequests'),u.uid),
+       {
+         uid:u.uid,
+         email:u.email||'',
+         name:publicName(profileCache||{},u),
+         createdAt:serverTimestamp(),
+         status:'pending'
+       }
+     );
+
+     // Legacy arrays are retained so existing communities keep working.
      await updateDoc(ref,{
        pendingMemberUids:arrayUnion(u.uid),
        pendingMembers:arrayUnion(u.email)
@@ -4513,16 +4531,25 @@ window.requestJoin=window.requestCommunityJoin;
 
 let notificationUnsubscribe=null;
 
-function notificationCount(communities){
- return communities.reduce(
-   (sum,c)=>
-     sum+
-     Math.max(
+async function notificationCount(communities){
+ let total=0;
+ for(const c of communities){
+   try{
+     const requests=await getCommunityJoinRequests(c.id);
+     total += requests.length
+       ? requests.length
+       : Math.max(
+           (c.pendingMemberUids||[]).length,
+           (c.pendingMembers||[]).length
+         );
+   }catch(e){
+     total += Math.max(
        (c.pendingMemberUids||[]).length,
        (c.pendingMembers||[]).length
-     ),
-   0
- );
+     );
+   }
+ }
+ return total;
 }
 
 function updateNotificationBadge(count){
@@ -4579,9 +4606,9 @@ function startNotificationListener(){
      where('createdByUid','==',u.uid)
    ),
    snap=>{
-     updateNotificationBadge(notificationCount(
+     notificationCount(
        snap.docs.map(d=>({id:d.id,...d.data()}))
-     ));
+     ).then(updateNotificationBadge);
    },
    err=>{
      console.warn('Listener de notificações indisponível:',err);
@@ -4589,35 +4616,50 @@ function startNotificationListener(){
    }
  );
 }
+async function getCommunityJoinRequests(communityId){
+ const snap=await getDocs(
+   query(
+     collection(db,'communities',communityId,'joinRequests'),
+     where('status','==','pending')
+   )
+ );
+ return snap.docs.map(d=>({id:d.id,...d.data()}));
+}
+
 window.loadNotifications=async function(){
  const box=$('page-notifications')?.querySelector('.card');
  if(!box)return;
 
  try{
    const arr=await visibleCreatorNotifications();
-   const pending=arr.filter(c=>
-     (c.pendingMemberUids||[]).length ||
-     (c.pendingMembers||[]).length
-   );
+   const rows=[];
 
-   updateNotificationBadge(notificationCount(arr));
+   for(const c of arr){
+     let requests=[];
+     try{requests=await getCommunityJoinRequests(c.id)}catch(e){}
 
-   box.innerHTML=pending.length
-     ?pending.map(c=>`
+     const legacyCount=Math.max(
+       (c.pendingMemberUids||[]).length,
+       (c.pendingMembers||[]).length
+     );
+
+     if(requests.length || legacyCount){
+       rows.push({community:c,count:requests.length||legacyCount});
+     }
+   }
+
+   updateNotificationBadge(await notificationCount(arr));
+
+   box.innerHTML=rows.length
+     ?rows.map(x=>`
        <div style="display:flex;justify-content:space-between;align-items:center;
                    padding:10px 0;border-bottom:1px solid #303654">
          <div>
-           <strong>${esc(c.name)}</strong>
-           <div style="color:#6B7A99">
-             ${Math.max(
-               (c.pendingMemberUids||[]).length,
-               (c.pendingMembers||[]).length
-             )} solicitação(ões)
-           </div>
+           <strong>${esc(x.community.name)}</strong>
+           <div style="color:#6B7A99">${x.count} solicitação(ões)</div>
          </div>
-         <button class="btn btn-small"
-                 type="button"
-                 onclick="viewRequests('${c.id}')">
+         <button class="btn btn-small" type="button"
+                 onclick="viewRequests('${x.community.id}')">
            Ver solicitações
          </button>
        </div>
