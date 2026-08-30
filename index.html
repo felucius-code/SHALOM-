@@ -3181,11 +3181,30 @@ function initials(n){return publicName({name:n}).split(/\s+/).slice(0,2).map(x=>
 function showError(id,msg){const e=$(id);if(e){e.textContent=msg;e.classList.remove('hidden')}}
 function hideError(id){$(id)?.classList.add('hidden')}
 function setPage(page,button){
-  if(page!=='communities'){
+
+  /*
+   * Comunidades possui duas subvisões:
+   * 1) lista de comunidades
+   * 2) comunidade aberta
+   *
+   * A aba Comunidades deve SEMPRE funcionar como retorno à lista.
+   * Por isso, qualquer entrada explícita nessa aba desmonta a subvisão
+   * da comunidade atualmente aberta.
+   */
+  if(page==='communities'){
     $('communityArea')?.classList.add('hidden');
     $('communityToolsPanel')?.classList.add('hidden');
     $('communitiesList')?.classList.remove('hidden');
     $('createCommunityBox')?.classList.add('hidden');
+
+    currentCommunityId=null;
+    currentCommunityIsAdmin=false;
+  }else{
+    $('communityArea')?.classList.add('hidden');
+    $('communityToolsPanel')?.classList.add('hidden');
+    $('communitiesList')?.classList.remove('hidden');
+    $('createCommunityBox')?.classList.add('hidden');
+
     currentCommunityId=null;
     currentCommunityIsAdmin=false;
   }
@@ -3209,6 +3228,14 @@ window.openPage=async function(page,button){
  if(!user())return;
  if(page==='admin'&&!isAdmin){alert('Acesso restrito ao administrador.');return}
  setPage(page,button);
+ if(page==='communities'){
+   $('communityArea')?.classList.add('hidden');
+   $('communityToolsPanel')?.classList.add('hidden');
+   $('communitiesList')?.classList.remove('hidden');
+   $('createCommunityBox')?.classList.add('hidden');
+   currentCommunityId=null;
+   currentCommunityIsAdmin=false;
+ }
  try{
   if(page==='home')await loadHome();
   else if(page==='communities')await loadCommunities();
