@@ -3181,30 +3181,11 @@ function initials(n){return publicName({name:n}).split(/\s+/).slice(0,2).map(x=>
 function showError(id,msg){const e=$(id);if(e){e.textContent=msg;e.classList.remove('hidden')}}
 function hideError(id){$(id)?.classList.add('hidden')}
 function setPage(page,button){
-
-  /*
-   * Comunidades possui duas subvisões:
-   * 1) lista de comunidades
-   * 2) comunidade aberta
-   *
-   * A aba Comunidades deve SEMPRE funcionar como retorno à lista.
-   * Por isso, qualquer entrada explícita nessa aba desmonta a subvisão
-   * da comunidade atualmente aberta.
-   */
-  if(page==='communities'){
+  if(page!=='communities'){
     $('communityArea')?.classList.add('hidden');
     $('communityToolsPanel')?.classList.add('hidden');
     $('communitiesList')?.classList.remove('hidden');
     $('createCommunityBox')?.classList.add('hidden');
-
-    currentCommunityId=null;
-    currentCommunityIsAdmin=false;
-  }else{
-    $('communityArea')?.classList.add('hidden');
-    $('communityToolsPanel')?.classList.add('hidden');
-    $('communitiesList')?.classList.remove('hidden');
-    $('createCommunityBox')?.classList.add('hidden');
-
     currentCommunityId=null;
     currentCommunityIsAdmin=false;
   }
@@ -3228,14 +3209,6 @@ window.openPage=async function(page,button){
  if(!user())return;
  if(page==='admin'&&!isAdmin){alert('Acesso restrito ao administrador.');return}
  setPage(page,button);
- if(page==='communities'){
-   $('communityArea')?.classList.add('hidden');
-   $('communityToolsPanel')?.classList.add('hidden');
-   $('communitiesList')?.classList.remove('hidden');
-   $('createCommunityBox')?.classList.add('hidden');
-   currentCommunityId=null;
-   currentCommunityIsAdmin=false;
- }
  try{
   if(page==='home')await loadHome();
   else if(page==='communities')await loadCommunities();
@@ -3930,18 +3903,27 @@ window.openCommunity=async function(id){
 
  if(!member)return alert('Você não é membro desta comunidade.');
 
- currentCommunityId=id;
- currentCommunityIsAdmin=await communityIsAdmin(id,c);
-
  /*
   * IMPORTANTE:
   * A comunidade continua sendo uma página própria.
   * Não deve ser renderizada dentro da Home.
+  *
+  * setPage('communities') limpa o estado da subvisão,
+  * portanto o ID atual é definido depois da navegação.
   */
  setPage(
    'communities',
    document.querySelector('.nav-item[onclick*="communities"]')
  );
+
+ currentCommunityId=id;
+ currentCommunityIsAdmin=await communityIsAdmin(id,c);
+
+ /*
+  * Cada comunidade possui seu próprio contexto de conversa.
+  * Nunca transportar texto digitado de uma comunidade para outra.
+  */
+ if($('messageInput'))$('messageInput').value='';
 
  $('communitiesList')?.classList.add('hidden');
  $('createCommunityBox')?.classList.add('hidden');
@@ -4082,7 +4064,37 @@ window.backToCommunities=async()=>{
  await loadCommunities();
 };
 async function loadCommunityMessages(id){const box=$('communityMessages');if(!box)return;const snap=await getDocs(collection(db,'communities',id,'messages'));const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';box.scrollTop=box.scrollHeight}
-window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){const u=user(),text=$('messageInput')?.value.trim();if(!u||!currentCommunityId||!text)return;await addDoc(collection(db,'communities',currentCommunityId,'messages'),{text,authorUid:u.uid,authorName:publicName(profileCache),createdAt:serverTimestamp()});$('messageInput').value='';await loadCommunityMessages(currentCommunityId)};
+window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){
+ const u=user(),input=$('messageInput'),text=input?.value.trim();
+
+ if(!u)return;
+ if(!currentCommunityId){
+   alert('Nenhuma comunidade está aberta.');
+   return;
+ }
+ if(!text)return;
+
+ const communityId=currentCommunityId;
+
+ try{
+   await addDoc(
+     collection(db,'communities',communityId,'messages'),
+     {
+       text,
+       authorUid:u.uid,
+       authorName:publicName(profileCache),
+       createdAt:serverTimestamp()
+     }
+   );
+
+   if(input)input.value='';
+   await loadCommunityMessages(communityId);
+
+ }catch(e){
+   console.error('sendMessage:',e);
+   alert('Não foi possível enviar a mensagem: '+e.message);
+ }
+};
 /*
  * VÍDEOS EXCLUSIVOS DAS COMUNIDADES
  *
