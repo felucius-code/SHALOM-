@@ -1416,7 +1416,22 @@ select option {
 .custom-interest-preview .custom-interest-tag{display:inline-flex;align-items:center;gap:5px}
 .custom-interest-preview .custom-interest-remove{border:0;background:transparent;color:var(--gold);cursor:pointer;font-size:14px;line-height:1;padding:0}
 .recommendation-card{position:relative}
-.recommendation-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.recommendation-grid{
+  display:flex;
+  flex-direction:row;
+  flex-wrap:nowrap;
+  gap:14px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:2px 2px 10px;
+  scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
+}
+.recommendation-grid > .card{
+  flex:0 0 220px;
+  min-width:220px;
+  scroll-snap-align:start;
+}
 .recommendation-empty{color:#6B7A99;font-size:14px;padding:8px 0}
  .recommendation-match{display:inline-block;margin-top:6px;font-size:11px;color:var(--gold)}
 .admin-dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}
@@ -3512,6 +3527,11 @@ function recommendationCard(item, matched){
 }
 
 async function loadRecommendations(){
+  /*
+   * REGRA DO PRODUTO:
+   * Recomendações usam somente o catálogo público em contentTypes.
+   * Vídeos exclusivos de comunidades (studyVideos) NÃO entram aqui.
+   */
   const section=$('recommendationsSection'), grid=$('recommendationsGrid'), intro=$('recommendationsIntro');
   if(!section||!grid)return;
   const p=profileCache||await getProfile();
