@@ -3353,7 +3353,17 @@ window.logout=()=>signOut(auth);
 function contentForm(type){
  const info=contentTypes[type];
  if(!info){ alert('Tipo de conteúdo inválido.'); return; }
- const homeHost=$(info.home), gridHost=$(info.grid), host=(homeHost||gridHost);
+ const homeHost=$(info.home), gridHost=$(info.grid);
+ /*
+  * Se o formulário foi aberto dentro de uma página de catálogo/Loja,
+  * o formulário deve aparecer naquela página, e não em um elemento
+  * correspondente escondido da Home.
+  */
+ const currentPage=document.querySelector('.page:not(.hidden)');
+ const currentHost=currentPage?.querySelector(
+   `#${info.grid}`
+ );
+ const host=currentHost||gridHost||homeHost;
  if(!host){ alert(`Área de ${info.title} não encontrada.`); return; }
  document.getElementById('dynamicContentForm')?.remove();
  const f=document.createElement('div');
