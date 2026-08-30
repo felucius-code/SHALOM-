@@ -4377,6 +4377,15 @@ window.saveStudyVideo=async function(){
  }
 };
 
+async function visibleCreatorNotifications(){
+ const u=user();
+ if(!u)return [];
+ const snap=await getDocs(
+   query(collection(db,'communities'),where('createdByUid','==',u.uid))
+ );
+ return snap.docs.map(x=>({id:x.id,...x.data()}));
+}
+
 async function visibleAdminCommunities(){
  const u=user();
  if(!u)return [];
@@ -4537,7 +4546,7 @@ async function refreshNotificationBadge(){
  }
 
  try{
-   const arr=await visibleAdminCommunities();
+   const arr=await visibleCreatorNotifications();
    updateNotificationBadge(notificationCount(arr));
  }catch(e){
    console.warn('Não foi possível atualizar notificações:',e);
@@ -4549,62 +4558,43 @@ function startNotificationListener(){
    notificationUnsubscribe();
    notificationUnsubscribe=null;
  }
+
  const u=user();
  if(!u){
    updateNotificationBadge(0);
    return;
  }
- if(isAdmin){
-   notificationUnsubscribe=onSnapshot(
+
+ /*
+  * REGRA DO PRODUTO:
+  * solicitações de entrada pertencem exclusivamente ao criador
+  * da comunidade para fins de notificação.
+  *
+  * O administrador geral NÃO recebe essas notificações só por
+  * possuir a função administrativa global.
+  */
+ notificationUnsubscribe=onSnapshot(
+   query(
      collection(db,'communities'),
-     snap=>updateNotificationBadge(notificationCount(
-       snap.docs.map(d=>({id:d.id,...d.data()}))
-     )),
-     err=>{
-       console.warn('Listener de notificações indisponível:',err);
-       refreshNotificationBadge();
-     }
-   );
-   return;
- }
- const byId=new Map();
- const updateMergedBadge=()=>{
-   updateNotificationBadge(notificationCount([...byId.values()]));
- };
- const unsubs=[
-   onSnapshot(
-     query(collection(db,'communities'),where('createdByUid','==',u.uid)),
-     snap=>{
-       snap.docs.forEach(d=>byId.set(d.id,{id:d.id,...d.data()}));
-       updateMergedBadge();
-     },
-     err=>{
-       console.warn('Listener de comunidades criadas indisponível:',err);
-       refreshNotificationBadge();
-     }
+     where('createdByUid','==',u.uid)
    ),
-   onSnapshot(
-     query(collection(db,'communities'),where('communityAdminUids','array-contains',u.uid)),
-     snap=>{
-       snap.docs.forEach(d=>byId.set(d.id,{id:d.id,...d.data()}));
-       updateMergedBadge();
-     },
-     err=>{
-       console.warn('Listener de administradores indisponível:',err);
-       refreshNotificationBadge();
-     }
-   )
- ];
- notificationUnsubscribe=()=>{
-   unsubs.forEach(fn=>{try{fn()}catch(e){}});
- };
+   snap=>{
+     updateNotificationBadge(notificationCount(
+       snap.docs.map(d=>({id:d.id,...d.data()}))
+     ));
+   },
+   err=>{
+     console.warn('Listener de notificações indisponível:',err);
+     refreshNotificationBadge();
+   }
+ );
 }
 window.loadNotifications=async function(){
  const box=$('page-notifications')?.querySelector('.card');
  if(!box)return;
 
  try{
-   const arr=await visibleAdminCommunities();
+   const arr=await visibleCreatorNotifications();
    const pending=arr.filter(c=>
      (c.pendingMemberUids||[]).length ||
      (c.pendingMembers||[]).length
