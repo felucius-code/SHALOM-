@@ -1599,8 +1599,8 @@ button {
           Enviamos um link de confirmação para seu e-mail.
         </p>
         <div id="emailVerificationError" class="error hidden"></div>
-        <button class="btn" type="button" onclick="resendVerificationEmail()">Reenviar e-mail de confirmação</button>
-        <button class="btn btn-secondary" type="button" style="margin-top:8px;" onclick="checkEmailVerification()">Já confirmei meu e-mail</button>
+        <button class="btn" type="button" onclick="window.resendVerificationEmail()">Reenviar e-mail de confirmação</button>
+        <button class="btn btn-secondary" type="button" style="margin-top:8px;" onclick="window.checkEmailVerification()">Já confirmei meu e-mail</button>
         <button class="btn btn-secondary" type="button" style="margin-top:8px;" onclick="handleLogout()">Voltar para o login</button>
       </div>
 
@@ -1657,7 +1657,7 @@ button {
                 <button
                     class="btn"
                     style="width:100%;"
-                    onclick="handleLogin()">
+                    onclick="window.handleLogin()">
 
                     Entrar
 
@@ -1666,12 +1666,12 @@ button {
                 <button
                     class="btn btn-secondary"
                     style="width:100%;"
-                    onclick="showSignup()">
+                    onclick="window.showSignup()">
 
                     Criar Conta
 
                 </button>
-                  <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="showPasswordRecovery()">
+                  <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="window.showPasswordRecovery()">
                     Esqueci minha senha
                   </button>
 
@@ -1726,7 +1726,7 @@ button {
                 <button
                     class="btn"
                     style="width:100%;"
-                    onclick="handleSignup()">
+                    onclick="window.handleSignup()">
 
                     Criar Conta
 
@@ -1735,7 +1735,7 @@ button {
                 <button
                     class="btn btn-secondary"
                     style="width:100%;"
-                    onclick="showLogin()">
+                    onclick="window.showLogin()">
 
                     Voltar
 
@@ -1756,10 +1756,10 @@ button {
                   <label>Email</label>
                   <input type="email" id="recoveryEmail" placeholder="seu@email.com" autocomplete="email">
                 </div>
-                <button class="btn" style="width:100%;" onclick="handlePasswordRecovery()">
+                <button class="btn" style="width:100%;" onclick="window.handlePasswordRecovery()">
                   Enviar link de recuperação
                 </button>
-                <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="showLogin()">
+                <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="window.showLogin()">
                   Voltar
                 </button>
               </div>
@@ -3466,33 +3466,19 @@ async function initializeAuthenticatedApp(u){
  await loadHome();
 }
 
-window.handleAuthLogout=async function(){
- try{await signOut(auth);}catch(e){console.error(e);}
-};
-
 window.handleSignup=async function(){
  const name=$('signupName')?.value.trim();
  const email=$('signupEmail')?.value.trim();
  const password=$('signupPassword')?.value;
-
  if(!name||!email||!password)return showError('signupError','Preencha todos os campos.');
  if(password.length<6)return showError('signupError','A senha precisa ter pelo menos 6 caracteres.');
-
  try{
    const c=await createUserWithEmailAndPassword(auth,email,password);
    await updateProfile(c.user,{displayName:name});
-
    await setDoc(doc(db,'users',c.user.uid),{
-     uid:c.user.uid,
-     name,
-     email,
-     photoURL:'',
-     interests:[],
-     emailVerificationRequired:true,
-     createdAt:serverTimestamp(),
-     updatedAt:serverTimestamp()
+     uid:c.user.uid,name,email,photoURL:'',interests:[],
+     emailVerificationRequired:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()
    });
-
    await sendEmailVerification(c.user);
    showEmailVerificationNotice(c.user);
  }catch(e){
