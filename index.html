@@ -1593,6 +1593,17 @@ button {
 
 <section id="authScreen">
 
+      <div id="emailVerificationNotice" class="card hidden" style="max-width:520px;margin:30px auto;">
+        <h2 style="margin-bottom:12px;">Confirme seu e-mail</h2>
+        <p id="emailVerificationText" style="color:#6B7A99;line-height:1.6;">
+          Enviamos um link de confirmação para seu e-mail.
+        </p>
+        <div id="emailVerificationError" class="error hidden"></div>
+        <button class="btn" type="button" onclick="resendVerificationEmail()">Reenviar e-mail de confirmação</button>
+        <button class="btn btn-secondary" type="button" style="margin-top:8px;" onclick="checkEmailVerification()">Já confirmei meu e-mail</button>
+        <button class="btn btn-secondary" type="button" style="margin-top:8px;" onclick="handleLogout()">Voltar para o login</button>
+      </div>
+
     <div class="auth-container">
 
         <div class="auth-card">
@@ -1660,6 +1671,9 @@ button {
                     Criar Conta
 
                 </button>
+                  <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="showPasswordRecovery()">
+                    Esqueci minha senha
+                  </button>
 
             </div>
 
@@ -1733,6 +1747,22 @@ button {
 
     </div>
 
+
+
+              <div id="passwordRecoveryForm" class="hidden">
+                <h2 style="margin-bottom:20px;">Recuperar senha</h2>
+                <div id="passwordRecoveryMessage" class="hidden"></div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="recoveryEmail" placeholder="seu@email.com" autocomplete="email">
+                </div>
+                <button class="btn" style="width:100%;" onclick="handlePasswordRecovery()">
+                  Enviar link de recuperação
+                </button>
+                <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="showLogin()">
+                  Voltar
+                </button>
+              </div>
 </section>
 
 <!-- =====================================================
@@ -3354,95 +3384,100 @@ window.saveProfile=async function(){
 
 window.showSignup=function(){hideError('loginError');hideError('signupError');$('loginForm')?.classList.add('hidden');$('signupForm')?.classList.remove('hidden');$('signupName')?.focus()};
 window.showLogin=function(){hideError('loginError');hideError('signupError');$('signupForm')?.classList.add('hidden');$('loginForm')?.classList.remove('hidden');$('loginEmail')?.focus()};
-window.handleLogin=async function(){const email=$('loginEmail')?.value.trim(),password=$('loginPassword')?.value;if(!email||!password)return alert('Preencha email e senha.');try{await signInWithEmailAndPassword(auth,email,password)}catch(e){console.error(e);alert('Não foi possível entrar: '+e.message)}};
-window.handleSignup=async function(){const name=$('signupName')?.value.trim(),email=$('signupEmail')?.value.trim(),password=$('signupPassword')?.value;if(!name||!email||!password)return showError('signupError','Preencha todos os campos.');if(password.length<6)return showError('signupError','A senha precisa ter pelo menos 6 caracteres.');try{const c=await createUserWithEmailAndPassword(auth,email,password);await updateProfile(c.user,{displayName:name});await setDoc(doc(db,'users',c.user.uid),{uid:c.user.uid,name,email,photoURL:'',interests:[],createdAt:serverTimestamp(),updatedAt:serverTimestamp()});document.getElementById('signupForm')?.classList.add('hidden');document.getElementById('loginForm')?.classList.remove('hidden');document.getElementById('signupPassword')&&(document.getElementById('signupPassword').value='');hideError('signupError')}catch(e){console.error(e);showError('signupError',e.message)}};
-window.logout=()=>signOut(auth);
 
-function contentForm(type){
- const info=contentTypes[type];
- if(!info){ alert('Tipo de conteúdo inválido.'); return; }
- const homeHost=$(info.home), gridHost=$(info.grid);
- /*
-  * Se o formulário foi aberto dentro de uma página de catálogo/Loja,
-  * o formulário deve aparecer naquela página, e não em um elemento
-  * correspondente escondido da Home.
-  */
- const currentPage=document.querySelector('.page:not(.hidden)');
- const currentHost=currentPage?.querySelector(
-   `#${info.grid}`
- );
- const host=currentHost||gridHost||homeHost;
- if(!host){ alert(`Área de ${info.title} não encontrada.`); return; }
- document.getElementById('dynamicContentForm')?.remove();
- const f=document.createElement('div');
- f.id='dynamicContentForm';
- f.className='card';
- f.style.margin='18px 0';
- const isVideo=type==='videos';
- const isProduct=type==='products';
-  const isBook=type==='books';
- f.innerHTML=`
- <h2 class="card-title">${info.icon} Adicionar ${info.singular}</h2>
- <div class="form-group"><label>Título</label><input id="newContentTitle" type="text" autocomplete="off"></div>
- <div class="form-group"><label>Descrição</label><textarea id="newContentDescription"></textarea></div>
- <div class="form-group"><label>${isProduct?'Imagem do produto':(isBook?'Capa do livro':'Imagem/capa')}</label><input type="file" id="newContentImageFile" accept="image/*"><input type="url" id="newContentImage" placeholder="ou cole a URL da imagem" style="margin-top:6px"></div>
- ${isProduct?`
-   <div class="form-group"><label>Link de compra</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
-   <div class="grid"><div class="form-group"><label>Preço</label><input id="newContentPrice" type="text" placeholder="Ex.: R$ 49,90"></div><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div></div>
-   <div class="form-group"><label>Marca / autor (opcional)</label><input id="newContentAuthor" type="text"></div>
- `:isBook?`
-   <div class="form-group"><label>Autor</label><input id="newContentAuthor" type="text"></div>
-   <div class="grid"><div class="form-group"><label>Ano de publicação</label><input id="newContentYear" type="number"></div><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div></div>
-   <div class="form-group"><label>ISBN (opcional)</label><input id="newContentISBN" type="text"></div>
-   <div class="form-group"><label>Link externo (opcional)</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
- `:`
-   <div class="form-group"><label>Link / URL do conteúdo</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
-   ${isVideo?'<div class="form-group"><small style="color:#8f9ab3">Para YouTube, cole a URL normal do vídeo.</small></div>':''}
-   <div class="grid"><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div><div class="form-group"><label>Ano</label><input id="newContentYear" type="number"></div></div>
-   <div class="form-group"><label>Duração</label><input id="newContentDuration" placeholder="Ex.: 1h 42min"></div>
- `}
- ${!isBook&&!isProduct?'<div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">🔓 Gratuito</option><option value="subscription">🔐 Por assinatura</option></select></div>':''}
- <div id="contentFormMessage" class="hidden"></div>
- <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="saveContentBtn" class="btn" type="button">💾 Salvar ${info.singular}</button><button id="cancelContentBtn" class="btn btn-secondary" type="button">Cancelar</button></div>`
- // Na Home, inserir o formulário no início da própria seção, acima do carrossel.
- // Nas páginas de catálogo, inserir antes do grid.
- const targetParent=host.parentElement;
- targetParent.insertBefore(f,host);
- f.scrollIntoView({behavior:'smooth',block:'center'});
- $('saveContentBtn').addEventListener('click',()=>window.saveContent(type));
- $('cancelContentBtn').addEventListener('click',()=>f.remove());
- setTimeout(()=>$('newContentTitle')?.focus(),50);
-}
-window.showContentForm=contentForm;window.updateContentPriceField=()=>{};
-window.saveContent=async function(type){
- const info=contentTypes[type],btn=$('saveContentBtn');
- if(!user()||!isAdmin)return alert('Acesso restrito ao administrador.');
- const title=$('newContentTitle')?.value.trim();
- if(!title)return alert('Informe o título.');
- if(btn){btn.disabled=true;btn.textContent='Salvando...'}
+window.showPasswordRecovery=function(){
+ $('loginForm')?.classList.add('hidden');
+ $('signupForm')?.classList.add('hidden');
+ $('passwordRecoveryForm')?.classList.remove('hidden');
+ const email=$('loginEmail')?.value.trim();
+ if(email && $('recoveryEmail'))$('recoveryEmail').value=email;
+};
+
+window.handlePasswordRecovery=async function(){
+ const email=$('recoveryEmail')?.value.trim();
+ const box=$('passwordRecoveryMessage');
+ if(!email){ if(box){box.className='error';box.textContent='Informe seu e-mail.';box.classList.remove('hidden');} return; }
  try{
-  let image=$('newContentImage')?.value.trim()||'';
-  const imageFile=$('newContentImageFile')?.files?.[0];
-  if(imageFile){
-    image=await uploadImageToCloudinary(imageFile,'O upload da capa');
-  }
-  const rawUrl=$('newContentUrl')?.value.trim()||'';
-   const author=$('newContentAuthor')?.value.trim()||'';
-   const isbn=$('newContentISBN')?.value.trim()||'';
-   const price=$('newContentPrice')?.value.trim()||'';
-  const data={title,description:$('newContentDescription')?.value.trim()||'',image,url:type==='videos'?youtubeUrl(rawUrl):rawUrl,category:$('newContentCategory')?.value.trim()||'',year:$('newContentYear')?.value||'',duration:$('newContentDuration')?.value.trim()||'',access:$('newContentAccess')?.value||'free',author,isbn,price,createdAt:serverTimestamp(),createdByUid:user().uid,createdByName:publicName(profileCache)};
-  if(type==='products')data.price=$('newContentPrice')?.value.trim()||'';
-  await withTimeout(addDoc(collection(db,info.collection),data),15000,'O salvamento do conteúdo no Firestore');
-  document.getElementById('dynamicContentForm')?.remove();
-  await loadContent(type);
-  if(type!=='products')await loadHome();
-  alert(`${info.singular} salvo com sucesso.`);
+   await sendPasswordResetEmail(auth,email);
+   if(box){box.className='success';box.textContent='Enviamos um link de recuperação para este e-mail. Verifique sua caixa de entrada e a pasta de spam.';box.classList.remove('hidden');}
  }catch(e){
-  console.error('saveContent:',e);
-  alert('Não foi possível salvar o conteúdo.\n\n'+e.message);
- }finally{
-  if(btn){btn.disabled=false;btn.textContent=`💾 Salvar ${info.singular}`}
+   console.error(e);
+   if(box){box.className='error';box.textContent='Não foi possível enviar o link de recuperação.';box.classList.remove('hidden');}
  }
+};
+
+function showEmailVerificationNotice(u){
+ const notice=$('emailVerificationNotice');
+ if(!notice)return;
+ const t=$('emailVerificationText');
+ if(t)t.textContent=`Enviamos um link de confirmação para ${u.email||'seu e-mail'}. Confirme o endereço para entrar no SHALOM.`;
+ notice.classList.remove('hidden');
+ $('loginForm')?.classList.add('hidden');
+ $('signupForm')?.classList.add('hidden');
+ $('passwordRecoveryForm')?.classList.add('hidden');
+}
+
+window.resendVerificationEmail=async function(){
+ const u=auth.currentUser;
+ if(!u)return;
+ try{
+   await sendEmailVerification(u);
+   const e=$('emailVerificationError');
+   if(e){e.className='success';e.textContent='E-mail de confirmação reenviado.';e.classList.remove('hidden');}
+ }catch(err){
+   console.error(err);
+   const e=$('emailVerificationError');
+   if(e){e.className='error';e.textContent='Não foi possível reenviar o e-mail agora.';e.classList.remove('hidden');}
+ }
+};
+
+window.checkEmailVerification=async function(){
+ const u=auth.currentUser;
+ if(!u)return;
+ try{
+   await reload(u);
+   if(auth.currentUser?.emailVerified){
+     $('emailVerificationNotice')?.classList.add('hidden');
+     await initializeAuthenticatedApp(auth.currentUser);
+   }else{
+     const e=$('emailVerificationError');
+     if(e){e.className='error';e.textContent='O e-mail ainda não foi confirmado. Abra o link recebido e tente novamente.';e.classList.remove('hidden');}
+   }
+ }catch(err){
+   console.error(err);
+   const e=$('emailVerificationError');
+   if(e){e.className='error';e.textContent='Não foi possível verificar o status do e-mail agora.';e.classList.remove('hidden');}
+ }
+};
+
+async function initializeAuthenticatedApp(u){
+ currentUser=u;
+ isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();
+ Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));
+ document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));
+ bindHomeAddButtons();
+ profileCache=await getProfile(u.uid);
+ startNotificationListener();
+ await refreshNotificationBadge();
+ $('authScreen')?.classList.add('hidden');
+ $('appScreen')?.classList.remove('hidden');
+ $('adminMenu')?.classList.toggle('hidden',!isAdmin);
+ applyIdentity(profileCache||{});
+ await loadHome();
+}
+
+window.handleLogin=async function(){
+ const email=$('loginEmail')?.value.trim(),password=$('loginPassword')?.value;
+ if(!email||!password)return alert('Preencha email e senha.');
+ try{
+   const cred=await signInWithEmailAndPassword(auth,email,password);
+   const profile=await getProfile(cred.user.uid);
+   if(profile?.emailVerificationRequired===true && !cred.user.emailVerified){
+     showEmailVerificationNotice(cred.user);
+     return;
+   }
+   await initializeAuthenticatedApp(cred.user);
+ }catch(e){console.error(e);alert('Não foi possível entrar: '+e.message);}
 };
 function isYouTubeUrl(rawUrl){
  try{
@@ -4861,7 +4896,36 @@ function bindHomeAddButtons(){
  });
 }
 
-onAuthStateChanged(auth,async u=>{currentUser=u;if(!u){if(notificationUnsubscribe){notificationUnsubscribe();notificationUnsubscribe=null;}updateNotificationBadge(0);} const authScreen=$('authScreen'),appScreen=$('appScreen');if(u){isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));bindHomeAddButtons();profileCache=await getProfile(u.uid);startNotificationListener();refreshNotificationBadge();authScreen?.classList.add('hidden');appScreen?.classList.remove('hidden');$('adminMenu')?.classList.toggle('hidden',!isAdmin);applyIdentity(profileCache||{});await loadHome();}else{isAdmin=false;profileCache=null;authScreen?.classList.remove('hidden');appScreen?.classList.add('hidden')}});
+onAuthStateChanged(auth,async u=>{
+ currentUser=u;
+ const authScreen=$('authScreen'),appScreen=$('appScreen');
+ if(!u){
+   if(notificationUnsubscribe){notificationUnsubscribe();notificationUnsubscribe=null;}
+   updateNotificationBadge(0);
+   isAdmin=false; profileCache=null;
+   authScreen?.classList.remove('hidden');
+   appScreen?.classList.add('hidden');
+   $('emailVerificationNotice')?.classList.add('hidden');
+   showLogin();
+   return;
+ }
+ try{
+   const profile=await getProfile(u.uid);
+   // Backward compatibility: only accounts created under the new policy
+   // are blocked until verification.
+   if(profile?.emailVerificationRequired===true && !u.emailVerified){
+     showEmailVerificationNotice(u);
+     authScreen?.classList.remove('hidden');
+     appScreen?.classList.add('hidden');
+     return;
+   }
+   $('emailVerificationNotice')?.classList.add('hidden');
+   await initializeAuthenticatedApp(u);
+ }catch(e){
+   console.error('auth initialization:',e);
+   alert('Não foi possível carregar sua conta. Tente novamente.');
+ }
+});
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
