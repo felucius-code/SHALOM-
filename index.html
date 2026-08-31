@@ -1724,9 +1724,10 @@ button {
                 </div>
 
                 <button
+                    id="signupSubmitBtn"
                     class="btn"
                     style="width:100%;"
-                    type="button" onclick="window.handleSignup();return false;">
+                    type="button">
 
                     Criar Conta
 
@@ -3476,6 +3477,7 @@ window.handleSignup=async function(){
 
  const old=btn?.textContent?.trim()||'Criar Conta';
  if(btn){btn.disabled=true;btn.textContent='Criando conta...';}
+ else { console.warn('Botão signupSubmitBtn não encontrado no momento do cadastro.'); }
  try{
    const c=await createUserWithEmailAndPassword(auth,email,password);
    await updateProfile(c.user,{displayName:name});
@@ -4956,27 +4958,29 @@ onAuthStateChanged(auth,async u=>{
 
 
 function bindAuthButtons(){
- const signupBtn=document.querySelector('#signupForm button[onclick*="handleSignup"]');
+ const signupBtn=document.getElementById('signupSubmitBtn');
  if(signupBtn && !signupBtn.dataset.authBound){
    signupBtn.dataset.authBound='1';
-   signupBtn.addEventListener('click',async ev=>{
+   signupBtn.addEventListener('click',function(ev){
      ev.preventDefault();
      ev.stopPropagation();
-     try{await window.handleSignup();}catch(e){console.error('Cadastro:',e);alert('Não foi possível criar a conta.');}
+     window.handleSignup();
    });
  }
  const loginBtn=document.querySelector('#loginForm button[onclick*="handleLogin"]');
  if(loginBtn && !loginBtn.dataset.authBound){
    loginBtn.dataset.authBound='1';
-   loginBtn.addEventListener('click',async ev=>{
+   loginBtn.addEventListener('click',async function(ev){
      ev.preventDefault();
      ev.stopPropagation();
-     try{await window.handleLogin();}catch(e){console.error('Login:',e);alert('Não foi possível entrar.');}
+     try{await window.handleLogin();}catch(e){console.error('Login:',e);}
    });
  }
 }
+document.addEventListener('DOMContentLoaded',bindAuthButtons);
 window.addEventListener('load',bindAuthButtons);
 setTimeout(bindAuthButtons,0);
+if(document.readyState!=='loading')bindAuthButtons();
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
