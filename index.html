@@ -1799,7 +1799,7 @@ button {
 
         <span id="userEmail" class="user-email"></span>
 
-        <button class="logout-btn" onclick="logout()">Sair</button>
+        
 
     </div>
 
@@ -3150,6 +3150,14 @@ button {
         </div>
 
         <button class="btn" onclick="saveProfile()">Salvar perfil</button>
+        <button
+            id="profileLogoutBtn"
+            class="btn btn-secondary"
+            type="button"
+            style="margin-top:10px;width:100%;"
+            onclick="logout()">
+            Sair da conta
+        </button>
     </div>
 
 </section>
@@ -3457,7 +3465,14 @@ window.handleSignup=async function(){
  }
 };
 
-window.logout=()=>signOut(auth);
+window.logout=async function(){
+ try{
+   await signOut(auth);
+ }catch(e){
+   console.error('Logout:',e);
+   alert('Não foi possível sair da conta. Tente novamente.');
+ }
+};
 
 function contentForm(type){
  const info=contentTypes[type];
