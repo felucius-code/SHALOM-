@@ -1601,7 +1601,7 @@ button {
         <div id="emailVerificationError" class="error hidden"></div>
         <button class="btn" type="button" onclick="window.resendVerificationEmail()">Reenviar e-mail de confirmação</button>
         <button class="btn btn-secondary" type="button" style="margin-top:8px;" onclick="window.checkEmailVerification()">Já confirmei meu e-mail</button>
-        <button class="btn btn-secondary" type="button" style="margin-top:8px;" onclick="handleLogout()">Voltar para o login</button>
+        <button class="btn btn-secondary" type="button" style="margin-top:8px;" onclick="window.handleAuthLogout()">Voltar para o login</button>
       </div>
 
     <div class="auth-container">
@@ -1657,7 +1657,7 @@ button {
                 <button
                     class="btn"
                     style="width:100%;"
-                    type="button" onclick="window.handleLogin();return false;">
+                    onclick="handleLogin()">
 
                     Entrar
 
@@ -1666,14 +1666,20 @@ button {
                 <button
                     class="btn btn-secondary"
                     style="width:100%;"
-                    type="button" onclick="window.showSignup();return false;">
+                    onclick="showSignup()">
 
                     Criar Conta
 
                 </button>
-                  <button class="btn btn-secondary" style="width:100%;margin-top:8px;" type="button" onclick="window.showPasswordRecovery();return false;">
+                <button
+                    class="btn btn-secondary"
+                    style="width:100%;margin-top:8px;"
+                    type="button"
+                    onclick="window.showPasswordRecovery()">
+
                     Esqueci minha senha
-                  </button>
+
+                </button>
 
             </div>
 
@@ -1723,11 +1729,10 @@ button {
 
                 </div>
 
-                <button
-                    id="signupSubmitBtn"
+                <button id="signupSubmitBtn" type="button"
                     class="btn"
                     style="width:100%;"
-                    type="button">
+                    onclick="handleSignup()">
 
                     Criar Conta
 
@@ -1736,7 +1741,7 @@ button {
                 <button
                     class="btn btn-secondary"
                     style="width:100%;"
-                    onclick="window.showLogin()">
+                    onclick="showLogin()">
 
                     Voltar
 
@@ -1757,10 +1762,10 @@ button {
                   <label>Email</label>
                   <input type="email" id="recoveryEmail" placeholder="seu@email.com" autocomplete="email">
                 </div>
-                <button class="btn" style="width:100%;" onclick="window.handlePasswordRecovery()">
+                <button class="btn" type="button" style="width:100%;" onclick="window.handlePasswordRecovery()">
                   Enviar link de recuperação
                 </button>
-                <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="window.showLogin()">
+                <button class="btn btn-secondary" type="button" style="width:100%;margin-top:8px;" onclick="window.showLogin()">
                   Voltar
                 </button>
               </div>
@@ -3383,117 +3388,23 @@ window.saveProfile=async function(){
  }
 };
 
-window.showSignup=function(){hideError('loginError');hideError('signupError');$('loginForm')?.classList.add('hidden');$('signupForm')?.classList.remove('hidden');$('signupName')?.focus()};
-window.showLogin=function(){hideError('loginError');hideError('signupError');$('signupForm')?.classList.add('hidden');$('loginForm')?.classList.remove('hidden');$('loginEmail')?.focus()};
-
-window.showPasswordRecovery=function(){
+window.showSignup=function(){
+ hideError('loginError');hideError('signupError');
  $('loginForm')?.classList.add('hidden');
- $('signupForm')?.classList.add('hidden');
- $('passwordRecoveryForm')?.classList.remove('hidden');
- const email=$('loginEmail')?.value.trim();
- if(email && $('recoveryEmail'))$('recoveryEmail').value=email;
+ $('signupForm')?.classList.remove('hidden');
+ $('passwordRecoveryForm')?.classList.add('hidden');
+ $('signupName')?.focus();
 };
-
-window.handlePasswordRecovery=async function(){
- const email=$('recoveryEmail')?.value.trim();
- const box=$('passwordRecoveryMessage');
- if(!email){ if(box){box.className='error';box.textContent='Informe seu e-mail.';box.classList.remove('hidden');} return; }
- try{
-   await sendPasswordResetEmail(auth,email);
-   if(box){box.className='success';box.textContent='Enviamos um link de recuperação para este e-mail. Verifique sua caixa de entrada e a pasta de spam.';box.classList.remove('hidden');}
- }catch(e){
-   console.error(e);
-   if(box){box.className='error';box.textContent='Não foi possível enviar o link de recuperação.';box.classList.remove('hidden');}
- }
-};
-
-function showEmailVerificationNotice(u){
- const notice=$('emailVerificationNotice');
- if(!notice)return;
- const t=$('emailVerificationText');
- if(t)t.textContent=`Enviamos um link de confirmação para ${u.email||'seu e-mail'}. Confirme o endereço para entrar no SHALOM.`;
- notice.classList.remove('hidden');
- $('loginForm')?.classList.add('hidden');
+window.showLogin=function(){
+ hideError('loginError');hideError('signupError');
  $('signupForm')?.classList.add('hidden');
  $('passwordRecoveryForm')?.classList.add('hidden');
-}
-
-window.resendVerificationEmail=async function(){
- const u=auth.currentUser;
- if(!u)return;
- try{
-   await sendEmailVerification(u);
-   const e=$('emailVerificationError');
-   if(e){e.className='success';e.textContent='E-mail de confirmação reenviado.';e.classList.remove('hidden');}
- }catch(err){
-   console.error(err);
-   const e=$('emailVerificationError');
-   if(e){e.className='error';e.textContent='Não foi possível reenviar o e-mail agora.';e.classList.remove('hidden');}
- }
+ $('loginForm')?.classList.remove('hidden');
+ $('emailVerificationNotice')?.classList.add('hidden');
+ $('loginEmail')?.focus();
 };
 
-window.checkEmailVerification=async function(){
- const u=auth.currentUser;
- if(!u)return;
- try{
-   await reload(u);
-   if(auth.currentUser?.emailVerified){
-     $('emailVerificationNotice')?.classList.add('hidden');
-     await initializeAuthenticatedApp(auth.currentUser);
-   }else{
-     const e=$('emailVerificationError');
-     if(e){e.className='error';e.textContent='O e-mail ainda não foi confirmado. Abra o link recebido e tente novamente.';e.classList.remove('hidden');}
-   }
- }catch(err){
-   console.error(err);
-   const e=$('emailVerificationError');
-   if(e){e.className='error';e.textContent='Não foi possível verificar o status do e-mail agora.';e.classList.remove('hidden');}
- }
-};
-
-async function initializeAuthenticatedApp(u){
- currentUser=u;
- isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();
- Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));
- document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));
- bindHomeAddButtons();
- profileCache=await getProfile(u.uid);
- startNotificationListener();
- await refreshNotificationBadge();
- $('authScreen')?.classList.add('hidden');
- $('appScreen')?.classList.remove('hidden');
- $('adminMenu')?.classList.toggle('hidden',!isAdmin);
- applyIdentity(profileCache||{});
- await loadHome();
-}
-
-window.handleSignup=async function(){
- const name=$('signupName')?.value.trim();
- const email=$('signupEmail')?.value.trim();
- const password=$('signupPassword')?.value;
- const btn=document.querySelector('#signupForm button[onclick*="handleSignup"]');
- if(!name||!email||!password)return showError('signupError','Preencha todos os campos.');
- if(password.length<6)return showError('signupError','A senha precisa ter pelo menos 6 caracteres.');
-
- const old=btn?.textContent?.trim()||'Criar Conta';
- if(btn){btn.disabled=true;btn.textContent='Criando conta...';}
- else { console.warn('Botão signupSubmitBtn não encontrado no momento do cadastro.'); }
- try{
-   const c=await createUserWithEmailAndPassword(auth,email,password);
-   await updateProfile(c.user,{displayName:name});
-   await setDoc(doc(db,'users',c.user.uid),{
-     uid:c.user.uid,name,email,photoURL:'',interests:[],
-     emailVerificationRequired:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()
-   });
-   await sendEmailVerification(c.user);
-   showEmailVerificationNotice(c.user);
- }catch(e){
-   console.error('handleSignup:',e);
-   showError('signupError',e.message||'Não foi possível criar a conta.');
- }finally{
-   if(btn){btn.disabled=false;btn.textContent=old;}
- }
-};
+const verificationPendingEmails=new Set();
 
 window.handleLogin=async function(){
  const email=$('loginEmail')?.value.trim(),password=$('loginPassword')?.value;
@@ -3505,8 +3416,134 @@ window.handleLogin=async function(){
      showEmailVerificationNotice(cred.user);
      return;
    }
-   await initializeAuthenticatedApp(cred.user);
- }catch(e){console.error(e);alert('Não foi possível entrar: '+e.message);}
+ }catch(e){
+   console.error(e);
+   alert('Não foi possível entrar: '+e.message);
+ }
+};
+
+window.handleSignup=async function(){
+ const name=$('signupName')?.value.trim();
+ const email=$('signupEmail')?.value.trim();
+ const password=$('signupPassword')?.value;
+ const btn=$('signupSubmitBtn')||[...document.querySelectorAll('#signupForm button')].find(b=>/Criar Conta/i.test(b.textContent||''));
+
+ if(!name||!email||!password)return showError('signupError','Preencha todos os campos.');
+ if(password.length<6)return showError('signupError','A senha precisa ter pelo menos 6 caracteres.');
+
+ const old=btn?.textContent?.trim()||'Criar Conta';
+ if(btn){btn.disabled=true;btn.textContent='Criando conta...';}
+ const emailKey=email.toLowerCase();
+
+ // Register before createUser can trigger onAuthStateChanged.
+ verificationPendingEmails.add(emailKey);
+
+ try{
+   const c=await createUserWithEmailAndPassword(auth,email,password);
+   await updateProfile(c.user,{displayName:name});
+   await setDoc(doc(db,'users',c.user.uid),{
+     uid:c.user.uid,name,email,photoURL:'',interests:[],
+     emailVerificationRequired:true,
+     createdAt:serverTimestamp(),updatedAt:serverTimestamp()
+   });
+   await sendEmailVerification(c.user);
+   showEmailVerificationNotice(c.user);
+ }catch(e){
+   console.error('handleSignup:',e);
+   verificationPendingEmails.delete(emailKey);
+   showError('signupError',e.message||'Não foi possível criar a conta.');
+ }finally{
+   if(btn){btn.disabled=false;btn.textContent=old;}
+ }
+};
+
+window.logout=()=>signOut(auth);
+
+function contentForm(type){
+ const info=contentTypes[type];
+ if(!info){ alert('Tipo de conteúdo inválido.'); return; }
+ const homeHost=$(info.home), gridHost=$(info.grid);
+ /*
+  * Se o formulário foi aberto dentro de uma página de catálogo/Loja,
+  * o formulário deve aparecer naquela página, e não em um elemento
+  * correspondente escondido da Home.
+  */
+ const currentPage=document.querySelector('.page:not(.hidden)');
+ const currentHost=currentPage?.querySelector(
+   `#${info.grid}`
+ );
+ const host=currentHost||gridHost||homeHost;
+ if(!host){ alert(`Área de ${info.title} não encontrada.`); return; }
+ document.getElementById('dynamicContentForm')?.remove();
+ const f=document.createElement('div');
+ f.id='dynamicContentForm';
+ f.className='card';
+ f.style.margin='18px 0';
+ const isVideo=type==='videos';
+ const isProduct=type==='products';
+  const isBook=type==='books';
+ f.innerHTML=`
+ <h2 class="card-title">${info.icon} Adicionar ${info.singular}</h2>
+ <div class="form-group"><label>Título</label><input id="newContentTitle" type="text" autocomplete="off"></div>
+ <div class="form-group"><label>Descrição</label><textarea id="newContentDescription"></textarea></div>
+ <div class="form-group"><label>${isProduct?'Imagem do produto':(isBook?'Capa do livro':'Imagem/capa')}</label><input type="file" id="newContentImageFile" accept="image/*"><input type="url" id="newContentImage" placeholder="ou cole a URL da imagem" style="margin-top:6px"></div>
+ ${isProduct?`
+   <div class="form-group"><label>Link de compra</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
+   <div class="grid"><div class="form-group"><label>Preço</label><input id="newContentPrice" type="text" placeholder="Ex.: R$ 49,90"></div><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div></div>
+   <div class="form-group"><label>Marca / autor (opcional)</label><input id="newContentAuthor" type="text"></div>
+ `:isBook?`
+   <div class="form-group"><label>Autor</label><input id="newContentAuthor" type="text"></div>
+   <div class="grid"><div class="form-group"><label>Ano de publicação</label><input id="newContentYear" type="number"></div><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div></div>
+   <div class="form-group"><label>ISBN (opcional)</label><input id="newContentISBN" type="text"></div>
+   <div class="form-group"><label>Link externo (opcional)</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
+ `:`
+   <div class="form-group"><label>Link / URL do conteúdo</label><input id="newContentUrl" type="url" placeholder="https://..."></div>
+   ${isVideo?'<div class="form-group"><small style="color:#8f9ab3">Para YouTube, cole a URL normal do vídeo.</small></div>':''}
+   <div class="grid"><div class="form-group"><label>Categoria</label><input id="newContentCategory"></div><div class="form-group"><label>Ano</label><input id="newContentYear" type="number"></div></div>
+   <div class="form-group"><label>Duração</label><input id="newContentDuration" placeholder="Ex.: 1h 42min"></div>
+ `}
+ ${!isBook&&!isProduct?'<div class="form-group"><label>Acesso</label><select id="newContentAccess"><option value="free">🔓 Gratuito</option><option value="subscription">🔐 Por assinatura</option></select></div>':''}
+ <div id="contentFormMessage" class="hidden"></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="saveContentBtn" class="btn" type="button">💾 Salvar ${info.singular}</button><button id="cancelContentBtn" class="btn btn-secondary" type="button">Cancelar</button></div>`
+ // Na Home, inserir o formulário no início da própria seção, acima do carrossel.
+ // Nas páginas de catálogo, inserir antes do grid.
+ const targetParent=host.parentElement;
+ targetParent.insertBefore(f,host);
+ f.scrollIntoView({behavior:'smooth',block:'center'});
+ $('saveContentBtn').addEventListener('click',()=>window.saveContent(type));
+ $('cancelContentBtn').addEventListener('click',()=>f.remove());
+ setTimeout(()=>$('newContentTitle')?.focus(),50);
+}
+window.showContentForm=contentForm;window.updateContentPriceField=()=>{};
+window.saveContent=async function(type){
+ const info=contentTypes[type],btn=$('saveContentBtn');
+ if(!user()||!isAdmin)return alert('Acesso restrito ao administrador.');
+ const title=$('newContentTitle')?.value.trim();
+ if(!title)return alert('Informe o título.');
+ if(btn){btn.disabled=true;btn.textContent='Salvando...'}
+ try{
+  let image=$('newContentImage')?.value.trim()||'';
+  const imageFile=$('newContentImageFile')?.files?.[0];
+  if(imageFile){
+    image=await uploadImageToCloudinary(imageFile,'O upload da capa');
+  }
+  const rawUrl=$('newContentUrl')?.value.trim()||'';
+   const author=$('newContentAuthor')?.value.trim()||'';
+   const isbn=$('newContentISBN')?.value.trim()||'';
+   const price=$('newContentPrice')?.value.trim()||'';
+  const data={title,description:$('newContentDescription')?.value.trim()||'',image,url:type==='videos'?youtubeUrl(rawUrl):rawUrl,category:$('newContentCategory')?.value.trim()||'',year:$('newContentYear')?.value||'',duration:$('newContentDuration')?.value.trim()||'',access:$('newContentAccess')?.value||'free',author,isbn,price,createdAt:serverTimestamp(),createdByUid:user().uid,createdByName:publicName(profileCache)};
+  if(type==='products')data.price=$('newContentPrice')?.value.trim()||'';
+  await withTimeout(addDoc(collection(db,info.collection),data),15000,'O salvamento do conteúdo no Firestore');
+  document.getElementById('dynamicContentForm')?.remove();
+  await loadContent(type);
+  if(type!=='products')await loadHome();
+  alert(`${info.singular} salvo com sucesso.`);
+ }catch(e){
+  console.error('saveContent:',e);
+  alert('Não foi possível salvar o conteúdo.\n\n'+e.message);
+ }finally{
+  if(btn){btn.disabled=false;btn.textContent=`💾 Salvar ${info.singular}`}
+ }
 };
 function isYouTubeUrl(rawUrl){
  try{
@@ -4925,67 +4962,147 @@ function bindHomeAddButtons(){
  });
 }
 
+
+window.showPasswordRecovery=function(){
+ $('loginForm')?.classList.add('hidden');
+ $('signupForm')?.classList.add('hidden');
+ $('passwordRecoveryForm')?.classList.remove('hidden');
+ const email=$('loginEmail')?.value.trim();
+ if(email && $('recoveryEmail'))$('recoveryEmail').value=email;
+};
+
+window.handlePasswordRecovery=async function(){
+ const email=$('recoveryEmail')?.value.trim(),box=$('passwordRecoveryMessage');
+ if(!email){
+   if(box){box.className='error';box.textContent='Informe seu e-mail.';box.classList.remove('hidden');}
+   return;
+ }
+ try{
+   await sendPasswordResetEmail(auth,email);
+   if(box){box.className='success';box.textContent='Enviamos um link de recuperação para este e-mail. Verifique sua caixa de entrada e a pasta de spam.';box.classList.remove('hidden');}
+ }catch(e){
+   console.error(e);
+   if(box){box.className='error';box.textContent='Não foi possível enviar o link de recuperação.';box.classList.remove('hidden');}
+ }
+};
+
+function showEmailVerificationNotice(u){
+ const notice=$('emailVerificationNotice');
+ if(!notice)return;
+ const t=$('emailVerificationText');
+ if(t)t.textContent=`Enviamos um link de confirmação para ${u.email||'seu e-mail'}. Confirme o endereço para entrar no SHALOM.`;
+ notice.classList.remove('hidden');
+ $('loginForm')?.classList.add('hidden');
+ $('signupForm')?.classList.add('hidden');
+ $('passwordRecoveryForm')?.classList.add('hidden');
+}
+
+window.resendVerificationEmail=async function(){
+ const u=auth.currentUser;
+ if(!u)return;
+ try{
+   await sendEmailVerification(u);
+   const e=$('emailVerificationError');
+   if(e){e.className='success';e.textContent='E-mail de confirmação reenviado.';e.classList.remove('hidden');}
+ }catch(err){
+   console.error(err);
+   const e=$('emailVerificationError');
+   if(e){e.className='error';e.textContent='Não foi possível reenviar o e-mail agora.';e.classList.remove('hidden');}
+ }
+};
+
+window.checkEmailVerification=async function(){
+ const u=auth.currentUser;
+ if(!u)return;
+ try{
+   await reload(u);
+   if(auth.currentUser?.emailVerified){
+     verificationPendingEmails.delete((auth.currentUser.email||'').toLowerCase());
+     $('emailVerificationNotice')?.classList.add('hidden');
+
+     currentUser=auth.currentUser;
+     isAdmin=currentUser.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();
+     Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));
+     document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));
+     bindHomeAddButtons();
+     profileCache=await getProfile(currentUser.uid);
+     startNotificationListener();
+     refreshNotificationBadge();
+     $('authScreen')?.classList.add('hidden');
+     $('appScreen')?.classList.remove('hidden');
+     $('adminMenu')?.classList.toggle('hidden',!isAdmin);
+     applyIdentity(profileCache||{});
+     await loadHome();
+   }else{
+     const e=$('emailVerificationError');
+     if(e){e.className='error';e.textContent='O e-mail ainda não foi confirmado. Abra o link recebido e tente novamente.';e.classList.remove('hidden');}
+   }
+ }catch(err){
+   console.error(err);
+   const e=$('emailVerificationError');
+   if(e){e.className='error';e.textContent='Não foi possível verificar o status do e-mail agora.';e.classList.remove('hidden');}
+ }
+};
+
+window.handleAuthLogout=async function(){
+ verificationPendingEmails.clear();
+ try{await signOut(auth);}catch(e){console.error(e);}
+};
+
 onAuthStateChanged(auth,async u=>{
  currentUser=u;
- const authScreen=$('authScreen'),appScreen=$('appScreen');
  if(!u){
    if(notificationUnsubscribe){notificationUnsubscribe();notificationUnsubscribe=null;}
    updateNotificationBadge(0);
-   isAdmin=false; profileCache=null;
-   authScreen?.classList.remove('hidden');
-   appScreen?.classList.add('hidden');
+   isAdmin=false;profileCache=null;
+   $('authScreen')?.classList.remove('hidden');
+   $('appScreen')?.classList.add('hidden');
    $('emailVerificationNotice')?.classList.add('hidden');
-   showLogin();
+   $('passwordRecoveryForm')?.classList.add('hidden');
+   $('loginForm')?.classList.remove('hidden');
+   $('signupForm')?.classList.add('hidden');
    return;
  }
  try{
    const profile=await getProfile(u.uid);
-   // Backward compatibility: only accounts created under the new policy
-   // are blocked until verification.
-   if(profile?.emailVerificationRequired===true && !u.emailVerified){
+   const emailKey=(u.email||'').toLowerCase();
+
+   // Prevent the Firebase auth-state callback from opening the app while a
+   // newly created account is still in the verification flow.
+   if(verificationPendingEmails.has(emailKey)){
      showEmailVerificationNotice(u);
-     authScreen?.classList.remove('hidden');
-     appScreen?.classList.add('hidden');
+     $('authScreen')?.classList.remove('hidden');
+     $('appScreen')?.classList.add('hidden');
      return;
    }
-   $('emailVerificationNotice')?.classList.add('hidden');
-   await initializeAuthenticatedApp(u);
+
+   // Existing v37 accounts remain usable unless explicitly marked by the
+   // new verification policy.
+   if(profile?.emailVerificationRequired===true && !u.emailVerified){
+     showEmailVerificationNotice(u);
+     $('authScreen')?.classList.remove('hidden');
+     $('appScreen')?.classList.add('hidden');
+     return;
+   }
+
+   // Preserve the complete v37 initialization path, including Home + add buttons.
+   isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();
+   Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));
+   document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));
+   bindHomeAddButtons();
+   profileCache=profile||await getProfile(u.uid);
+   startNotificationListener();
+   refreshNotificationBadge();
+   $('authScreen')?.classList.add('hidden');
+   $('appScreen')?.classList.remove('hidden');
+   $('adminMenu')?.classList.toggle('hidden',!isAdmin);
+   applyIdentity(profileCache||{});
+   await loadHome();
  }catch(e){
    console.error('auth initialization:',e);
    alert('Não foi possível carregar sua conta. Tente novamente.');
  }
 });
-
-
-function bindAuthButtons(){
- const signupBtn=document.getElementById('signupSubmitBtn');
- if(signupBtn && !signupBtn.dataset.authBound){
-   signupBtn.dataset.authBound='1';
-   signupBtn.addEventListener('click',async function(ev){
-     ev.preventDefault();
-     ev.stopPropagation();
-     try{
-       await window.handleSignup();
-     }catch(e){
-       console.error('Cadastro:',e);
-       showError('signupError',e?.message||'Não foi possível criar a conta.');
-     }
-   });
- }
- const loginBtn=document.querySelector('#loginForm button[onclick*="handleLogin"]');
- if(loginBtn && !loginBtn.dataset.authBound){
-   loginBtn.dataset.authBound='1';
-   loginBtn.addEventListener('click',async function(ev){
-     ev.preventDefault();
-     ev.stopPropagation();
-     try{await window.handleLogin();}catch(e){console.error('Login:',e);}
-   });
- }
-}
-document.addEventListener('DOMContentLoaded',bindAuthButtons);
-window.addEventListener('load',bindAuthButtons);
-setTimeout(bindAuthButtons,0);
-if(document.readyState!=='loading')bindAuthButtons();
 
 // inicialização visual
 window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((p,i)=>{if(i>0){p.classList.add('hidden');p.style.display='none'}});});
