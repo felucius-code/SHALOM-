@@ -2010,7 +2010,7 @@ button {
     id="addFilmHomeBtn"
     class="home-see-all hidden"
     type="button"
-    onclick="showContentForm('films')"
+    onclick="window.showContentForm('films')"
     title="Adicionar filme">
 
     ＋
@@ -2070,7 +2070,7 @@ button {
                 id="addSeriesHomeBtn"
                 class="home-see-all hidden"
                 type="button"
-                onclick="showContentForm('series')"
+                onclick="window.showContentForm('series')"
                 title="Adicionar série">
 
                 ＋
@@ -2130,7 +2130,7 @@ button {
                 id="addDocumentaryHomeBtn"
                 class="home-see-all hidden"
                 type="button"
-                onclick="showContentForm('documentaries')"
+                onclick="window.showContentForm('documentaries')"
                 title="Adicionar documentário">
 
                 ＋
@@ -2189,7 +2189,7 @@ button {
                 id="addBookHomeBtn"
                 class="home-see-all hidden"
                 type="button"
-                onclick="showContentForm('books')"
+                onclick="window.showContentForm('books')"
                 title="Adicionar livro">
 
                 ＋
@@ -2248,7 +2248,7 @@ button {
                 id="addArticleHomeBtn"
                 class="home-see-all hidden"
                 type="button"
-                onclick="showContentForm('articles')"
+                onclick="window.showContentForm('articles')"
                 title="Adicionar artigo">
 
                 ＋
@@ -2307,7 +2307,7 @@ button {
                 id="addStudyHomeBtn"
                 class="home-see-all hidden"
                 type="button"
-                onclick="showContentForm('studies')"
+                onclick="window.showContentForm('studies')"
                 title="Adicionar estudo">
 
                 ＋
@@ -2366,7 +2366,7 @@ button {
                 id="addVideoHomeBtn"
                 class="home-see-all hidden"
                 type="button"
-                onclick="showContentForm('videos')"
+                onclick="window.showContentForm('videos')"
                 title="Adicionar vídeo">
 
                 ＋
@@ -2425,7 +2425,7 @@ button {
                 id="addProductHomeBtn"
                 class="home-see-all hidden"
                 type="button"
-                onclick="showContentForm('products')"
+                onclick="window.showContentForm('products')"
                 title="Adicionar produto">
 
                 ＋
@@ -4955,19 +4955,8 @@ window.loadAdmin=loadAdmin;
 
 function bindHomeAddButtons(){
  document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>{
-  const m=btn.id.match(/^add(.+)HomeBtn$/); if(!m)return;
-  const map={Film:'films',Series:'series',Documentary:'documentaries',Book:'books',Article:'articles',Study:'studies',Video:'videos',Product:'products'};
-  const type=map[m[1]]; if(!type)return;
-
-  // O botão + é exclusivo do administrador geral.
   btn.classList.toggle('hidden',!isAdmin);
   btn.type='button';
-  btn.onclick=(ev)=>{
-    ev.preventDefault();
-    ev.stopPropagation();
-    if(!isAdmin)return;
-    window.showContentForm(type);
-  };
  });
 }
 
