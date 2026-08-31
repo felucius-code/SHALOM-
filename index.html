@@ -2008,9 +2008,9 @@ button {
 
             <button
     id="addFilmHomeBtn"
-    class="home-see-all hidden"
+    class="home-see-all admin-home-add"
     type="button"
-    onclick="showContentForm('films')"
+    onclick="window.showContentForm('films')"
     title="Adicionar filme">
 
     ＋
@@ -2068,9 +2068,9 @@ button {
 
             <button
                 id="addSeriesHomeBtn"
-                class="home-see-all hidden"
+                class="home-see-all admin-home-add"
                 type="button"
-                onclick="showContentForm('series')"
+                onclick="window.showContentForm('series')"
                 title="Adicionar série">
 
                 ＋
@@ -2128,9 +2128,9 @@ button {
 
             <button
                 id="addDocumentaryHomeBtn"
-                class="home-see-all hidden"
+                class="home-see-all admin-home-add"
                 type="button"
-                onclick="showContentForm('documentaries')"
+                onclick="window.showContentForm('documentaries')"
                 title="Adicionar documentário">
 
                 ＋
@@ -2187,9 +2187,9 @@ button {
 
             <button
                 id="addBookHomeBtn"
-                class="home-see-all hidden"
+                class="home-see-all admin-home-add"
                 type="button"
-                onclick="showContentForm('books')"
+                onclick="window.showContentForm('books')"
                 title="Adicionar livro">
 
                 ＋
@@ -2246,9 +2246,9 @@ button {
 
             <button
                 id="addArticleHomeBtn"
-                class="home-see-all hidden"
+                class="home-see-all admin-home-add"
                 type="button"
-                onclick="showContentForm('articles')"
+                onclick="window.showContentForm('articles')"
                 title="Adicionar artigo">
 
                 ＋
@@ -2305,9 +2305,9 @@ button {
 
             <button
                 id="addStudyHomeBtn"
-                class="home-see-all hidden"
+                class="home-see-all admin-home-add"
                 type="button"
-                onclick="showContentForm('studies')"
+                onclick="window.showContentForm('studies')"
                 title="Adicionar estudo">
 
                 ＋
@@ -2364,9 +2364,9 @@ button {
 
             <button
                 id="addVideoHomeBtn"
-                class="home-see-all hidden"
+                class="home-see-all admin-home-add"
                 type="button"
-                onclick="showContentForm('videos')"
+                onclick="window.showContentForm('videos')"
                 title="Adicionar vídeo">
 
                 ＋
@@ -2423,9 +2423,9 @@ button {
 
             <button
                 id="addProductHomeBtn"
-                class="home-see-all hidden"
+                class="home-see-all admin-home-add"
                 type="button"
-                onclick="showContentForm('products')"
+                onclick="window.showContentForm('products')"
                 title="Adicionar produto">
 
                 ＋
@@ -3468,6 +3468,27 @@ window.handleSignup=async function(){
 window.logout=async function(){
  try{
    await signOut(auth);
+
+   // signOut() is authoritative; immediately reset the visible application
+   // state as well, so the user cannot remain on the authenticated UI if the
+   // auth-state callback is delayed.
+   currentUser=null;
+   currentCommunityId=null;
+   currentCommunityIsAdmin=false;
+   isAdmin=false;
+   profileCache=null;
+
+   if(notificationUnsubscribe){
+     notificationUnsubscribe();
+     notificationUnsubscribe=null;
+   }
+
+   $('appScreen')?.classList.add('hidden');
+   $('authScreen')?.classList.remove('hidden');
+   $('emailVerificationNotice')?.classList.add('hidden');
+   $('passwordRecoveryForm')?.classList.add('hidden');
+   $('signupForm')?.classList.add('hidden');
+   $('loginForm')?.classList.remove('hidden');
  }catch(e){
    console.error('Logout:',e);
    alert('Não foi possível sair da conta. Tente novamente.');
@@ -4969,19 +4990,26 @@ await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentM
 window.loadAdmin=loadAdmin;
 
 function bindHomeAddButtons(){
- document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>{
-  const m=btn.id.match(/^add(.+)HomeBtn$/); if(!m)return;
-  const map={Film:'films',Series:'series',Documentary:'documentaries',Book:'books',Article:'articles',Study:'studies',Video:'videos',Product:'products'};
-  const type=map[m[1]]; if(!type)return;
-
-  // The + button is exclusively for the general administrator.
-  btn.classList.toggle('hidden',!isAdmin);
+ const map={
+  addFilmHomeBtn:'films',
+  addSeriesHomeBtn:'series',
+  addDocumentaryHomeBtn:'documentaries',
+  addBookHomeBtn:'books',
+  addArticleHomeBtn:'articles',
+  addStudyHomeBtn:'studies',
+  addVideoHomeBtn:'videos',
+  addProductHomeBtn:'products'
+ };
+ Object.entries(map).forEach(([id,type])=>{
+  const btn=$(id);
+  if(!btn)return;
   btn.type='button';
+  btn.style.display=isAdmin?'inline-flex':'none';
   btn.onclick=(ev)=>{
-    ev.preventDefault();
-    ev.stopPropagation();
-    if(!isAdmin)return;
-    window.showContentForm(type);
+   ev.preventDefault();
+   ev.stopPropagation();
+   if(!isAdmin)return;
+   window.showContentForm(type);
   };
  });
 }
@@ -5057,6 +5085,7 @@ window.checkEmailVerification=async function(){
      $('adminMenu')?.classList.toggle('hidden',!isAdmin);
      applyIdentity(profileCache||{});
      await loadHome();
+     bindHomeAddButtons();
    }else{
      const e=$('emailVerificationError');
      if(e){e.className='error';e.textContent='O e-mail ainda não foi confirmado. Abra o link recebido e tente novamente.';e.classList.remove('hidden');}
@@ -5122,6 +5151,7 @@ onAuthStateChanged(auth,async u=>{
    $('adminMenu')?.classList.toggle('hidden',!isAdmin);
    applyIdentity(profileCache||{});
    await loadHome();
+   bindHomeAddButtons();
  }catch(e){
    console.error('auth initialization:',e);
    alert('Não foi possível carregar sua conta. Tente novamente.');
