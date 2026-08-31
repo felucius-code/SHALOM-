@@ -4961,10 +4961,15 @@ function bindAuthButtons(){
  const signupBtn=document.getElementById('signupSubmitBtn');
  if(signupBtn && !signupBtn.dataset.authBound){
    signupBtn.dataset.authBound='1';
-   signupBtn.addEventListener('click',function(ev){
+   signupBtn.addEventListener('click',async function(ev){
      ev.preventDefault();
      ev.stopPropagation();
-     window.handleSignup();
+     try{
+       await window.handleSignup();
+     }catch(e){
+       console.error('Cadastro:',e);
+       showError('signupError',e?.message||'Não foi possível criar a conta.');
+     }
    });
  }
  const loginBtn=document.querySelector('#loginForm button[onclick*="handleLogin"]');
