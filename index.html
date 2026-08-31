@@ -4958,7 +4958,16 @@ function bindHomeAddButtons(){
   const m=btn.id.match(/^add(.+)HomeBtn$/); if(!m)return;
   const map={Film:'films',Series:'series',Documentary:'documentaries',Book:'books',Article:'articles',Study:'studies',Video:'videos',Product:'products'};
   const type=map[m[1]]; if(!type)return;
-  btn.onclick=(ev)=>{ev.preventDefault();window.showContentForm(type);};
+
+  // O botão + é exclusivo do administrador geral.
+  btn.classList.toggle('hidden',!isAdmin);
+  btn.type='button';
+  btn.onclick=(ev)=>{
+    ev.preventDefault();
+    ev.stopPropagation();
+    if(!isAdmin)return;
+    window.showContentForm(type);
+  };
  });
 }
 
