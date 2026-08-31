@@ -3203,7 +3203,7 @@ button {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",authDomain:"shalom-a1626.firebaseapp.com",projectId:"shalom-a1626",storageBucket:"shalom-a1626.firebasestorage.app",messagingSenderId:"746323382164",appId:"1:746323382164:web:1bca1a1df5f5ec6f2b8981",measurementId:"G-QXD13ER8SK"};
@@ -3465,6 +3465,41 @@ async function initializeAuthenticatedApp(u){
  applyIdentity(profileCache||{});
  await loadHome();
 }
+
+window.handleAuthLogout=async function(){
+ try{await signOut(auth);}catch(e){console.error(e);}
+};
+
+window.handleSignup=async function(){
+ const name=$('signupName')?.value.trim();
+ const email=$('signupEmail')?.value.trim();
+ const password=$('signupPassword')?.value;
+
+ if(!name||!email||!password)return showError('signupError','Preencha todos os campos.');
+ if(password.length<6)return showError('signupError','A senha precisa ter pelo menos 6 caracteres.');
+
+ try{
+   const c=await createUserWithEmailAndPassword(auth,email,password);
+   await updateProfile(c.user,{displayName:name});
+
+   await setDoc(doc(db,'users',c.user.uid),{
+     uid:c.user.uid,
+     name,
+     email,
+     photoURL:'',
+     interests:[],
+     emailVerificationRequired:true,
+     createdAt:serverTimestamp(),
+     updatedAt:serverTimestamp()
+   });
+
+   await sendEmailVerification(c.user);
+   showEmailVerificationNotice(c.user);
+ }catch(e){
+   console.error('handleSignup:',e);
+   showError('signupError',e.message||'Não foi possível criar a conta.');
+ }
+};
 
 window.handleLogin=async function(){
  const email=$('loginEmail')?.value.trim(),password=$('loginPassword')?.value;
