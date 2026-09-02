@@ -952,6 +952,33 @@ select option {
     text-decoration: underline;
 }
 
+/* v50 — botões de adição da Home: visual próprio e independente de “Ver todos” */
+.admin-home-add {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0 !important;
+    border: 1px solid var(--gold) !important;
+    border-radius: 50%;
+    font-size: 20px !important;
+    line-height: 1;
+    text-decoration: none !important;
+    flex: 0 0 30px;
+}
+.admin-home-add:hover {
+    color: white;
+    background: var(--panel2);
+    text-decoration: none !important;
+}
+
+/* v50 — logout claramente separado das ações de edição do perfil */
+#profileLogoutBtn {
+    margin-top: 18px !important;
+    border-color: #a94442 !important;
+}
+
 
 /* =========================
    CARROSSEL
@@ -1586,6 +1613,7 @@ button {
 </head>
 
 <body>
+<!-- SHALOM v50: correções isoladas de logout do Perfil e botões + da Home -->
 
 <!-- =====================================================
      AUTENTICAÇÃO
@@ -3155,7 +3183,7 @@ button {
             class="btn btn-secondary"
             type="button"
             style="margin-top:10px;width:100%;"
-            onclick="window.logout()">
+            onclick="window.logoutFromProfile()">
             Sair da conta
         </button>
     </div>
@@ -3465,36 +3493,44 @@ window.handleSignup=async function(){
  }
 };
 
+window.logoutFromProfile=async function(){
+  const btn=$('profileLogoutBtn');
+  if(btn){btn.disabled=true;btn.textContent='Saindo...';}
+  try{
+    await window.logout();
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Sair da conta';}
+  }
+};
+
 window.logout=async function(){
  try{
-   // Mantém o signOut do Firebase como operação principal.
    await signOut(auth);
+
+   // signOut() is authoritative; immediately reset the visible application
+   // state as well, so the user cannot remain on the authenticated UI if the
+   // auth-state callback is delayed.
+   currentUser=null;
+   currentCommunityId=null;
+   currentCommunityIsAdmin=false;
+   isAdmin=false;
+   profileCache=null;
+
+   if(notificationUnsubscribe){
+     notificationUnsubscribe();
+     notificationUnsubscribe=null;
+   }
+
+   $('appScreen')?.classList.add('hidden');
+   $('authScreen')?.classList.remove('hidden');
+   $('emailVerificationNotice')?.classList.add('hidden');
+   $('passwordRecoveryForm')?.classList.add('hidden');
+   $('signupForm')?.classList.add('hidden');
+   $('loginForm')?.classList.remove('hidden');
  }catch(e){
-   console.error('Logout Firebase:',e);
+   console.error('Logout:',e);
    alert('Não foi possível sair da conta. Tente novamente.');
-   return;
  }
-
- // Limpeza local independente do atraso do listener do Firebase.
- currentUser=null;
- currentCommunityId=null;
- currentCommunityIsAdmin=false;
- isAdmin=false;
- profileCache=null;
- customInterestsCache=[];
-
- if(notificationUnsubscribe){
-   notificationUnsubscribe();
-   notificationUnsubscribe=null;
- }
-
- $('appScreen')?.classList.add('hidden');
- $('authScreen')?.classList.remove('hidden');
- $('emailVerificationNotice')?.classList.add('hidden');
- $('passwordRecoveryForm')?.classList.add('hidden');
- $('signupForm')?.classList.add('hidden');
- $('loginForm')?.classList.remove('hidden');
- $('loginPassword')&&( $('loginPassword').value='' );
 };
 
 function contentForm(type){
@@ -5006,7 +5042,9 @@ function bindHomeAddButtons(){
   const btn=$(id);
   if(!btn)return;
   btn.type='button';
+  btn.classList.remove('hidden');
   btn.style.display=isAdmin?'inline-flex':'none';
+  btn.setAttribute('aria-hidden',isAdmin?'false':'true');
   btn.onclick=(ev)=>{
    ev.preventDefault();
    ev.stopPropagation();
@@ -5077,7 +5115,7 @@ window.checkEmailVerification=async function(){
      currentUser=auth.currentUser;
      isAdmin=currentUser.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();
      Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));
-     document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));
+     document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.remove('hidden'));
      bindHomeAddButtons();
      profileCache=await getProfile(currentUser.uid);
      startNotificationListener();
@@ -5143,7 +5181,7 @@ onAuthStateChanged(auth,async u=>{
    // Preserve the complete v37 initialization path, including Home + add buttons.
    isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();
    Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));
-   document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.toggle('hidden',!isAdmin));
+   document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.remove('hidden'));
    bindHomeAddButtons();
    profileCache=profile||await getProfile(u.uid);
    startNotificationListener();
