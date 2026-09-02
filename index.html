@@ -240,7 +240,7 @@ select option {
 }
 
 /* =========================
-   CONVERSAS PRIVADAS — v52
+   CONVERSAS PRIVADAS — v53
 ========================= */
 .conversations-list{display:flex;flex-direction:column;gap:10px}
 .conversation-item{width:100%;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #303654;border-radius:10px;background:var(--panel);color:var(--white);text-align:left}
@@ -1636,7 +1636,7 @@ button {
 </head>
 
 <body>
-<!-- SHALOM v52: conversas privadas sobre a base oficial da v51 -->
+<!-- SHALOM v53: conversas privadas sobre a base oficial da v51 -->
 
 <!-- =====================================================
      AUTENTICAÇÃO
@@ -4475,7 +4475,7 @@ async function ensurePrivateConversation(otherUid,otherName){
  const shared=await findSharedCommunity(u.uid,otherUid);
  if(!shared)throw new Error('Você só pode iniciar uma conversa privada com alguém que pertença a uma comunidade em comum com você.');
  const id=privatePairKey(u.uid,otherUid),ref=doc(db,'conversations',id),snap=await getDoc(ref);
- if(!snap.exists())await setDoc(ref,{participantUids:[u.uid,otherUid],participantNames:{[u.uid]:publicName(profileCache,u),[otherUid]:otherName||'Usuário'},createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastMessage:'',lastMessageAt:null,unreadBy:{[u.uid]:0,[otherUid]:0}});
+ if(!snap.exists())await setDoc(ref,{participantUids:[u.uid,otherUid],participantNames:{[u.uid]:publicName(profileCache,u),[otherUid]:otherName||'Usuário'},sharedCommunityId:shared.id,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastMessage:'',lastMessageAt:null,unreadBy:{[u.uid]:0,[otherUid]:0}});
  return id;
 }
 async function openPrivateConversationWith(uid,name){try{const id=await ensurePrivateConversation(uid,name);await openPrivateConversation(id)}catch(e){console.error('openPrivateConversationWith:',e);alert(e.message||'Não foi possível abrir a conversa.');}}
