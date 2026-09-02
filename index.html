@@ -1613,7 +1613,7 @@ button {
 </head>
 
 <body>
-<!-- SHALOM v50: correções isoladas de logout do Perfil e botões + da Home -->
+<!-- SHALOM v51: correções funcionais sobre a base visual da v50 -->
 
 <!-- =====================================================
      AUTENTICAÇÃO
@@ -3497,8 +3497,13 @@ window.logoutFromProfile=async function(){
   const btn=$('profileLogoutBtn');
   if(btn){btn.disabled=true;btn.textContent='Saindo...';}
   try{
-    await window.logout();
-  }finally{
+    const ok=await window.logout();
+    if(!ok && btn){
+      btn.disabled=false;
+      btn.textContent='Sair da conta';
+    }
+  }catch(e){
+    console.error('logoutFromProfile:',e);
     if(btn){btn.disabled=false;btn.textContent='Sair da conta';}
   }
 };
@@ -3506,10 +3511,8 @@ window.logoutFromProfile=async function(){
 window.logout=async function(){
  try{
    await signOut(auth);
-
-   // signOut() is authoritative; immediately reset the visible application
-   // state as well, so the user cannot remain on the authenticated UI if the
-   // auth-state callback is delayed.
+   // Firebase Auth is the source of truth. The auth-state listener will
+   // also execute the normal transition back to the login screen.
    currentUser=null;
    currentCommunityId=null;
    currentCommunityIsAdmin=false;
@@ -3527,9 +3530,11 @@ window.logout=async function(){
    $('passwordRecoveryForm')?.classList.add('hidden');
    $('signupForm')?.classList.add('hidden');
    $('loginForm')?.classList.remove('hidden');
+   return true;
  }catch(e){
    console.error('Logout:',e);
-   alert('Não foi possível sair da conta. Tente novamente.');
+   alert('Não foi possível sair da conta.\n\n'+(e?.message||'Tente novamente.'));
+   return false;
  }
 };
 
@@ -3538,15 +3543,18 @@ function contentForm(type){
  if(!info){ alert('Tipo de conteúdo inválido.'); return; }
  const homeHost=$(info.home), gridHost=$(info.grid);
  /*
-  * Se o formulário foi aberto dentro de uma página de catálogo/Loja,
-  * o formulário deve aparecer naquela página, e não em um elemento
-  * correspondente escondido da Home.
+  * O formulário aberto pela Home deve permanecer na seção da Home.
+  * Nas páginas de catálogo, usamos o grid daquela página.
+  * Isso evita escolher um host de uma página escondida ou de outro
+  * contexto por causa da ordem dos elementos no DOM.
   */
  const currentPage=document.querySelector('.page:not(.hidden)');
- const currentHost=currentPage?.querySelector(
-   `#${info.grid}`
- );
- const host=currentHost||gridHost||homeHost;
+ const currentPageId=currentPage?.id||'';
+ const isHomePage=currentPageId==='page-home';
+ const currentHost=!isHomePage
+   ? currentPage?.querySelector(`#${info.grid}`)
+   : null;
+ const host=isHomePage?(homeHost||gridHost):(currentHost||gridHost||homeHost);
  if(!host){ alert(`Área de ${info.title} não encontrada.`); return; }
  document.getElementById('dynamicContentForm')?.remove();
  const f=document.createElement('div');
@@ -5027,6 +5035,18 @@ async function loadAdmin(){ if(!isAdmin)return;
 await loadAdminCommunities();await loadCommunityAdmins();await loadAdminContentManager()}
 window.loadAdmin=loadAdmin;
 
+function isGeneralAdminNow(){
+ const u=auth.currentUser;
+ const email=String(u?.email||'').trim().toLowerCase();
+ const adminEmail=String(ADMIN_EMAIL||'').trim().toLowerCase();
+ const result=!!u && !!email && email===adminEmail;
+ // Keep the shared state synchronized with the authoritative Firebase user.
+ isAdmin=result;
+ return result;
+}
+
+window.isGeneralAdminNow=isGeneralAdminNow;
+
 function bindHomeAddButtons(){
  const map={
   addFilmHomeBtn:'films',
@@ -5038,18 +5058,30 @@ function bindHomeAddButtons(){
   addVideoHomeBtn:'videos',
   addProductHomeBtn:'products'
  };
+ const admin=isGeneralAdminNow();
  Object.entries(map).forEach(([id,type])=>{
   const btn=$(id);
   if(!btn)return;
   btn.type='button';
   btn.classList.remove('hidden');
-  btn.style.display=isAdmin?'inline-flex':'none';
-  btn.setAttribute('aria-hidden',isAdmin?'false':'true');
+  btn.style.display=admin?'inline-flex':'none';
+  btn.setAttribute('aria-hidden',admin?'false':'true');
+  // The handler deliberately rechecks Firebase Auth at click time.
+  // This prevents a stale isAdmin value from making the button inert.
   btn.onclick=(ev)=>{
    ev.preventDefault();
    ev.stopPropagation();
-   if(!isAdmin)return;
-   window.showContentForm(type);
+   if(!isGeneralAdminNow()){
+    btn.style.display='none';
+    btn.setAttribute('aria-hidden','true');
+    return;
+   }
+   try{
+    window.showContentForm(type);
+   }catch(e){
+    console.error('Erro ao abrir formulário pela Home:',e);
+    alert('Não foi possível abrir o formulário de cadastro.\n\n'+(e?.message||e));
+   }
   };
  });
 }
@@ -5179,7 +5211,7 @@ onAuthStateChanged(auth,async u=>{
    }
 
    // Preserve the complete v37 initialization path, including Home + add buttons.
-   isAdmin=u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase();
+   isAdmin=isGeneralAdminNow();
    Object.values(contentTypes).forEach(info=>$(info.admin)?.classList.toggle('hidden',!isAdmin));
    document.querySelectorAll('[id$="HomeBtn"]').forEach(btn=>btn.classList.remove('hidden'));
    bindHomeAddButtons();
