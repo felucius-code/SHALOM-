@@ -239,6 +239,28 @@ select option {
     display: none;
 }
 
+/* =========================
+   CONVERSAS PRIVADAS — v52
+========================= */
+.conversations-list{display:flex;flex-direction:column;gap:10px}
+.conversation-item{width:100%;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #303654;border-radius:10px;background:var(--panel);color:var(--white);text-align:left}
+.conversation-item:hover{border-color:var(--gold)}
+.conversation-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--panel2);color:var(--gold);font-weight:bold;flex:0 0 44px}
+.conversation-main{min-width:0;flex:1}
+.conversation-name{font-weight:700;margin-bottom:4px}
+.conversation-preview{color:#9AA7C4;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conversation-time{color:#6B7A99;font-size:12px;margin-left:8px}
+.private-chat{display:flex;flex-direction:column;gap:12px}
+.private-chat-header{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #303654}
+.private-chat-messages{min-height:360px;max-height:520px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px}
+.private-message{max-width:78%;padding:10px 12px;border-radius:12px;background:var(--panel2);align-self:flex-start}
+.private-message.mine{align-self:flex-end;background:#303654}
+.private-message-text{white-space:pre-wrap;word-break:break-word}
+.private-message-time{display:block;color:#6B7A99;font-size:11px;margin-top:4px}
+.private-chat-composer{display:flex;gap:10px;align-items:flex-end}
+.private-chat-composer textarea{flex:1;min-height:58px;max-height:150px}
+@media(max-width:700px){.private-message{max-width:88%}.private-chat-composer{flex-direction:column}.private-chat-composer .btn{width:100%}}
+
 .community-item {
     flex: 0 0 auto;
     min-width: 85px;
@@ -602,6 +624,7 @@ select option {
     font-weight: bold;
     margin-bottom: 4px;
 }
+.community-user-link{background:none;border:0;padding:0;margin:0;color:var(--gold);font:inherit;font-weight:700;text-align:left}.community-user-link:hover{text-decoration:underline}
 
 .community-message-text {
     color: white;
@@ -1613,7 +1636,7 @@ button {
 </head>
 
 <body>
-<!-- SHALOM v51: correções funcionais sobre a base visual da v50 -->
+<!-- SHALOM v52: conversas privadas sobre a base oficial da v51 -->
 
 <!-- =====================================================
      AUTENTICAÇÃO
@@ -1904,6 +1927,14 @@ button {
         onclick="openPage('communities',this)">
 
         👥 Comunidades
+
+    </button>
+
+    <button
+        class="nav-item"
+        onclick="openPage('conversations',this)">
+
+        💬 Conversas
 
     </button>
 
@@ -2848,6 +2879,32 @@ button {
 </section>
     
 <!-- =====================================================
+     CONVERSAS PRIVADAS
+===================================================== -->
+
+<section id="page-conversations" class="page">
+    <h1 class="page-title">💬 Conversas</h1>
+    <p class="page-description">Suas conversas privadas com outros membros do SHALOM.</p>
+    <div id="conversationsListCard" class="card">
+        <div id="conversationsList" class="conversations-list"><p style="color:#6B7A99">Nenhuma conversa ainda.</p></div>
+    </div>
+    <div id="privateChatCard" class="card hidden" style="margin-top:16px;">
+        <div class="private-chat">
+            <div class="private-chat-header">
+                <button class="btn btn-secondary btn-small" type="button" onclick="backToConversations()">← Voltar</button>
+                <div id="privateChatAvatar" class="conversation-avatar">👤</div>
+                <div><div id="privateChatName" style="font-weight:700">Usuário</div><div style="color:#6B7A99;font-size:12px">Conversa privada</div></div>
+            </div>
+            <div id="privateChatMessages" class="private-chat-messages"></div>
+            <div class="private-chat-composer">
+                <textarea id="privateMessageInput" rows="2" placeholder="Digite uma mensagem..."></textarea>
+                <button class="btn" type="button" onclick="sendPrivateMessage()">Enviar</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =====================================================
      CATEGORIAS
 ===================================================== -->
 
@@ -3331,6 +3388,7 @@ window.openPage=async function(page,button){
  try{
   if(page==='home')await loadHome();
   else if(page==='communities')await loadCommunities();
+  else if(page==='conversations')await loadConversations();
   else if(page==='profile')await loadProfilePage();
   else if(page==='notifications')await loadNotifications();
   else if(page==='admin')await loadAdmin();
@@ -4358,7 +4416,20 @@ window.backToCommunities=async()=>{
  $('communitiesList')?.classList.remove('hidden');
  await loadCommunities();
 };
-async function loadCommunityMessages(id){const box=$('communityMessages');if(!box)return;const snap=await getDocs(collection(db,'communities',id,'messages'));const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));box.innerHTML=arr.map(m=>`<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div><div class="community-post-author-name">${esc(m.authorName||'Usuário')}</div></div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';box.scrollTop=box.scrollHeight}
+async function loadCommunityMessages(id){
+ const box=$('communityMessages'); if(!box)return;
+ const snap=await getDocs(collection(db,'communities',id,'messages'));
+ const arr=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));
+ box.innerHTML=arr.map(m=>{
+   const authorUid=String(m.authorUid||'');
+   const clickable=authorUid && authorUid!==user()?.uid;
+   const author=clickable
+    ? `<button type="button" class="community-message-author community-user-link" data-private-user-uid="${esc(authorUid)}" data-private-user-name="${esc(m.authorName||'Usuário')}">${esc(m.authorName||'Usuário')}</button>`
+    : `<span class="community-message-author">${esc(m.authorName||'Usuário')}</span>`;
+   return `<div class="community-post"><div class="community-post-author"><div class="community-post-avatar">${initials(m.authorName)}</div><div>${author}</div></div><div class="community-post-text">${esc(m.text||'')}</div></div>`;
+ }).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda.</p>';
+ box.scrollTop=box.scrollHeight;
+}
 window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async function(){
  const u=user(),input=$('messageInput'),text=input?.value.trim();
 
@@ -4390,6 +4461,61 @@ window.loadCommunityMessages=loadCommunityMessages;window.sendMessage=async func
    alert('Não foi possível enviar a mensagem: '+e.message);
  }
 };
+let currentPrivateConversationId=null;
+let currentPrivatePartner=null;
+let privateMessagesUnsubscribe=null;
+function privatePairKey(a,b){return [String(a||''),String(b||'')].sort().join('__');}
+async function findSharedCommunity(uidA,uidB){
+ const snap=await getDocs(collection(db,'communities'));
+ const shared=snap.docs.find(d=>{const m=d.data()?.memberUids||[];return m.includes(uidA)&&m.includes(uidB);});
+ return shared?{id:shared.id,...shared.data()}:null;
+}
+async function ensurePrivateConversation(otherUid,otherName){
+ const u=user(); if(!u||!otherUid||otherUid===u.uid)throw new Error('Usuário inválido para conversa privada.');
+ const shared=await findSharedCommunity(u.uid,otherUid);
+ if(!shared)throw new Error('Você só pode iniciar uma conversa privada com alguém que pertença a uma comunidade em comum com você.');
+ const id=privatePairKey(u.uid,otherUid),ref=doc(db,'conversations',id),snap=await getDoc(ref);
+ if(!snap.exists())await setDoc(ref,{participantUids:[u.uid,otherUid],participantNames:{[u.uid]:publicName(profileCache,u),[otherUid]:otherName||'Usuário'},createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastMessage:'',lastMessageAt:null,unreadBy:{[u.uid]:0,[otherUid]:0}});
+ return id;
+}
+async function openPrivateConversationWith(uid,name){try{const id=await ensurePrivateConversation(uid,name);await openPrivateConversation(id)}catch(e){console.error('openPrivateConversationWith:',e);alert(e.message||'Não foi possível abrir a conversa.');}}
+window.openPrivateConversationWith=openPrivateConversationWith;
+async function openPrivateConversation(id){
+ const snap=await getDoc(doc(db,'conversations',id)); if(!snap.exists())return alert('Conversa não encontrada.');
+ const c=snap.data()||{},u=user(); if(!u||!(c.participantUids||[]).includes(u.uid))return alert('Você não tem acesso a esta conversa.');
+ const otherUid=(c.participantUids||[]).find(x=>x!==u.uid); if(!otherUid)return alert('Conversa inválida.');
+ const otherName=(c.participantNames||{})[otherUid]||'Usuário'; currentPrivateConversationId=id;currentPrivatePartner={uid:otherUid,name:otherName};
+ setPage('conversations',document.querySelector('.nav-item[onclick*="conversations"]'));
+ $('conversationsListCard')?.classList.add('hidden');$('privateChatCard')?.classList.remove('hidden');$('privateChatName').textContent=otherName;$('privateChatAvatar').textContent=initials(otherName);$('privateMessageInput').value='';
+ await markPrivateConversationRead(id);subscribePrivateMessages(id);
+}
+window.openPrivateConversation=openPrivateConversation;
+function subscribePrivateMessages(id){
+ if(privateMessagesUnsubscribe){privateMessagesUnsubscribe();privateMessagesUnsubscribe=null;} const box=$('privateChatMessages');if(!box)return;
+ privateMessagesUnsubscribe=onSnapshot(collection(db,'conversations',id,'messages'),snap=>{
+  const arr=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>ts(a.createdAt)-ts(b.createdAt));
+  box.innerHTML=arr.map(m=>`<div class="private-message ${m.senderUid===user()?.uid?'mine':''}"><div class="private-message-text">${esc(m.text||'')}</div><span class="private-message-time">${formatPrivateTime(m.createdAt)}</span></div>`).join('')||'<p style="color:#6B7A99">Nenhuma mensagem ainda. Comece a conversa.</p>';box.scrollTop=box.scrollHeight;
+ },err=>{console.error('private messages:',err);box.innerHTML='<p class="error">Não foi possível carregar esta conversa.</p>';});
+}
+function formatPrivateTime(v){const ms=v?.toMillis?.()||Date.parse(v)||0;return ms?new Date(ms).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';}
+async function markPrivateConversationRead(id){const u=user();if(!u)return;try{await updateDoc(doc(db,'conversations',id),{[`unreadBy.${u.uid}`]:0});}catch(e){console.warn('Não foi possível marcar conversa como lida:',e);}}
+async function sendPrivateMessage(){
+ const u=user(),input=$('privateMessageInput'),text=input?.value.trim();if(!u||!currentPrivateConversationId||!text)return;const id=currentPrivateConversationId,otherUid=currentPrivatePartner?.uid;
+ try{await addDoc(collection(db,'conversations',id,'messages'),{text,senderUid:u.uid,senderName:publicName(profileCache,u),createdAt:serverTimestamp()});const update={lastMessage:text,lastMessageAt:serverTimestamp(),updatedAt:serverTimestamp()};if(otherUid)update[`unreadBy.${otherUid}`]=1;update[`unreadBy.${u.uid}`]=0;await updateDoc(doc(db,'conversations',id),update);input.value='';}catch(e){console.error('sendPrivateMessage:',e);alert('Não foi possível enviar a mensagem: '+e.message);}
+}
+window.sendPrivateMessage=sendPrivateMessage;
+async function loadConversations(){
+ const list=$('conversationsList');if(!list)return;$('conversationsListCard')?.classList.remove('hidden');$('privateChatCard')?.classList.add('hidden');if(privateMessagesUnsubscribe){privateMessagesUnsubscribe();privateMessagesUnsubscribe=null;}currentPrivateConversationId=null;currentPrivatePartner=null;
+ const u=user();if(!u){list.innerHTML='<p style="color:#6B7A99">Nenhuma conversa.</p>';return;}
+ const q=query(collection(db,'conversations'),where('participantUids','array-contains',u.uid)),snap=await getDocs(q);
+ const arr=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>ts(b.updatedAt||b.lastMessageAt)-ts(a.updatedAt||a.lastMessageAt));
+ if(!arr.length){list.innerHTML='<p style="color:#6B7A99">Nenhuma conversa ainda. Para iniciar uma, clique no nome de outro membro dentro de uma comunidade que vocês compartilham.</p>';return;}
+ list.innerHTML=arr.map(c=>{const otherUid=(c.participantUids||[]).find(x=>x!==u.uid),name=(c.participantNames||{})[otherUid]||'Usuário',unread=Number((c.unreadBy||{})[u.uid]||0)>0;return `<button type="button" class="conversation-item" onclick="openPrivateConversation('${esc(c.id)}')"><div class="conversation-avatar">${initials(name)}</div><div class="conversation-main"><div class="conversation-name">${esc(name)}${unread?' <span class="badge">Nova</span>':''}</div><div class="conversation-preview">${esc(c.lastMessage||'Conversa iniciada')}</div></div><span class="conversation-time">${formatPrivateTime(c.lastMessageAt||c.updatedAt)}</span></button>`;}).join('');
+}
+window.loadConversations=loadConversations;
+async function backToConversations(){if(privateMessagesUnsubscribe){privateMessagesUnsubscribe();privateMessagesUnsubscribe=null;}currentPrivateConversationId=null;currentPrivatePartner=null;await loadConversations();}
+window.backToConversations=backToConversations;
+
 /*
  * VÍDEOS EXCLUSIVOS DAS COMUNIDADES
  *
@@ -5292,6 +5418,8 @@ window.addEventListener('load',()=>{document.querySelectorAll('.page').forEach((
    PLAYER INTERNO — TODOS OS CONTEÚDOS DE MÍDIA
 ===================================================== */
 document.addEventListener('click',function(e){
+ const privateUser=e.target.closest?.('[data-private-user-uid]');
+ if(privateUser){e.preventDefault();e.stopPropagation();openPrivateConversationWith(privateUser.getAttribute('data-private-user-uid')||'',privateUser.getAttribute('data-private-user-name')||'Usuário');return;}
 
  const btn=e.target.closest?.('.shalom-watch-btn');
 
