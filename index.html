@@ -3155,7 +3155,7 @@ button {
             class="btn btn-secondary"
             type="button"
             style="margin-top:10px;width:100%;"
-            onclick="logout()">
+            onclick="window.logout()">
             Sair da conta
         </button>
     </div>
@@ -3467,32 +3467,34 @@ window.handleSignup=async function(){
 
 window.logout=async function(){
  try{
+   // Mantém o signOut do Firebase como operação principal.
    await signOut(auth);
-
-   // signOut() is authoritative; immediately reset the visible application
-   // state as well, so the user cannot remain on the authenticated UI if the
-   // auth-state callback is delayed.
-   currentUser=null;
-   currentCommunityId=null;
-   currentCommunityIsAdmin=false;
-   isAdmin=false;
-   profileCache=null;
-
-   if(notificationUnsubscribe){
-     notificationUnsubscribe();
-     notificationUnsubscribe=null;
-   }
-
-   $('appScreen')?.classList.add('hidden');
-   $('authScreen')?.classList.remove('hidden');
-   $('emailVerificationNotice')?.classList.add('hidden');
-   $('passwordRecoveryForm')?.classList.add('hidden');
-   $('signupForm')?.classList.add('hidden');
-   $('loginForm')?.classList.remove('hidden');
  }catch(e){
-   console.error('Logout:',e);
+   console.error('Logout Firebase:',e);
    alert('Não foi possível sair da conta. Tente novamente.');
+   return;
  }
+
+ // Limpeza local independente do atraso do listener do Firebase.
+ currentUser=null;
+ currentCommunityId=null;
+ currentCommunityIsAdmin=false;
+ isAdmin=false;
+ profileCache=null;
+ customInterestsCache=[];
+
+ if(notificationUnsubscribe){
+   notificationUnsubscribe();
+   notificationUnsubscribe=null;
+ }
+
+ $('appScreen')?.classList.add('hidden');
+ $('authScreen')?.classList.remove('hidden');
+ $('emailVerificationNotice')?.classList.add('hidden');
+ $('passwordRecoveryForm')?.classList.add('hidden');
+ $('signupForm')?.classList.add('hidden');
+ $('loginForm')?.classList.remove('hidden');
+ $('loginPassword')&&( $('loginPassword').value='' );
 };
 
 function contentForm(type){
