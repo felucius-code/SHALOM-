@@ -4474,8 +4474,8 @@ async function ensurePrivateConversation(otherUid,otherName){
  const u=user(); if(!u||!otherUid||otherUid===u.uid)throw new Error('Usuário inválido para conversa privada.');
  const shared=await findSharedCommunity(u.uid,otherUid);
  if(!shared)throw new Error('Você só pode iniciar uma conversa privada com alguém que pertença a uma comunidade em comum com você.');
- const id=privatePairKey(u.uid,otherUid),ref=doc(db,'conversations',id),snap=await getDoc(ref);
- if(!snap.exists())await setDoc(ref,{participantUids:[u.uid,otherUid],participantNames:{[u.uid]:publicName(profileCache,u),[otherUid]:otherName||'Usuário'},sharedCommunityId:shared.id,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastMessage:'',lastMessageAt:null,unreadBy:{[u.uid]:0,[otherUid]:0}});
+ const id=privatePairKey(u.uid,otherUid),ref=doc(db,'conversations',id);
+ await setDoc(ref,{participantUids:[u.uid,otherUid],participantNames:{[u.uid]:publicName(profileCache,u),[otherUid]:otherName||'Usuário'},sharedCommunityId:shared.id,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastMessage:'',lastMessageAt:null,unreadBy:{[u.uid]:0,[otherUid]:0}},{merge:true});
  return id;
 }
 async function openPrivateConversationWith(uid,name){try{const id=await ensurePrivateConversation(uid,name);await openPrivateConversation(id)}catch(e){console.error('openPrivateConversationWith:',e);alert(e.message||'Não foi possível abrir a conversa.');}}
