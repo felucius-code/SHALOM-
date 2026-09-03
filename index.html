@@ -240,7 +240,7 @@ select option {
 }
 
 /* =========================
-   CONVERSAS PRIVADAS — v53
+   CONVERSAS PRIVADAS — v54
 ========================= */
 .conversations-list{display:flex;flex-direction:column;gap:10px}
 .conversation-item{width:100%;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #303654;border-radius:10px;background:var(--panel);color:var(--white);text-align:left}
@@ -1636,7 +1636,7 @@ button {
 </head>
 
 <body>
-<!-- SHALOM v53: conversas privadas sobre a base oficial da v51 -->
+<!-- SHALOM v54: conversas privadas sobre a base oficial da v51 -->
 
 <!-- =====================================================
      AUTENTICAÇÃO
@@ -4471,12 +4471,25 @@ async function findSharedCommunity(uidA,uidB){
  return shared?{id:shared.id,...shared.data()}:null;
 }
 async function ensurePrivateConversation(otherUid,otherName){
- const u=user(); if(!u||!otherUid||otherUid===u.uid)throw new Error('Usuário inválido para conversa privada.');
+ const u=user();
+ if(!u||!otherUid||otherUid===u.uid)throw new Error('Usuário inválido para conversa privada.');
  const shared=await findSharedCommunity(u.uid,otherUid);
  if(!shared)throw new Error('Você só pode iniciar uma conversa privada com alguém que pertença a uma comunidade em comum com você.');
- const id=privatePairKey(u.uid,otherUid),ref=doc(db,'conversations',id);
- await setDoc(ref,{participantUids:[u.uid,otherUid],participantNames:{[u.uid]:publicName(profileCache,u),[otherUid]:otherName||'Usuário'},sharedCommunityId:shared.id,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastMessage:'',lastMessageAt:null,unreadBy:{[u.uid]:0,[otherUid]:0}},{merge:true});
- return id;
+ try{
+   const existingSnap=await getDocs(query(collection(db,'conversations'),where('participantUids','array-contains',u.uid)));
+   const existing=existingSnap.docs.find(d=>{const p=d.data()?.participantUids||[];return p.length===2&&p.includes(otherUid);});
+   if(existing)return existing.id;
+ }catch(e){
+   console.error('ensurePrivateConversation/list:',e);
+   throw new Error('Falha ao consultar suas conversas privadas: '+(e?.code||'erro')+' — '+(e?.message||'permissão negada.'));
+ }
+ try{
+   const created=await addDoc(collection(db,'conversations'),{participantUids:[u.uid,otherUid],participantNames:{[u.uid]:publicName(profileCache,u),[otherUid]:otherName||'Usuário'},sharedCommunityId:shared.id,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),lastMessage:'',lastMessageAt:null,unreadBy:{[u.uid]:0,[otherUid]:0}});
+   return created.id;
+ }catch(e){
+   console.error('ensurePrivateConversation/create:',e);
+   throw new Error('Falha ao criar a conversa privada: '+(e?.code||'erro')+' — '+(e?.message||'permissão negada.'));
+ }
 }
 async function openPrivateConversationWith(uid,name){try{const id=await ensurePrivateConversation(uid,name);await openPrivateConversation(id)}catch(e){console.error('openPrivateConversationWith:',e);alert(e.message||'Não foi possível abrir a conversa.');}}
 window.openPrivateConversationWith=openPrivateConversationWith;
