@@ -3304,9 +3304,10 @@ button {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, sendPasswordResetEmail, reload } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-functions.js";
 
 const firebaseConfig={apiKey:"AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",authDomain:"shalom-a1626.firebaseapp.com",projectId:"shalom-a1626",storageBucket:"shalom-a1626.firebasestorage.app",messagingSenderId:"746323382164",appId:"1:746323382164:web:1bca1a1df5f5ec6f2b8981",measurementId:"G-QXD13ER8SK"};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app);
 const ADMIN_EMAIL="felucius@gmail.com";
 
 // Cloudinary: upload direto do navegador usando o preset UNSIGNED.
@@ -5007,8 +5008,28 @@ window.loadNotifications=async function(){
 };
 
 function adminWorkspace(){return $('adminWorkspace');}
-window.adminShowUsers=async function(){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
-const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando...</p>';try{const s=await getDocs(collection(db,'users'));const rows=[];s.forEach(d=>{const x=d.data();rows.push(`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.email||'—')}</td><td>${esc(x.uid||d.id)}</td><td>${(x.interests||[]).length}</td></tr>`)});w.innerHTML=`<h2 class="card-title">👥 Usuários</h2><div style="overflow:auto"><table class="admin-table"><tr><th>Nome</th><th>E-mail</th><th>UID</th><th>Interesses</th></tr>${rows.join('')||'<tr><td colspan="4">Nenhum usuário.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
+window.adminDeleteUser=async function(uid,name,email){
+ if(!isGeneralAdminNow())return alert('Acesso restrito ao administrador geral.');
+ const targetUid=String(uid||'').trim();
+ const targetEmail=String(email||'').trim().toLowerCase();
+ const currentUid=String(auth.currentUser?.uid||'').trim();
+ if(!targetUid)return alert('Usuário inválido.');
+ if(targetUid===currentUid || targetEmail===ADMIN_EMAIL.toLowerCase())return alert('A conta do administrador geral não pode ser excluída por esta ferramenta.');
+ const label=name||targetEmail||targetUid;
+ if(!confirm(`Excluir definitivamente o usuário "${label}"?\n\nA conta de acesso e o perfil serão removidos. Esta ação não pode ser desfeita.`))return;
+ try{
+   const callable=httpsCallable(functions,'adminDeleteUser');
+   await callable({uid:targetUid});
+   alert('Usuário excluído com sucesso.');
+   await window.adminShowUsers();
+ }catch(e){
+   console.error('adminDeleteUser:',e);
+   alert('Não foi possível excluir o usuário: '+(e?.message||e));
+ }
+};
+
+window.adminShowUsers=async function(){ if(!isGeneralAdminNow())return alert('Acesso restrito ao administrador geral.');
+ const w=adminWorkspace();if(!w)return;w.innerHTML='<h2 class="card-title">👥 Usuários</h2><p>Carregando...</p>';try{const s=await getDocs(collection(db,'users'));const rows=[];s.forEach(d=>{const x=d.data();const uid=String(x.uid||d.id);const email=String(x.email||'');const isSelf=uid===String(auth.currentUser?.uid||'')||email.trim().toLowerCase()===ADMIN_EMAIL.toLowerCase();rows.push(`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.email||'—')}</td><td>${esc(uid)}</td><td>${(x.interests||[]).length}</td><td>${isSelf?'<span style="color:var(--muted);font-size:12px">Administrador geral</span>':`<button class="btn btn-danger btn-small" type="button" onclick="adminDeleteUser('${esc(uid)}','${esc(x.name||'')}','${esc(email)}')">Excluir</button>`}</td></tr>`)});w.innerHTML=`<h2 class="card-title">👥 Usuários</h2><p style="color:#6B7A99;font-size:13px;margin-bottom:12px">Exclusão disponível somente para o administrador geral.</p><div style="overflow:auto"><table class="admin-table"><tr><th>Nome</th><th>E-mail</th><th>UID</th><th>Interesses</th><th>Ação</th></tr>${rows.join('')||'<tr><td colspan="5">Nenhum usuário.</td></tr>'}</table></div>`}catch(e){w.innerHTML=`<div class="error">${esc(e.message)}</div>`}};
 window.adminShowCommunities=async function(){ if(!isAdmin)return alert('Acesso restrito ao administrador geral.');
 
  const w=adminWorkspace();if(!w)return;
