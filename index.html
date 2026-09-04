@@ -3307,7 +3307,7 @@ import { getFirestore, collection, addDoc, getDocs, getDoc, doc, setDoc, updateD
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-functions.js";
 
 const firebaseConfig={apiKey:"AIzaSyDNtzaQVr3MeD6UpTbmhe79J_v8bTN-mIA",authDomain:"shalom-a1626.firebaseapp.com",projectId:"shalom-a1626",storageBucket:"shalom-a1626.firebasestorage.app",messagingSenderId:"746323382164",appId:"1:746323382164:web:1bca1a1df5f5ec6f2b8981",measurementId:"G-QXD13ER8SK"};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app,'us-central1');
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),functions=getFunctions(app);
 const ADMIN_EMAIL="felucius@gmail.com";
 
 // Cloudinary: upload direto do navegador usando o preset UNSIGNED.
@@ -5024,11 +5024,7 @@ window.adminDeleteUser=async function(uid,name,email){
    await window.adminShowUsers();
  }catch(e){
    console.error('adminDeleteUser:',e);
-   const code=String(e?.code||'').replace(/^functions\//,'');
-   const message=String(e?.message||'').trim();
-   alert('Não foi possível excluir o usuário.
-
-'+(code?('Código: '+code+'\n'):'')+(message||'O servidor não informou o motivo. Consulte os registros da função adminDeleteUser.'));
+   alert('Não foi possível excluir o usuário: '+(e?.message||e));
  }
 };
 
@@ -5492,3 +5488,4 @@ document.addEventListener('click',function(e){
 
 </body>
 </html>
+ 
